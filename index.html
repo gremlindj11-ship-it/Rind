@@ -1171,9 +1171,15 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
         const hh = n => String(Math.floor(n / 60)).padStart(2, '0') + ':' + String(n % 60).padStart(2, '0');
         const ok = later(y.e.i, z => clauses(z.text).some(c => m.re.test(c) && /\b(intended|intentional|second dose reviewed|both doses reviewed|aware of the earlier dose)\b/i.test(c)));
         if (ok) loops.push({ key: 'dup:' + m.name, kind: 'dup', label: cap(m.name), status: 'closed', start: x.e.i, end: ok.i, text: `${cap(m.name)} given twice, reviewed ${ok.time}`, src: [x.e.i, y.e.i, ok.i] });
-        else loops.push({ key: 'dup:' + m.name, kind: 'dup', label: cap(m.name), status: 'open', start: x.e.i, end: null, maybe: null,
-          title: `${cap(m.name)} recorded as given twice — ${hh(x.t)} (${x.e.svc}) and ${hh(y.t)} (${y.e.svc})`,
-          detail: `"${x.c}" · "${y.c}" · possible duplicate, check the chart`, src: [x.e.i, y.e.i] });
+        else {
+          // did the second service already have the first dose written down, in its own notes, before it gave the second?
+          const known = E.find(z => z.svc === y.e.svc && z.i < y.e.i && m.re.test(z.text) && z.text.includes(hh(x.t)));
+          const also = E.filter(z => z.i !== x.e.i && z.i !== y.e.i && (!known || z.i !== known.i) && m.re.test(z.text) && z.text.includes(hh(x.t)) && z.i < y.e.i);
+          loops.push({ key: 'dup:' + m.name, kind: 'dup', label: cap(m.name), status: 'open', start: x.e.i, end: null, maybe: null,
+            title: `${cap(m.name)} recorded as given twice — ${hh(x.t)} (${x.e.svc}) and ${hh(y.t)} (${y.e.svc})`,
+            detail: `"${x.c}" · "${y.c}" · possible duplicate, check the chart` + (known ? ` · ${y.e.svc} had already written the ${hh(x.t)} dose in its own note at ${known.time}, as a sentence` : '') + (also.length ? ` · ${also.length} other note${also.length === 1 ? '' : 's'} from ${[...new Set(also.map(z => z.svc))].join(', ')} carried the first dose forward correctly` : ''),
+            known: known ? known.i : null, ageFrom: y.e.i, src: [x.e.i, ...also.map(z => z.i), ...(known ? [known.i] : []), y.e.i] });
+        }
       }
     });
 
@@ -1461,6 +1467,7 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
   function loopBody(l, E) {
     if (l.status === 'closed') return `<p class="quote">${esc(l.text)}. Started and finished in the notes.</p><dl class="meta2"><dt>Source</dt><dd>${chips(l.src, E)}</dd></dl>`;
     return `<p class="quote">${esc(l.detail)}</p>
+      ${l.kind === 'dup' && l.known != null ? `<p class="q"><b>The fact was already in the record.</b> It was a sentence in a note, not an entry on the drug chart, so a check that compares chart entries has nothing to compare. ${chips([l.known], E)}</p>` : ''}
       ${l.maybe ? `<p class="q"><b>Possible restart on day ${E[l.maybe.i].day}:</b> "${esc(l.maybe.text)}". The wording is unclear, so this stays open until someone confirms. ${chips([l.maybe.i], E)}</p>` : ''}
       <dl class="meta2"><dt>Passed through</dt><dd>${l.path.map(esc).join('<span class="arrow" aria-hidden="true"></span>')}</dd><dt>Evidence</dt><dd>${evidence(l)}</dd><dt>Source</dt><dd>${chips(l.src, E)}</dd></dl>`;
   }
@@ -1592,7 +1599,7 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
     const aiCard = ai.length ? `<details class="aiBox" open><summary><b>Suggested by AI</b><span>${kept.length} backed by a line in the notes${drop ? ` · ${drop} dropped, no matching line` : ''}</span></summary>${kept.length ? `<ul>${kept.map(x => `<li>${esc(x.text)} <q>${esc(x.quote)}</q> ${chips([x.i], E)}</li>`).join('')}</ul>` : ''}<p class="hint">Written by a language model, not by the checks. A line is shown only if its quote is found word for word in the notes. AI lines never open or close a loop.</p></details>` : '';
     const flashCard = flash ? `<p class="notice good flash"><b>Closed by your entry.</b> ${esc(flash)}</p>` : ''; flash = '';
     $('out').innerHTML = `${flashCard}${trendCard}${planCard}<section class="loops">${open.length ? open.map((o, k) => `<details class="loop${done[dk(o)] ? ' actioned' : ''}" id="flag${k}" ${k === 0 && !done[dk(o)] ? 'open' : ''}>
-        <summary><span class="dot" aria-hidden="true"></span><span class="lt"><b>${esc(o.t1)}</b>${o.t2 ? `<i>${esc(o.t2)}</i>` : ''}</span><span class="age">${age(o.start, E).startsWith('since') ? age(o.start, E) : 'open ' + age(o.start, E)}</span>${o.problem ? `<button type="button" class="tag" data-prob="${esc(o.problem)}" title="See this problem in the summary">${esc(o.problem)}</button>` : ''}</summary>
+        <summary><span class="dot" aria-hidden="true"></span><span class="lt"><b>${esc(o.t1)}</b>${o.t2 ? `<i>${esc(o.t2)}</i>` : ''}</span><span class="age">${age(o.ageFrom != null ? o.ageFrom : o.start, E).startsWith('since') ? age(o.ageFrom != null ? o.ageFrom : o.start, E) : 'open ' + age(o.ageFrom != null ? o.ageFrom : o.start, E)}</span>${o.problem ? `<button type="button" class="tag" data-prob="${esc(o.problem)}" title="See this problem in the summary">${esc(o.problem)}</button>` : ''}</summary>
         <div class="lb">${loopBody(o, E)}<div class="act">${done[dk(o)] ? `<span class="okTag">Recorded in the notes at ${done[dk(o)]}</span>Still open by the checks. <button type="button" class="linkbtn" data-rec="${k}">Add another entry</button>` : `<button type="button" class="btn" data-rec="${k}">Record what was done</button>`}
           <form class="recF" data-k="${k}" hidden><div class="recTop"><label for="rec${k}">New entry for the notes</label>${TPL(o).length > 1 ? TPL(o).map((t, n) => `<button type="button" class="chip" data-tpl="${n}" aria-pressed="${n === 0}">${esc(t[0])}</button>`).join('') : ''}</div>
           <textarea id="rec${k}" rows="2" spellcheck="true">${esc(TPL(o)[0][1])}</textarea>
@@ -1635,7 +1642,7 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
         <table class="meds"><thead><tr><th>Medicine</th><th>In the notes</th><th>Home</th><th>Latest list</th><th>First and last mention</th></tr></thead><tbody>${meds.all.map(medRow).join('')}</tbody></table></details>`
       : `<table class="meds"><thead><tr><th>Medicine</th><th>In the notes</th><th>First and last mention</th></tr></thead><tbody>${meds.all.map(m => `<tr><td>${esc(cap(m.name))}</td><td>${openRx(m.name) ? '<b class="bad">Prescribed, no record it was given</b>' : st[m.status]}</td><td>${chips([m.first, m.last], E)}</td></tr>`).join('')}</tbody></table>`}
       <h3 class="subH">Still open</h3>
-      ${open.length ? open.map((l, k) => `<button type="button" class="openRow" data-ql="${k}"><i class="qDot" aria-hidden="true"></i><b>${esc(l.t1)}</b><span>${esc(l.t2 || '')}</span><em>${age(l.start, E).startsWith('since') ? age(l.start, E) : 'open ' + age(l.start, E)}</em></button>`).join('') : '<p class="hint">None found by these checks.</p>'}
+      ${open.length ? open.map((l, k) => `<button type="button" class="openRow" data-ql="${k}"><i class="qDot" aria-hidden="true"></i><b>${esc(l.t1)}</b><span>${esc(l.t2 || '')}</span><em>${age(l.ageFrom != null ? l.ageFrom : l.start, E).startsWith('since') ? age(l.ageFrom != null ? l.ageFrom : l.start, E) : 'open ' + age(l.ageFrom != null ? l.ageFrom : l.start, E)}</em></button>`).join('') : '<p class="hint">None found by these checks.</p>'}
       <details class="noteBox"${myNote[cur.id] ? ' open' : ''}><summary>${myNote[cur.id] ? 'Clinician note' : 'Add a clinician note'}</summary>
         <p class="hint">Written by you, not taken from the notes. It is marked as added by the clinician and goes into the handover and every document.</p>
         <textarea id="myNote" rows="3" aria-label="Clinician note">${esc(myNote[cur.id] || '')}</textarea></details>
@@ -1703,7 +1710,7 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
     const short = l => { const base = l.kind === 'confirm' ? l.t1.split(',')[0] : (l.label || l.t1); return (base + ({ decision: ' decision', finding: ' follow-up', referral: ' reply', pending: ' result', dup: ' given twice' }[l.kind] || '')).toLowerCase(); };
     $('heroTitle').textContent = !show ? 'What was started and never closed?' : !n ? 'No open loops found by these checks' : !left.length ? `All ${n} open loops have an entry recorded` : (cur.prealert ? `Before ${cur.sex === 'F' ? 'she' : 'he'} arrives: ` : 'Still open: ') + left.slice(0, 3).map(short).join(', ') + (left.length > 3 ? ` + ${left.length - 3} more` : '');
     const st0 = epStart(R.E), topL = left.find(l => !(cur.dayLabels && R.E[l.start].day === 0));
-    $('heroClock').innerHTML = !show ? '' : `<b>${age(st0.i, R.E)}</b> since first seen (${esc(st0.svc)}, ${when(st0.i, R.E)})` + (topL ? ` · ${esc(short(topL))} waiting <b>${age(topL.start, R.E)}</b>` : '');
+    $('heroClock').innerHTML = !show ? '' : `<b>${age(st0.i, R.E)}</b> since first seen (${esc(st0.svc)}, ${when(st0.i, R.E)})` + (topL ? ` · ${esc(short(topL))} waiting <b>${age(topL.ageFrom != null ? topL.ageFrom : topL.start, R.E)}</b>` : '');
     const nowS = R.summary.now, nowP = nowS ? nowS.text.split(/(?<=\.)\s/) : [], nowT = nowP.length > 1 && nowP[0].length < 30 ? nowP[0] + ' ' + nowP[1] : nowP[0] || '';
     if (show && nowS) $('heroSub').innerHTML = `<b>Latest:</b> ${esc(nowT)} ${chips(nowS.src, R.E)}`;
     else $('heroSub').textContent = show ? `${R.E.length} entries from ${svc} services.` : 'Rind reads the whole record across every handover and lists the loose ends.';
