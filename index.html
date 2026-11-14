@@ -406,6 +406,78 @@ body.showNotes .jh b{font-size:11.5px}
 body.showNotes .jh span{display:none}
 body.showNotes .jopen,body.showNotes .jdone{padding:2px 7px;font-size:11px}
 
+/* v14: the document shown on the page, ready to print, no new window */
+.overlay{position:fixed;inset:0;z-index:70;background:rgba(16,32,48,.55);overflow:auto;padding:24px 16px 40px}
+.sheetWrap{max-width:820px;margin:0 auto}
+.sheetBar{display:flex;align-items:center;gap:10px;color:#fff;margin-bottom:12px}
+.sheetBar b{font-size:16px;font-weight:600}
+.sheetBar .sp{flex:1}
+#dvMsg{color:#fff;margin:0 0 10px}
+#dvMsg:empty{display:none}
+#docView #printDoc{display:block}
+.sheet{background:#fff;color:var(--ink);border-radius:6px;box-shadow:0 20px 48px rgba(16,32,48,.35);padding:44px 52px;font-size:14px;line-height:1.5}
+.pdHead{border-bottom:2px solid var(--bluedk);padding-bottom:14px;margin-bottom:6px}
+.pdHead>div{display:flex;align-items:baseline;gap:12px;margin-bottom:10px}
+.pdBrand{font-size:20px;font-weight:700;color:var(--bluedk)}
+.pdHead>div span{font-size:18px;font-weight:600}
+.pdHead dl{display:grid;grid-template-columns:auto 1fr;gap:2px 16px;margin:0;font-size:13px}
+.pdHead dt{color:var(--mute)}.pdHead dd{margin:0;font-weight:600}
+.pdBody h4{font-size:12px;font-weight:700;letter-spacing:0;color:var(--bluedk);margin:18px 0 4px;border-bottom:1px solid var(--soft);padding-bottom:3px}
+.pdBody p{margin:0 0 3px}
+.pdBody p.li{padding-left:16px;text-indent:-16px}
+.pdFoot{border-top:1px solid var(--line);margin-top:22px;padding-top:8px;font-size:11px;color:var(--mute)}
+@media print{
+  body.docView>*:not(#docView){display:none!important}
+  body.docView{background:#fff}
+  body.docView #docView{position:static;display:block!important;background:none;padding:0;overflow:visible}
+  .sheetBar,#dvMsg{display:none!important}
+  .sheetWrap{max-width:none}
+  .sheet{box-shadow:none;border-radius:0;padding:0;font-size:11pt}
+  .pdBody h4{break-after:avoid}
+}
+@media(max-width:700px){.sheet{padding:24px 20px}}
+
+/* v15: things link to where they lead */
+.banner .facts{align-items:stretch}
+.banner .fact{flex:0 1 auto;max-width:48%;min-width:0;text-align:left}
+.fact b{white-space:normal;line-height:1.3}
+button.fact.src{background:none;border:0;border-left:1px solid var(--line);border-radius:0;color:inherit;text-decoration:none;white-space:normal;font-size:inherit;padding:0 18px;cursor:pointer}
+.banner button.fact.src:first-child{border-left:0;padding-left:0}
+button.fact.src:hover b,button.fact.src:focus-visible b{color:var(--blue);text-decoration:underline;text-decoration-color:#a9c9ea;text-underline-offset:3px}
+.pre.src{text-decoration:none;cursor:pointer}
+.pre.src:hover{border-color:#c99a1e}
+button.svc{background:none;border:0;padding:0;font:inherit;font-weight:500;color:var(--ink);cursor:pointer;border-radius:3px}
+button.svc:hover,button.svc:focus-visible{color:var(--blue);text-decoration:underline;text-underline-offset:3px}
+button.tag{border:0;cursor:pointer;font-family:inherit}
+button.tag:hover,button.tag:focus-visible{background:var(--tint);color:var(--bluedk)}
+.pLoop{margin:6px 0 10px}
+.pLoop .linkbtn{text-align:left}
+#noteF{margin:0 0 10px}
+#noteF .chip{padding:2px 10px;font-size:12px}
+.qSug{padding:2px 10px 8px;display:flex;flex-wrap:wrap;gap:6px}
+.qList .qSug .chip{display:inline-block;width:auto;border:1px solid var(--line);border-radius:16px;padding:3px 12px;font-size:13px;color:var(--ink)}
+.qList .qSug .chip:hover{border-color:var(--blue);background:var(--tint)}
+
+/* v16: the clock, the trend and the plan already on record */
+.clock{font-size:15px;color:var(--mute);margin:2px 0 4px}
+.clock:empty{display:none}
+.clock b{color:var(--red);font-weight:700}
+.age{margin-left:auto;flex:none;font-size:12px;color:var(--mute);white-space:nowrap}
+details.loop .age + .tag{margin-left:10px}
+details.loop.actioned .age{visibility:hidden}
+.plan{border:1px solid #b9dcc8;background:#f1f9f4;border-radius:8px;padding:0 16px;margin:0 0 12px}
+.plan>summary{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;padding:11px 0;cursor:pointer;list-style:none}
+.plan>summary::-webkit-details-marker{display:none}
+.plan>summary b{font-weight:600;color:#005a2b}
+.plan>summary span{font-size:13px;color:var(--mute)}
+.plan ul{margin:0;padding:0 0 12px 18px;font-size:14px;line-height:1.5}
+.plan li{margin:2px 0}
+#out>.notice.bad{margin:0 0 12px}
+#out .hub{margin:14px 0 0}
+@media(max-width:900px){.age{margin-left:21px;order:2}}
+
+.overlay{background:rgba(12,24,38,.78)}
+
 </style>
 </head>
 <body>
@@ -459,6 +531,7 @@ body.showNotes .jopen,body.showNotes .jdone{padding:2px 7px;font-size:11px}
           <div class="lead" id="lead">
             <svg class="ring" viewBox="0 0 32 32" aria-hidden="true"><circle class="ringTrack" cx="16" cy="16" r="11"/><circle id="ringArc" class="ringArc" cx="16" cy="16" r="11" pathLength="100" transform="rotate(-20 16 16)"/></svg>
             <h2 id="heroTitle"></h2>
+            <p id="heroClock" class="clock"></p>
             <p id="heroSub"></p>
             <ul class="boot" id="boot">
               <li>Runs in this browser</li>
@@ -497,6 +570,7 @@ body.showNotes .jopen,body.showNotes .jdone{padding:2px 7px;font-size:11px}
       <section class="card" id="left" hidden>
         <div class="noteTop"><h2 class="cardH" id="noteHead">Source notes</h2><button type="button" class="linkbtn" id="closeNotes">Close</button></div>
         <p class="accLine">Requested by ED clinician (demo sign-in). Viewing is logged.</p>
+        <div class="jf" id="noteF"></div>
         <form id="addForm" class="add" autocomplete="off">
           <label for="addIn">Add an entry</label>
           <div class="addRow"><input id="addIn" type="text" spellcheck="false"><button type="submit" class="btn">Add</button></div>
@@ -514,7 +588,13 @@ body.showNotes .jopen,body.showNotes .jdone{padding:2px 7px;font-size:11px}
   </main>
 </div>
 
-<div id="printDoc"></div>
+<div class="overlay" id="docView" hidden>
+  <div class="sheetWrap" role="dialog" aria-modal="true" aria-labelledby="dvTitle">
+    <div class="sheetBar"><b id="dvTitle"></b><span class="sp"></span><span class="next" style="margin:0"><button type="button" class="btn" id="dvPrint">Print or save as PDF</button></span><button type="button" class="btn" id="dvClose">Close</button></div>
+    <p class="hint" id="dvMsg" role="status"></p>
+    <div class="sheet" id="printDoc"></div>
+  </div>
+</div>
 <div class="modal" id="idModal" hidden>
   <div class="modalBox" role="dialog" aria-modal="true" aria-labelledby="idT">
     <h2 class="cardH" id="idT">Confirm before you open this record</h2>
@@ -700,7 +780,11 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
     'Decision deferred and never made',
     'Something to confirm that nobody confirmed',
     'A document the team could not see',
-    'Family to be told, with no record they were'
+    'Family to be told, with no record they were',
+    'Medicine given or prescribed against a recorded allergy',
+    'Allergy recorded differently by different services',
+    'Getting worse across services: breathing rate, heart rate, NEWS2, new oxygen',
+    'Essentials missing from the whole record: allergies, escalation status, next of kin'
   ];
 
   /* Problem-oriented summary: each sentence is filed under the problems it mentions.
@@ -908,12 +992,30 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
       else loops.push({ key: 'family', kind: 'family', label: 'Family', status: 'open', start: e.i, end: null, maybe: null, title: `Family to be told ${e.time} — no record they were`, detail: `"${c}"`, src: [e.i] });
     }));
 
+    // 11. a medicine given or prescribed that the allergy record rules out
+    const PEN = /\b(amoxicillin|co-?amoxiclav|augmentin|flucloxacillin|tazocin|piperacillin|benzylpenicillin|phenoxymethylpenicillin|penicillin v|pivmecillinam)\b/i;
+    let penAl = null;
+    E.forEach(e => clauses(e.text).forEach(c => { if (!penAl && /penicillin/i.test(c) && /allerg|avoid/i.test(c) && !/no known|NKDA/i.test(c)) penAl = { e, c }; }));
+    if (penAl) E.forEach(e => clauses(e.text).forEach(c => {
+      const m = c.match(PEN); if (!m) return;
+      if (!/\b(given|gave|prescribed|started|commenced|administered|stat)\b/i.test(c) || /\b(not|avoid|do not|instead of|withheld|stopped|allerg)\b/i.test(c)) return;
+      const d = m[1].toLowerCase(); if (loops.some(l => l.key === 'conflict:' + d)) return;
+      loops.push({ key: 'conflict:' + d, kind: 'conflict', label: 'Allergy', status: 'open', start: e.i, end: null, maybe: null,
+        title: `${cap(d)} ${/prescribed/i.test(c) ? 'prescribed' : 'given'} ${e.time} — penicillin allergy is on record`,
+        detail: `"${c}" · the allergy was recorded as "${penAl.c}"`, src: [penAl.e.i, e.i] });
+    }));
+    // 12. the allergy record says different things in different places
+    const nk = E.find(e => /\bNKDA\b|no known (drug )?allerg/i.test(e.text));
+    const al = E.find(e => clauses(e.text).some(c => /allerg/i.test(c) && !/no known|NKDA|\?\s*allerg/i.test(c)));
+    if (nk && al) loops.push({ key: 'conflict:allergy record', kind: 'conflict', label: 'Allergy', status: 'open', start: Math.min(nk.i, al.i), end: null, maybe: null,
+      title: `Allergy record differs — no known allergies (${nk.svc}), an allergy (${al.svc})`, detail: 'Two services recorded different allergy status', src: [nk.i, al.i] });
+
     // services, and the handovers each open loop has crossed
     const strip = [];
     E.forEach(e => { const l = strip[strip.length - 1]; if (l && l.svc === e.svc) { l.n++; l.i1 = e.i; } else strip.push({ svc: e.svc, n: 1, i0: e.i, i1: e.i }); });
     const path = i => { const p = [E[i].svc]; E.slice(i + 1).forEach(x => { if (x.svc !== p[p.length - 1]) p.push(x.svc); }); return p; };
     loops.forEach(l => { if (l.status === 'open') l.path = path(l.start); });
-    const RANK = ['rx', 'drug', 'decision', 'confirm', 'pending', 'finding', 'referral', 'device', 'doc', 'family'];
+    const RANK = ['conflict', 'rx', 'drug', 'decision', 'confirm', 'pending', 'finding', 'referral', 'device', 'doc', 'family'];
     loops.sort((a, b) => (RANK.indexOf(a.kind) - RANK.indexOf(b.kind)) || (a.start - b.start));
 
     // coverage: which sentences did any check have something to look at
@@ -988,7 +1090,20 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
       if (o.rr || o.spo2 || o.hr) obs.push(o);
     });
 
-    return { E, bad, loops, problems, meds, obs, open: loops.filter(l => l.status === 'open'), closed: loops.filter(l => l.status === 'closed'),
+    // 13. getting worse across services, on the latest day of the record
+    let trend = null;
+    const lastDay = obs.length ? E[obs[obs.length - 1].i].day : null, today = obs.filter(o => E[o.i].day === lastDay);
+    if (today.length >= 3) {
+      const num = k => today.map(o => parseFloat(o[k])).filter(n => !isNaN(n)), lines = [], last = a => a[a.length - 1];
+      const rrs = num('rr'), hrs = num('hr'), nws = num('news'), o2 = today.map(o => o.spo2).filter(Boolean);
+      if (rrs.length >= 2 && last(rrs) - rrs[0] >= 6 && last(rrs) >= 25) lines.push('Breathing rate ' + rrs.join(' → '));
+      if (hrs.length >= 2 && last(hrs) - hrs[0] >= 15 && last(hrs) >= 100) lines.push('Heart rate ' + hrs.join(' → '));
+      if (nws.length >= 2 && last(nws) - nws[0] >= 3) lines.push('NEWS2 ' + nws.join(' → '));
+      if (o2.length >= 2 && /air/i.test(o2[0]) && /L\/min|oxygen/i.test(last(o2))) lines.push('Oxygen ' + o2[0] + ' → ' + last(o2));
+      if (lines.length) trend = { lines, src: today.map(o => o.i) };
+    }
+
+    return { E, bad, loops, problems, meds, obs, trend, open: loops.filter(l => l.status === 'open'), closed: loops.filter(l => l.status === 'closed'),
       summary, strip, cover: { total, checked, unchk }, days: E.length ? E[E.length - 1].day - E[0].day + 1 : 0, words: text.split(/\s+/).length };
   }
 
@@ -1005,7 +1120,7 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
   const cap = s => s[0].toUpperCase() + s.slice(1);
   const reduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   const sleep = ms => new Promise(r => setTimeout(r, ms));
-  let cur = PATIENTS[0], notesText = cur.notes, built = false, busy = false, lastMs = '0', query = '', lastR = null, audience = '', jStage = null, jOpen = true, jClosed = false, doc = 'handover', jSel = null;
+  let cur = PATIENTS[0], notesText = cur.notes, built = false, busy = false, lastMs = '0', query = '', lastR = null, audience = '', jStage = null, jOpen = true, jClosed = false, doc = 'handover', jSel = null, nSvc = null, nUn = false;
   const edits = {}, myNote = {};
 
   /* ---------- source links: a small chip; hover or focus shows the note it came from ---------- */
@@ -1013,6 +1128,13 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
   const whenShort = (i, E) => { const e = E[i], L = cur.dayLabels; return !L ? `Day ${e.day}` : e.day === 0 ? L[0] : e.time; };
   const dayWords = t => t ? t.replace(/\bD(\d+)\b/g, 'day $1') : t;
   const nice = R => { if (!cur.dayLabels) R.loops.forEach(l => { l.title = dayWords(l.title); l.detail = dayWords(l.detail); l.text = dayWords(l.text); }); return R; };
+  const mins = e => e.day * 1440 + +e.time.slice(0, 2) * 60 + +e.time.slice(3, 5);
+  const dur = m => m < 60 ? `${m} min` : m < 2880 ? `${Math.floor(m / 60)} h${m % 60 ? ' ' + (m % 60) + ' min' : ''}` : `${Math.round(m / 1440)} days`;
+  const age = (i, E) => { const a = E[i], b = E[E.length - 1]; return cur.dayLabels && a.day === 0 && b.day !== 0 ? 'since ' + cur.dayLabels[0] : dur(Math.max(0, mins(b) - mins(a))); };
+  const epStart = E => E.find(e => !(cur.dayLabels && e.day === 0)) || E[0];
+  const planOf = R => { const fd = R.closed.find(c => c.found); if (!fd) return null; const svc = R.E[fd.src[fd.src.length - 1]].svc;
+    const lines = R.E.filter(e => e.svc === svc).flatMap(e => e.text.split(/[.;](?=\s|$)/).map(c => c.trim()).filter(c => /\b(target|plan|avoid|ceiling|guideline|trial)\b/i.test(c)).map(c => ({ c, i: e.i }))).slice(0, 5);
+    return lines.length ? { svc, lines, why: fd.text.split('.')[0] } : null; };
   const USER = 'ED clinician (demo sign-in)';
   const nowTime = () => new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
   const audit = [], done = {}, reviewed = {};
@@ -1044,8 +1166,9 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
   function renderNotes(R, newIdx) {
     const q = query.trim(), W = qWords(q);
     const hl = t => q ? qMark(t, W) : esc(t);
-    const list = R.E.filter(e => !q || qHit(e, W));
-    $('noteHead').textContent = q ? `${list.length} of ${R.E.length} entries match "${q}"` : `Source notes · ${R.E.length} entries · ${R.days} days`;
+    const list = R.E.filter(e => !q || qHit(e, W)).filter(e => !nSvc || e.svc === nSvc).filter(e => !nUn || R.cover.unchk.includes(e.i));
+    if ($('noteF')) $('noteF').innerHTML = `<button type="button" class="chip" data-ns="" aria-pressed="${!nSvc && !nUn}">All</button>` + [...new Set(R.E.map(e => e.svc))].map(x => `<button type="button" class="chip" data-ns="${esc(x)}" aria-pressed="${nSvc === x}">${esc(x)}</button>`).join('') + (built && R.cover.unchk.length ? `<button type="button" class="chip" data-nu="1" aria-pressed="${nUn}">Not touched by a check ${R.cover.unchk.length}</button>` : '');
+    $('noteHead').textContent = q || nSvc || nUn ? `${list.length} of ${R.E.length} entries${q ? ` match "${q}"` : ''}${nSvc ? ' · ' + nSvc : ''}${nUn ? ' · not touched by a check' : ''}` : `Source notes · ${R.E.length} entries · ${R.days} days`;
     $('notes').innerHTML = list.map(e => `<div class="note${e.i === newIdx ? ' new' : ''}" id="n${e.i}"><span class="meta">${when(e.i, R.E)} · ${esc(e.svc)} · ${hl(e.who)}</span>${hl(e.text)}</div>`).join('') || '<p class="none">No entries match.</p>';
     if (built) R.cover.unchk.forEach(i => { const n = $('n' + i); if (n) n.classList.add('unchk'); });
   }
@@ -1054,7 +1177,7 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
     hidePop(); setNotes(true);
     if (lastR && lastR.E[i]) log(`Source viewed: ${when(i, lastR.E)}, ${lastR.E[i].svc}`);
     if (!$('editor').hidden) toggleEdit();
-    if (query && !$('n' + i)) { query = ''; $('q').value = ''; renderNotes(lastR); }
+    if (!$('n' + i)) { query = ''; $('q').value = ''; nSvc = null; nUn = false; renderNotes(lastR); }
     document.querySelectorAll('.note.hit').forEach(n => n.classList.remove('hit'));
     const n = $('n' + i); if (!n) return;
     n.classList.add('hit');
@@ -1157,7 +1280,11 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
     const mine = who === 'ED' && carer(R) !== 'ED' ? R.open : R.open.filter(l => owners(l, R).includes(who)), rest = R.open.filter(l => !mine.includes(l));
     const line = (l, k) => `${k + 1}. ${l.title} [${at(l.start)}, ${E[l.start].svc}]` + (l.maybe ? ` (possible restart ${at(l.maybe.i)}, unclear, confirm)` : '');
     const L = [`HANDOVER TO ${who.toUpperCase()} · synthetic patient ${demo}`, ''];
+    const st0 = epStart(E), plan = planOf(R);
+    L.push(`First seen ${at(st0.i)} (${st0.svc}), ${age(st0.i, E)} before the latest note.`, '');
     if (S.admitted) L.push('PRESENTING PROBLEM', S.admitted.text, '');
+    if (R.trend) L.push('GETTING WORSE TODAY', ...R.trend.lines.map(x => '- ' + x), '');
+    if (plan) L.push(`PLAN ALREADY ON RECORD (${plan.svc}, ${at(plan.lines[0].i)})`, ...plan.lines.map(x => '- ' + x.c), '');
     L.push('MAIN PROBLEMS', ...R.problems.slice(0, 5).map(p => `- ${p.name}: ${p.items[p.items.length - 1].text}`), '');
     L.push(who === 'ED' && carer(R) !== 'ED' ? `ALL OPEN LOOPS (${mine.length})` : `FOR YOU TO ACTION (${mine.length})`);
     L.push(...(mine.length ? mine.map(line) : ['None found for you by these checks.']));
@@ -1224,7 +1351,7 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
         ${recs.some(x => x.name === 'ED') ? '' : `<button type="button" class="rec" data-a="ED" aria-pressed="${audience === 'ED'}"><b>ED</b><span class="recN">All ${R.open.length}</span><span class="recWhy">If the patient comes back in</span></button>`}</div>` : ''}
       <textarea id="hoText" rows="16" spellcheck="true" aria-label="${DOCS.find(d => d[0] === doc)[1]} text, editable">${esc(ed ? ed.text : draft)}</textarea>
       <p class="docState" id="docState"></p>
-      <button type="button" id="copyBtn" class="btn copy">Copy text</button> <button type="button" id="pdfBtn" class="btn copy">Print or save as PDF</button> <span id="copyMsg" class="hint" role="status"></span>`;
+      <button type="button" id="copyBtn" class="btn copy">Copy text</button> <button type="button" id="pdfBtn" class="btn copy">View as a document</button> <span id="copyMsg" class="hint" role="status"></span>`;
     docStatus(draft);
     $('recs').innerHTML = recs.map(x => `<button type="button" class="nav sub" data-aud="${esc(x.name)}"><span class="lbl">${esc(x.name)}</span><span class="badge quiet">${x.n}</span></button>`).join('');
   }
@@ -1241,12 +1368,16 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
     const { E, open, closed, summary: S, cover, problems, meds } = R;
     const f = x => x ? `${esc(x.text)} ${chips(x.src, E)}` : NF;
     // 1 open loops
-    $('out').innerHTML = `<p class="hub"><span class="hubL">Read ${R.E.length} entries in ${lastMs} ms from</span>${R.strip.map(x => `<span class="svc">${esc(x.svc)} <i>${x.n}</i></span>`).join('<span class="arrow" aria-hidden="true"></span>')}</p><section class="loops">${open.length ? open.map((o, k) => `<details class="loop${done[dk(o)] ? ' actioned' : ''}" id="flag${k}" ${k === 0 && !done[dk(o)] ? 'open' : ''}>
-        <summary><span class="dot" aria-hidden="true"></span><span class="lt">${esc(o.title)}</span>${o.problem ? `<span class="tag">${esc(o.problem)}</span>` : ''}</summary>
+    const plan = planOf(R);
+    const trendCard = R.trend ? `<p class="notice bad"><b>Getting worse today.</b> ${R.trend.lines.map(esc).join(' · ')}. ${chips(R.trend.src, E)}</p>` : '';
+    const planCard = plan ? `<details class="plan" open><summary><b>Treatment plan already on record</b><span>${esc(plan.svc)}, ${when(plan.lines[0].i, E)} · ${esc(plan.why)}</span></summary><ul>${plan.lines.map(x => `<li>${esc(x.c)} ${chips([x.i], E)}</li>`).join('')}</ul></details>` : '';
+    $('out').innerHTML = `${trendCard}${planCard}<section class="loops">${open.length ? open.map((o, k) => `<details class="loop${done[dk(o)] ? ' actioned' : ''}" id="flag${k}" ${k === 0 && !done[dk(o)] ? 'open' : ''}>
+        <summary><span class="dot" aria-hidden="true"></span><span class="lt">${esc(o.title)}</span><span class="age">${age(o.start, E).startsWith('since') ? age(o.start, E) : 'open ' + age(o.start, E)}</span>${o.problem ? `<button type="button" class="tag" data-prob="${esc(o.problem)}" title="See this problem in the summary">${esc(o.problem)}</button>` : ''}</summary>
         <div class="lb">${loopBody(o, E)}<p class="act">${done[dk(o)] ? `<span class="okTag">Actioned at ${done[dk(o)]}</span> <button type="button" class="linkbtn" data-undo="${k}">Undo</button>` : `<button type="button" class="btn" data-done="${k}">Mark as actioned</button>`}</p></div></details>`).join('')
         : '<p class="notice">None found by these checks. That is not the same as none. The notes are still the record.</p>'}</section>
-      ${closed.filter(c => c.found).map(c => `<p class="notice good"><b>Found in the record.</b> ${esc(c.text)}. ${chips(c.src, E)}</p>`).join('')}
+      ${closed.filter(c => c.found && !plan).map(c => `<p class="notice good"><b>Found in the record.</b> ${esc(c.text)}. ${chips(c.src, E)}</p>`).join('')}
       <p class="notice"><b>${CHECKS.length} checks only.</b> ${cover.unchk.length} of ${E.length} entries were not touched by any check and still need a human read. <button type="button" class="linkbtn" data-act="unchk">Show them</button></p>
+      <p class="hub"><span class="hubL">Read ${R.E.length} entries in ${lastMs} ms from</span>${R.strip.map(x => `<button type="button" class="svc" data-ns="${esc(x.svc)}" title="Show the ${esc(x.svc)} notes">${esc(x.svc)} <i>${x.n}</i></button>`).join('<span class="arrow" aria-hidden="true"></span>')}</p>
       <p class="sign">${reviewed[cur.id] ? `<span class="okTag">Reviewed at ${reviewed[cur.id]}</span> Logged in the audit trail.` : `<button type="button" class="btn" id="signBtn">Mark this page as reviewed</button>`}</p>
       <p class="next"><button type="button" class="btn" data-go="journey">Next: see where each one started</button></p>`;
     $('out').hidden = false;
@@ -1270,8 +1401,8 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
       <table class="meds"><thead><tr><th>When</th><th>Where</th><th>Breathing rate</th><th>Oxygen</th><th>Heart rate</th><th>Temp</th><th>NEWS2</th></tr></thead><tbody>${R.obs.map(o => `<tr><td>${chips([o.i], E)}</td><td>${esc(E[o.i].svc)}</td><td>${o.rr || ''}</td><td>${esc(o.spo2 || '')}</td><td>${o.hr || ''}</td><td>${o.temp || ''}</td><td>${o.news || ''}</td></tr>`).join('')}</tbody></table>` : ''}
       <h3 class="subH">Problems, most important first</h3>
       
-      ${(() => { const row = p => { const last = p.items[p.items.length - 1]; return `<details class="prob"><summary><span class="pn">${esc(p.name)}</span>${p.loops.length ? `<span class="badge">${p.loops.length} open</span>` : ''}<span class="pl">${esc(last.text.length > 70 ? last.text.slice(0, 68) + '…' : last.text)}</span></summary>
-        <ol class="tl">${p.items.map(it => `<li>${dayLink(it.i, E)}<span>${esc(it.text)}</span></li>`).join('')}</ol></details>`; }; const top = problems.filter(p => p.loops.length), rest = problems.filter(p => !p.loops.length);
+      ${(() => { const row = p => { const last = p.items[p.items.length - 1]; return `<details class="prob" data-pn="${esc(p.name)}"><summary><span class="pn">${esc(p.name)}</span>${p.loops.length ? `<span class="badge">${p.loops.length} open</span>` : ''}<span class="pl">${esc(last.text.length > 70 ? last.text.slice(0, 68) + '…' : last.text)}</span></summary>
+        <ol class="tl">${p.items.map(it => `<li>${dayLink(it.i, E)}<span>${esc(it.text)}</span></li>`).join('')}</ol>${open.filter(l => p.loops.includes(l.key)).map(l => `<p class="pLoop"><button type="button" class="linkbtn" data-ql="${open.indexOf(l)}"><i class="qDot" aria-hidden="true"></i>${esc(l.title)}</button></p>`).join('')}</details>`; }; const top = problems.filter(p => p.loops.length), rest = problems.filter(p => !p.loops.length);
         return (top.length ? top : rest.slice(0, 3)).map(row).join('') + ((top.length ? rest : rest.slice(3)).length ? `<details class="prob more"><summary><span class="pn">${(top.length ? rest : rest.slice(3)).length} more mentioned</span><span class="pl">${(top.length ? rest : rest.slice(3)).map(p => esc(p.name)).join(', ')}</span></summary><div class="nest">${(top.length ? rest : rest.slice(3)).map(row).join('')}</div></details>` : ''); })()}
       <h3 class="subH">Medicines</h3>
       ${meds.now ? `${meds.missing.length ? `<p class="notice bad"><b>Home medicine not on the latest list:</b> ${meds.missing.map(cap).map(esc).join(', ')}. ${chips([meds.now.i], E)}</p>` : '<p class="notice">Every home medicine is on the latest list.</p>'}
@@ -1289,7 +1420,7 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
     let val;
     if (notesText === cur.notes) {
       const got = open.map(o => o.key), hit = cur.expectedOpen.filter(k => got.includes(k)).length, extra = got.filter(k => !cur.expectedOpen.includes(k)).length;
-      val = `Self-check on this synthetic record: ${hit}/${cur.expectedOpen.length} planted open loops found · ${extra} false alarms · ${closed.length} closed loops left alone.`;
+      val = `Self-check on this synthetic record: ${hit}/${cur.expectedOpen.length} expected open loops found · ${extra} false alarms · ${closed.length} closed loops left alone.`;
     } else val = 'Notes changed since the original. Everything was rebuilt from the current text.';
     if (R.bad.length) val += ` Lines not in the entry format and not read: ${R.bad.join(', ')}.`;
     $('checksBody').innerHTML = `<p>Rind runs ${CHECKS.length} checks. Each one looks for something that was started and never finished.</p>
@@ -1299,9 +1430,10 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
       <p><b>No AI model.</b> Rules only, so the same notes always give the same page and it cannot invent a sentence. Every line links to the note it came from.</p>
       <p class="val">${val}</p>`;
     $('nOpen').textContent = open.filter(l => !done[dk(l)]).length;
-    const tidy = t => { const m = t.match(/\b([Dd]aughter|[Ss]on|[Ww]ife|[Hh]usband|[Pp]artner) ([A-Z][a-z]+(?: [A-Z][a-z]+)?)[^0-9]{0,8}(0\d[\d ]{8,12}\d)?/); if (m) return `${m[2]}, ${m[1].toLowerCase()}${m[3] ? ' · ' + m[3] : ''}`; t = t.replace(/^escalation ceiling:\s*/i, ''); return cap(t.length > 60 ? t.slice(0, 58) + '…' : t); };
-    const fact = (k, x) => `<div class="fact${x ? '' : ' miss'}"><span>${k}</span><b>${x ? esc(tidy(x.text)) : 'Not found in notes'}</b></div>`;
+    const tidy = t => { const m = t.match(/\b([Dd]aughter|[Ss]on|[Ww]ife|[Hh]usband|[Pp]artner) ([A-Z][a-z]+(?: [A-Z][a-z]+)?)[^0-9]{0,8}(0\d[\d ]{8,12}\d)?/); if (m) return `${m[2]}, ${m[1].toLowerCase()}${m[3] ? ' · ' + m[3] : ''}`; t = t.replace(/^escalation ceiling:\s*/i, ''); return cap(t); };
+    const fact = (k, x) => x ? `<button type="button" class="fact src" data-i="${x.src[0]}" title="Open the note this came from"><span>${k}</span><b>${esc(tidy(x.text))}</b></button>` : `<div class="fact miss"><span>${k}</span><b>Not found in notes</b></div>`;
     $('facts').innerHTML = fact('Allergies', S.allergies) + fact('Escalation', S.resus) + fact('Next of kin', S.nok);
+    const pa = E.find(e => /pre-?alert/i.test(e.text)), pp = $('ptPre'); pp.classList.toggle('src', !!pa); if (pa) pp.dataset.i = pa.i; else delete pp.dataset.i;
   }
 
   /* ---------- flows ---------- */
@@ -1328,7 +1460,7 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
   function openPatient(p) {
     $('idModal').hidden = true; pending = null;
     if (!$('editor').hidden) { $('editor').hidden = true; $('notes').hidden = false; $('addForm').hidden = false; $('editBtn').textContent = 'Edit notes'; }
-    cur = p; notesText = p.notes; $('addIn').value = p.demoEntry; $('addErr').hidden = true; audience = ''; doc = 'handover'; jStage = null; jSel = null; built = false;
+    cur = p; notesText = p.notes; $('addIn').value = p.demoEntry; $('addErr').hidden = true; audience = ''; doc = 'handover'; jStage = null; jSel = null; nSvc = null; nUn = false; query = ''; built = false;
     document.body.classList.remove('noPatient'); $('q').placeholder = 'Find a patient or search these notes'; $('out').hidden = true;
     drawBanner(); refresh(false); setView('loops'); $('notes').scrollTop = 0;
     log(`Access confirmed for direct care and record opened: ${p.name}, NHS no ${p.nhsNo}`);
@@ -1340,7 +1472,9 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
     const nd = R.open.filter(l => done[dk(l)]).length;
     const left = R.open.filter(l => !done[dk(l)]);
     const short = l => { const base = l.kind === 'confirm' ? l.title.split(' — ')[0].split(',')[0] : (l.label || l.title.split(' — ')[0]); return (base + ({ decision: ' decision', finding: ' follow-up', referral: ' reply', pending: ' result' }[l.kind] || '')).toLowerCase(); };
-    $('heroTitle').textContent = !show ? 'What was started and never closed?' : !n ? 'No open loops found by these checks' : !left.length ? `All ${n} open loops marked as actioned` : 'Still open: ' + left.slice(0, 3).map(short).join(', ') + (left.length > 3 ? ` + ${left.length - 3} more` : '');
+    $('heroTitle').textContent = !show ? 'What was started and never closed?' : !n ? 'No open loops found by these checks' : !left.length ? `All ${n} open loops marked as actioned` : (cur.prealert ? `Before ${cur.sex === 'F' ? 'she' : 'he'} arrives: ` : 'Still open: ') + left.slice(0, 3).map(short).join(', ') + (left.length > 3 ? ` + ${left.length - 3} more` : '');
+    const st0 = epStart(R.E), topL = left.find(l => !(cur.dayLabels && R.E[l.start].day === 0));
+    $('heroClock').innerHTML = !show ? '' : `<b>${age(st0.i, R.E)}</b> since first seen (${esc(st0.svc)}, ${when(st0.i, R.E)})` + (topL ? ` · ${esc(short(topL))} waiting <b>${age(topL.start, R.E)}</b>` : '');
     const nowS = R.summary.now, nowP = nowS ? nowS.text.split(/(?<=\.)\s/) : [], nowT = nowP.length > 1 && nowP[0].length < 30 ? nowP[0] + ' ' + nowP[1] : nowP[0] || '';
     if (show && nowS) $('heroSub').innerHTML = `<b>Latest:</b> ${esc(nowT)} ${chips(nowS.src, R.E)}`;
     else $('heroSub').textContent = show ? `${R.E.length} entries from ${svc} services.` : 'Rind reads the whole record across every handover and lists the loose ends.';
@@ -1384,6 +1518,10 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
   document.addEventListener('click', e => {
     const t = e.target;
     if (!t.closest('.search')) closeList();
+    const ns = t.closest('[data-ns]'); if (ns) { nSvc = ns.dataset.ns || null; if (!nSvc) nUn = false; if (!$('editor').hidden) toggleEdit(); setNotes(true); renderNotes(lastR); return; }
+    if (t.closest('[data-nu]')) { nUn = !nUn; renderNotes(lastR); return; }
+    const pb = t.closest('[data-prob]'); if (pb) { e.preventDefault(); setView('summary'); const d = [...document.querySelectorAll('details.prob[data-pn]')].find(x => x.dataset.pn === pb.dataset.prob); if (d) { const up = d.parentElement.closest('details'); if (up) up.open = true; d.open = true; d.scrollIntoView({ block: 'center' }); } return; }
+    const qs = t.closest('[data-qs]'); if (qs) { $('q').value = qs.dataset.qs; $('q').focus(); drawList(); return; }
     const jr = t.closest('#journey [data-loop]'); if (jr) { showLoop(+jr.dataset.loop); return; }
     const b = t.closest('.src'); if (b) { showNote(+b.dataset.i); return; }
     const g = t.closest('.loopHit'); if (g) { showLoop(+g.dataset.loop); return; }
@@ -1398,7 +1536,7 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
     const qp = t.closest('#qList [data-p]'); if (qp) { pickPatient(qp.dataset.p); return; }
     if (t.closest('#qList [data-notes]')) { searchNotes(); return; }
     const qn = t.closest('#qList [data-qn]'); if (qn) { query = $('q').value; closeList(); if (!$('editor').hidden) toggleEdit(); setNotes(true); renderNotes(lastR); showNote(+qn.dataset.qn); return; }
-    const ql = t.closest('#qList [data-ql]'); if (ql) { closeList(); setView('loops'); const d = $('flag' + ql.dataset.ql); if (d) { d.open = true; d.scrollIntoView({ block: 'center' }); } return; }
+    const ql = t.closest('[data-ql]'); if (ql) { closeList(); setView('loops'); const d = $('flag' + ql.dataset.ql); if (d) { d.open = true; d.scrollIntoView({ block: 'center' }); } return; }
     if (t.id === 'changePt') { goHome(); return; }
     const row = t.closest('.ptRow'); if (row) { askIdentity(row.dataset.p); return; }
     if (t.id === 'idOpen' && pending && $('idTick').checked) { openPatient(pending); return; }
@@ -1410,11 +1548,18 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
     if (t.id === 'closeNotes') { setNotes(false); return; }
     if (t.dataset && t.dataset.act === 'unchk') { setNotes(true); const n = document.querySelector('.note.unchk'); if (n) { const box = $('notes'); box.scrollTop = Math.max(0, n.offsetTop - box.offsetTop - 40); } return; }
     if (t.id === 'pdfBtn') {
-      const name = DOCS.find(d => d[0] === doc)[1], ed = edits[docKey()];
-      $('printDoc').innerHTML = `<div class="pdHead"><b>Rind</b> · ${esc(name)}${doc === 'handover' ? ' to ' + esc(audience) : ''}<br>${esc(cur.name)} · born ${esc(cur.dob)} · NHS no ${esc(cur.nhsNo)} · synthetic patient<br>${ed ? 'Edited by the clinician at ' + ed.t : 'Draft written by Rind from the notes, not yet edited'}<br>Requested by ${esc(USER)} · printed ${nowTime()}</div><pre>${esc($('hoText').value)}</pre><div class="pdFoot">Student prototype, not an NHS service. Decision support: check against the notes.</div>`;
-      log(`${name} printed or saved as PDF`);
-      document.body.classList.add('printDoc'); window.print(); setTimeout(() => document.body.classList.remove('printDoc'), 500); return;
+      const name = DOCS.find(d => d[0] === doc)[1], ed = edits[docKey()], lines = $('hoText').value.split('\n');
+      const body = lines.slice(1).map(x => !x.trim() ? '' : /^[A-Z][A-Z0-9 ,'-]{3,58}(\s*\(.*\))?$/.test(x.trim()) ? `<h4>${esc(x.trim())}</h4>` : /^(- |\d+\. )/.test(x) ? `<p class="li">${esc(x)}</p>` : `<p>${esc(x)}</p>`).join('');
+      $('dvTitle').textContent = name + (doc === 'handover' ? ' to ' + audience : '');
+      $('printDoc').innerHTML = `<div class="pdHead"><div><b class="pdBrand">Rind</b><span>${esc(name)}${doc === 'handover' ? ' to ' + esc(audience) : ''}</span></div>
+        <dl><dt>Patient</dt><dd>${esc(cur.name)}</dd><dt>Born</dt><dd>${esc(cur.dob)}</dd><dt>NHS number</dt><dd>${esc(cur.nhsNo)}</dd><dt>Requested by</dt><dd>${esc(USER)}, ${nowTime()}</dd><dt>Status</dt><dd>${ed ? 'Edited by the clinician at ' + ed.t : 'Draft written by Rind from the notes, not yet edited'}</dd></dl></div>
+        <div class="pdBody">${body}</div><div class="pdFoot">Synthetic patient. Student prototype, not an NHS service. Decision support: check against the notes before acting.</div>`;
+      $('dvMsg').textContent = window.self !== window.top ? 'This preview is inside another page, which can block printing. Open the page on its own to print.' : '';
+      $('docView').hidden = false; document.body.classList.add('docView'); $('docView').scrollTop = 0; $('dvPrint').focus();
+      log(`${name} opened as a document`); return;
     }
+    if (t.id === 'dvPrint') { log(`${$('dvTitle').textContent} sent to print or PDF`); try { window.print(); } catch (err) { $('dvMsg').textContent = 'Printing is blocked here. Close this and use Copy text.'; } return; }
+    if (t.id === 'dvClose' || t.id === 'docView') { $('docView').hidden = true; document.body.classList.remove('docView'); return; }
     if (t.id === 'copyBtn') {
       const ta = $('hoText'), msg = $('copyMsg');
       log(`${DOCS.find(d => d[0] === doc)[1]} copied${doc === 'handover' ? ' for ' + audience : ''}`);
@@ -1424,7 +1569,8 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
   });
   document.addEventListener('keydown', e => {
     if ((e.key === 'Enter' || e.key === ' ') && e.target.classList && e.target.classList.contains('loopHit')) { e.preventDefault(); showLoop(+e.target.dataset.loop); }
-    if (e.key === 'Escape') { hidePop(); if (!$('idModal').hidden) { $('idModal').hidden = true; pending = null; } }
+    if (e.key === '/' && !/INPUT|TEXTAREA/.test(e.target.tagName)) { e.preventDefault(); $('q').focus(); }
+    if (e.key === 'Escape') { hidePop(); if (!$('idModal').hidden) { $('idModal').hidden = true; pending = null; } if (!$('docView').hidden) { $('docView').hidden = true; document.body.classList.remove('docView'); } }
   });
   $('notesBtn').addEventListener('click', () => { const on = $('left').hidden; setNotes(on); if (on) log(`Source notes opened: ${cur.name}`); });
   /* header search: finds a patient, or searches this patient's notes */
@@ -1441,6 +1587,10 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
       h += hit.slice(0, 5).map(e => `<button type="button" data-qn="${e.i}"><b>${when(e.i, lastR.E)} · ${esc(e.svc)}</b><span>${qMark(snip(e), W)}</span></button>`).join('');
       if (!hit.length && !loops.length) h += '<div class="qNone">Nothing in this record matches.</div>';
       if (hit.length > 5) h += `<button type="button" data-notes="1" class="qNotes">Show all ${hit.length} in the notes</button>`;
+    }
+    if (!home && lastR && !v) {
+      const cand = [...new Set([...lastR.meds.all.slice(0, 4).map(m => m.name), 'allergy', 'oxygen', 'family', 'escalation'])].filter(w => lastR.E.some(e => qHit(e, [w]))).slice(0, 7);
+      if (cand.length) h += `<div class="qH">Search this record for</div><div class="qSug">${cand.map(w => `<button type="button" class="chip" data-qs="${esc(w)}">${esc(w)}</button>`).join('')}</div>`;
     }
     if (home || !v || pts.length) h += `<div class="qH">${v ? 'Patients' : 'Recent patients'}</div>` +
       (pts.map(p => `<button type="button" data-p="${p.id}"><b>${esc(p.name)}</b><span>${p.age} · ${p.sex} · NHS no ${esc(p.nhsNo)} · ${esc(p.story)}${!home && p === cur ? ' · open now' : ''}</span></button>`).join('') || '<div class="qNone">No patient matches. Search by name, date of birth or NHS number.</div>');
