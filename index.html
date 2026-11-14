@@ -742,7 +742,7 @@ D1 21:05 | ED registrar | Decision to admit to AMU.
 D1 21:35 | AMU doctor (HOSP-B-AMU-2135) | Admitted with exacerbation of COPD/asthma overlap and new confusion. Correct potassium. Repeat U&E planned. Review respiratory management plan from North Mersey. Care home collateral planned.
 D1 22:05 | AMU nurse | Transferred from ED. Settled on the ward.
 D2 08:40 | AMU pharmacist (HOSP-B-PHARM-150826) | Medicines reconciliation: prednisolone recorded twice on 14 Nov, at 09:30 and 18:40. Penicillin allergy, reaction details not confirmed.
-D2 09:15 | AMU doctor (HOSP-B-MED-0915) | Ward round. Repeat U&E following potassium replacement. Respiratory management plan requested from North Mersey. Care home contacted for collateral.`,
+D2 09:15 | AMU doctor (HOSP-B-MED-0915) | Ward round. Repeat U&E to follow potassium replacement. Respiratory management plan requested from North Mersey. Care home contacted for collateral.`,
     expectedOpen: ['rx:potassium', 'dup:prednisolone', 'confirm:respiratory plan and oxygen target', 'confirm:penicillin reaction', 'confirm:nebuliser product and dose', 'confirm:care home collateral', 'pending:chest imaging', 'pending:repeat U&E'],
     demoEntry: 'D2 09:40 | AMU nurse | Potassium replacement given at 09:40 as charted.'
   },
@@ -975,7 +975,7 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
     { name: 'Records and documents', re: /\b(chart|care plan|PDF|paper copy|medication record|not transmitted)\b/i }
   ];
   /* Medicines: names and the short forms used on wards */
-  const MEDS = [...['apixaban','warfarin','rivaroxaban','edoxaban','dabigatran','bisoprolol','ramipril','amlodipine','metformin','amiodarone','digoxin','atorvastatin','clopidogrel','aspirin','levetiracetam','furosemide','insulin','enoxaparin','lansoprazole','omeprazole','paracetamol','morphine','tazocin','cefuroxime','laxatives','prednisolone','salbutamol','ipratropium','doxycycline'].map(n => ({ name: n, re: new RegExp('\\b' + n + '\\b', 'i') })),
+  const MEDS = [...['apixaban','warfarin','rivaroxaban','edoxaban','dabigatran','bisoprolol','ramipril','amlodipine','metformin','amiodarone','digoxin','atorvastatin','clopidogrel','aspirin','levetiracetam','furosemide','insulin','enoxaparin','lansoprazole','omeprazole','paracetamol','morphine','tazocin','cefuroxime','laxatives','prednisolone','salbutamol','ipratropium','doxycycline','donepezil','budesonide'].map(n => ({ name: n, re: new RegExp('\\b' + n + '\\b', 'i') })),
     { name: 'co-amoxiclav', re: /\bco-amox\w*/i }, { name: 'clarithromycin', re: /\bclari\w*/i }, { name: 'noradrenaline', re: /\bnorad\w*/i }];
   const HOME_LIST = /\b(home meds|PMH|meds bag)\b/i, NOW_LIST = /\b(TTO|Meds):/;
   const SERVICES_NAMED = ['Hospital A', 'GP', 'UCR', 'Care home', 'ICU', 'Ward', 'ED'];
@@ -1579,7 +1579,7 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
     const st0 = epStart(E), plan = planOf(R);
     L.push(`First seen ${at(st0.i)} (${st0.svc}), ${age(st0.i, E)} before the latest note.`, '');
     if (S.admitted) L.push('PRESENTING PROBLEM', S.admitted.text, '');
-    if (R.trend) L.push('GETTING WORSE TODAY', ...R.trend.lines.map(x => '- ' + x), '');
+    if (R.trend) L.push(R.E[R.trend.src[0]].day === R.E[R.E.length - 1].day ? 'GETTING WORSE TODAY' : 'GOT WORSE ON ' + String(cur.dayLabels ? cur.dayLabels[R.E[R.trend.src[0]].day] : 'day ' + R.E[R.trend.src[0]].day).toUpperCase(), ...R.trend.lines.map(x => '- ' + x), '');
     if (plan) L.push(`PLAN ALREADY ON RECORD (${plan.svc}, ${at(plan.lines[0].i)})`, ...plan.lines.map(x => '- ' + x.c), '');
     L.push('MAIN PROBLEMS', ...R.problems.slice(0, 5).map(p => `- ${p.name}: ${p.items[p.items.length - 1].text}`), '');
     L.push(who === 'ED' && carer(R) !== 'ED' ? `ALL OPEN LOOPS (${mine.length})` : `FOR YOU TO ACTION (${mine.length})`);
@@ -1704,7 +1704,7 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
       ${R.trend ? `<div class="trendG flat">${R.trend.items.map(x => `<div class="${x.wide ? 'wide' : ''}"><span>${esc(x.k)}</span><b><i>${esc(String(x.a))}</i><em aria-hidden="true">→</em>${esc(String(x.b))}</b></div>`).join('')}</div>` : ''}
       ${R.obs.length > 1 ? `<details class="prob"><summary><span class="pn">All observations</span><span class="pl">${R.obs.length} sets across the journey</span></summary><table class="meds"><thead><tr><th>When</th><th>Where</th><th>Breathing rate</th><th>Oxygen</th><th>Heart rate</th><th>Temp</th><th>NEWS2</th></tr></thead><tbody>${R.obs.map(o => `<tr><td>${chips([o.i], E)}</td><td>${esc(E[o.i].svc)}</td><td>${o.rr || ''}</td><td>${esc(o.spo2 || '')}</td><td>${o.hr || ''}</td><td>${o.temp || ''}</td><td>${o.news || ''}</td></tr>`).join('')}</tbody></table></details>` : ''}
       <h3 class="subH">Background</h3>
-      <div class="kvG">${kv('Presenting problem', S.admitted, true)}${kv('Allergies', S.allergies)}${kv('Limits on treatment', S.resus)}${kv('Next of kin', S.nok)}${kv('Family last told', S.familyTold)}${kv('Lives', S.living)}${kv('What helps this person', S.adjust)}</div>
+      <div class="kvG">${kv('Presenting problem', S.admitted, true)}${kv('Allergies', S.allergies)}${kv('Limits on treatment', S.resus)}${kv('Next of kin', S.nok)}${kv('Family last told', S.familyTold)}${cur.where ? `<div class="kv"><span>Lives</span><div>${esc(cur.where)}</div></div>` : kv('Lives', S.living)}${kv('What helps this person', S.adjust)}</div>
       <h3 class="subH">Assessment, by problem</h3>
       ${(() => { const row = p => { const last = p.items[p.items.length - 1]; return `<details class="prob" data-pn="${esc(p.name)}"><summary><span class="pn">${esc(p.name)}</span>${p.loops.length ? `<span class="badge">${p.loops.length} open</span>` : ''}<span class="pl">${esc(last.text.length > 70 ? last.text.slice(0, 68) + '…' : last.text)}</span></summary>
         <ol class="tl">${p.items.map(it => `<li>${dayLink(it.i, E)}<span>${esc(it.text)}</span></li>`).join('')}</ol>${open.filter(l => p.loops.includes(l.key)).map(l => `<p class="pLoop"><button type="button" class="linkbtn" data-ql="${open.indexOf(l)}"><i class="qDot" aria-hidden="true"></i>${esc(l.title)}</button></p>`).join('')}</details>`; }; const top = problems.filter(p => p.loops.length), rest = problems.filter(p => !p.loops.length);
