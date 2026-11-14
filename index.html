@@ -478,6 +478,102 @@ details.loop.actioned .age{visibility:hidden}
 
 .overlay{background:rgba(12,24,38,.78)}
 
+/* Dual-Mode Clinical Guardrail UI, Verified Badges, Skeleton, Safety Banner & Raw Keyword View */
+.modeBar,.safetyBanner{max-width:1040px}
+body.wide .modeBar,body.wide .safetyBanner,body.showNotes .modeBar,body.showNotes .safetyBanner{max-width:1320px}
+body.noPatient .modeBar,body.noPatient .safetyBanner,body.paper .modeBar,body.paper .safetyBanner{display:none!important}
+.modeBar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:12px 16px;margin-bottom:16px}
+.segToggle{display:inline-flex;background:var(--soft);border:1px solid var(--line);border-radius:9px;padding:3px;gap:4px;flex-wrap:wrap}
+.segBtn{display:inline-flex;align-items:center;gap:8px;border:0;background:transparent;border-radius:7px;padding:8px 14px;font-size:13.5px;font-weight:600;color:var(--mute);transition:background .12s,color .12s}
+.segBtn:hover{color:var(--ink);background:rgba(255,255,255,.55)}
+.segBtn[aria-pressed="true"]{background:var(--bluedk);color:#fff;box-shadow:0 1px 3px rgba(0,48,135,.22)}
+.segTag{font-size:11px;font-weight:700;padding:1px 7px;border-radius:10px;background:rgba(0,0,0,.08);color:inherit}
+.segBtn[aria-pressed="true"] .segTag{background:rgba(255,255,255,.22);color:#fff}
+.modeTools{display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+.gatePill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;padding:4px 11px;border-radius:14px;background:#e3f3ea;color:#005a2b;border:1px solid #9bd1b3}
+.gatePill.warn{background:var(--ambertint);color:#7a4e00;border-color:#ebc76b}
+.gatePill.halt{background:var(--redtint);color:var(--red);border-color:#eb9b94}
+.btn.sim{border-color:#d89c97;color:var(--red);background:#fff}
+.btn.sim:hover{background:var(--redtint);border-color:var(--red)}
+.btn.sim[aria-pressed="true"]{background:var(--red);border-color:var(--red);color:#fff}
+.btn.sm{padding:6px 11px;font-size:12.5px}
+
+.safetyBanner{background:#fdf0ee;border:2px solid #d5281b;border-left:8px solid #d5281b;border-radius:var(--r);padding:16px 20px;margin-bottom:16px;box-shadow:var(--shadow)}
+.safetyHead{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:8px}
+.safetyTitle{display:flex;align-items:center;gap:10px;font-size:16px;font-weight:700;color:#d5281b;line-height:1.35}
+.safetyBadge{display:inline-block;background:#d5281b;color:#fff;font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;padding:3px 9px;border-radius:4px;flex:none}
+.safetyReasons{margin:8px 0 0;padding-left:18px;font-size:13.5px;color:#5c120b;display:grid;gap:4px}
+.quarantineBox{margin-top:10px;background:#fff;border:1px solid #eab3ae;border-radius:8px;padding:10px 14px;font-size:13px}
+.quarantineBox b{color:#d5281b}
+.quarantineBox code{display:inline-block;background:#fdf0ee;color:#7a130b;padding:1px 5px;border-radius:4px;font-family:ui-monospace,Consolas,monospace;font-size:12px}
+
+.aiCardHead{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px;padding-bottom:12px;margin-bottom:14px;border-bottom:1px solid var(--line)}
+.aiCardBrand{display:flex;align-items:center;gap:10px}
+.rindMark{font-weight:800;font-size:20px;color:var(--bluedk);letter-spacing:.3px}
+.aiSubMeta{font-size:12.5px;color:var(--mute)}
+.aiGrid{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:16px;align-items:start}
+@media(max-width:980px){.aiGrid{grid-template-columns:1fr}}
+.aiSection{background:#fafcfe;border:1px solid var(--line);border-radius:9px;padding:14px 16px;margin-bottom:14px}
+.aiSection:last-child{margin-bottom:0}
+.aiSecH{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:14px;font-weight:700;color:var(--bluedk);margin-bottom:10px;text-transform:none}
+.aiClaimList{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.aiClaimItem{background:#fff;border:1px solid var(--line);border-radius:8px;padding:10px 12px;display:grid;gap:6px}
+.aiClaimTop{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.aiClaimText{font-size:14px;color:var(--ink);line-height:1.45;font-weight:500}
+.aiClaimMeta{display:flex;align-items:center;flex-wrap:wrap;gap:6px}
+.verified-badge{display:inline-flex;align-items:center;gap:4px;background:#e3f3ea;color:#005a2b;border:1px solid #9bd1b3;border-radius:12px;padding:2px 9px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap}
+.verified-badge:hover{background:#d1ebd9;border-color:#007f3b}
+.verified-badge.blocked{background:#fdf0ee;color:#d5281b;border-color:#eb9b94}
+.conf-pill{font-size:11px;font-weight:700;border-radius:10px;padding:2px 8px;letter-spacing:.2px}
+.conf-pill.HIGH{background:#e3f3ea;color:#005a2b}
+.conf-pill.MEDIUM{background:var(--ambertint);color:#7a4e00}
+.conf-pill.LOW{background:var(--redtint);color:var(--red)}
+.admin-pill{display:inline-block;font-size:11.5px;font-weight:700;border-radius:10px;padding:2px 8px;white-space:nowrap}
+.admin-pill.ADMINISTERED{background:#e3f3ea;color:#005a2b}
+.admin-pill.PRESCRIBED_ONLY{background:var(--ambertint);color:#7a4e00}
+.admin-pill.WITHHELD_OR_NOT_GIVEN{background:#eef2f5;color:#3d4e5c}
+.admin-pill.INSUFFICIENT_DATA{background:var(--redtint);color:#d5281b}
+.aiTimeline{display:grid;gap:10px}
+.aiEvent{border-left:3px solid var(--blue);padding:4px 0 4px 12px;background:#fff;border-radius:0 6px 6px 0}
+.aiEventHead{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:3px}
+.aiEventWho{font-weight:700;font-size:13.5px;color:var(--ink)}
+.aiEventWhen{font-size:12px;color:var(--mute)}
+.aiEventTx{font-size:12.5px;color:var(--bluedk);background:var(--tint);border-radius:5px;padding:4px 8px;margin-top:5px}
+
+/* Loading skeleton */
+.ai-skel{padding:16px;border:1px solid var(--line);border-radius:9px;background:#fff;margin-bottom:16px}
+.ai-skelHead{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:600;color:var(--bluedk);margin-bottom:12px}
+.skel-spin{width:16px;height:16px;border:2.5px solid var(--tint);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.skel-line{height:14px;border-radius:6px;margin:8px 0;background:linear-gradient(90deg,#eef2f5 25%,#e0e7ed 50%,#eef2f5 75%);background-size:200% 100%;animation:shimmer 1.2s infinite}
+.skel-line.w40{width:40%}.skel-line.w75{width:75%}.skel-line.w90{width:90%}.skel-line.w60{width:60%}
+@keyframes shimmer{from{background-position:200% 0}to{background-position:-200% 0}}
+
+/* Mode B: Raw Clinical Notes & Deterministic Keyword Extraction */
+.rawBanner{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;background:#f4f7f9;border:1px solid var(--line);border-left:5px solid var(--ink);border-radius:8px;padding:12px 16px;margin-bottom:14px}
+.kwBar{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 14px;padding:12px;background:#fafcfe;border:1px solid var(--line);border-radius:8px}
+.kwChip{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line);background:#fff;border-radius:16px;padding:4px 11px;font-size:12.5px;font-weight:600;color:var(--ink)}
+.kwChip:hover{border-color:var(--blue)}
+.kwChip[aria-pressed="true"]{background:var(--bluedk);border-color:var(--bluedk);color:#fff}
+.kwChip .cnt{font-size:11px;padding:0 6px;border-radius:9px;background:var(--soft);color:var(--mute)}
+.kwChip[aria-pressed="true"] .cnt{background:rgba(255,255,255,.22);color:#fff}
+.kw-mark{padding:1px 4px;border-radius:3px;font-weight:700}
+.kw-cat-risk{background:#fde2df;color:#9b170c;border-bottom:2px solid #d5281b}
+.kw-cat-med{background:#d7efe2;color:#005226;border-bottom:2px solid #007f3b}
+.kw-cat-obs{background:#fff0c2;color:#6e4700;border-bottom:2px solid #ffb81c}
+.kw-cat-plan{background:#e5e3fa;color:#33267a;border-bottom:2px solid #4c3fb5}
+.rawDocs{display:grid;gap:10px}
+.rawDocCard{border:1px solid var(--line);border-radius:8px;padding:12px 14px;background:#fff}
+.rawDocCard.dim{display:none}
+.rawDocHead{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid var(--soft)}
+.rawDocId{font-family:ui-monospace,Consolas,monospace;font-size:12px;background:var(--soft);color:var(--bluedk);padding:2px 7px;border-radius:5px;font-weight:600}
+.rawDocText{font-size:14px;line-height:1.55;color:var(--ink)}
+
+/* Verbatim Quote Modal */
+.modalBox.wide{max-width:680px}
+.quoteNoteBox{background:#fafcfe;border:1px solid var(--line);border-radius:8px;padding:14px 16px;font-size:14px;line-height:1.6;margin:10px 0}
+mark.verbatim-highlight{background:#ffeb3b;color:#1d2a33;padding:2px 3px;border-radius:3px;font-weight:600;box-shadow:0 0 0 1px #e2c900}
+
 </style>
 </head>
 <body>
@@ -519,6 +615,24 @@ details.loop.actioned .age{visibility:hidden}
       <button id="changePt" class="linkbtn" type="button">Change patient</button>
       <div class="facts" id="facts"></div>
     </section>
+    <section class="modeBar" id="rindModeBar" aria-label="RIND Acute Journey View Mode">
+      <div class="segToggle" role="group" aria-label="Clinical display mode">
+        <button type="button" class="segBtn" data-rind-mode="ai" aria-pressed="true">
+          <span>AI Clinical Synthesis (Verified)</span>
+          <span class="segTag">claude-sonnet-5-5</span>
+        </button>
+        <button type="button" class="segBtn" data-rind-mode="raw" aria-pressed="false">
+          <span>Raw Clinical Notes &amp; Keyword Extraction (Non-AI)</span>
+          <span class="segTag">ZERO AI</span>
+        </button>
+      </div>
+      <div class="modeTools">
+        <span id="aiGatePill" class="gatePill">Safety Gate Ready</span>
+        <button type="button" id="simHallucBtn" class="btn sm sim" aria-pressed="false" title="Inject a simulated ungrounded medication claim to test Layer 3 deterministic stop-gate">Simulate Hallucination (Test Stop-Gate)</button>
+        <button type="button" id="reverifyBtn" class="btn sm">Re-run Synthesis</button>
+      </div>
+    </section>
+    <div id="safetyStopBanner" class="safetyBanner" role="alert" hidden></div>
     <div class="cols">
       <div class="col">
         <section class="card view" id="v-home" hidden>
@@ -534,12 +648,13 @@ details.loop.actioned .age{visibility:hidden}
             <p id="heroClock" class="clock"></p>
             <p id="heroSub"></p>
             <ul class="boot" id="boot">
-              <li>Runs in this browser</li>
-              <li>Nothing is sent anywhere</li>
+              <li>Structured synthesis via Python guardrail API</li>
+              <li>Deterministic verbatim quote check active</li>
               <li id="bootCount">Notes loaded</li>
             </ul>
             <button id="buildBtn" class="go" type="button" hidden>Find the open loops</button>
           </div>
+          <div id="aiLoopsPanel" hidden></div>
           <div id="out" hidden></div>
         </section>
         <section class="card view" id="v-journey" hidden>
@@ -566,6 +681,7 @@ details.loop.actioned .age{visibility:hidden}
           <h3 class="subH">How it checks</h3>
           <div id="checksBody"></div>
         </section>
+        <section class="card view" id="v-raw-non-ai" hidden></section>
       </div>
       <section class="card" id="left" hidden>
         <div class="noteTop"><h2 class="cardH" id="noteHead">Source notes</h2><button type="button" class="linkbtn" id="closeNotes">Close</button></div>
@@ -602,6 +718,24 @@ details.loop.actioned .age{visibility:hidden}
     <label class="tick"><input type="checkbox" id="idTick"> <span id="idSay"></span></label>
     <p class="accLine" style="margin-top:10px">Requested by ED clinician (demo sign-in). This access is logged.</p>
     <div class="moreBtns" style="margin-top:14px"><span class="next" style="margin:0"><button type="button" class="btn" id="idOpen" disabled>Confirm and open record</button></span><button type="button" class="btn" id="idCancel">Cancel</button></div>
+  </div>
+</div>
+<div class="modal" id="quoteModal" hidden>
+  <div class="modalBox wide" role="dialog" aria-modal="true" aria-labelledby="qmTitle">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px">
+      <h2 class="cardH" id="qmTitle" style="margin:0">Source Document Verification</h2>
+      <span id="qmStatusPill" class="verified-badge">Verified Source ✓</span>
+    </div>
+    <dl class="meta2" id="qmMeta" style="margin-top:4px"></dl>
+    <h3 class="subH" style="margin:14px 0 6px">Extracted Clinical Claim</h3>
+    <p id="qmClaim" style="font-size:14.5px;font-weight:600;color:var(--ink)"></p>
+    <p id="qmReason" class="hint" style="margin-top:4px"></p>
+    <h3 class="subH" style="margin:14px 0 6px">Raw Source Note (Exact Verbatim Quote Highlighted)</h3>
+    <div class="quoteNoteBox" id="qmRawNote"></div>
+    <div class="moreBtns" style="margin-top:16px">
+      <button type="button" class="btn" id="qmOpenInNotes">Jump to entry in Source Notes drawer</button>
+      <button type="button" class="btn" id="qmClose">Close</button>
+    </div>
   </div>
 </div>
 <script>
@@ -1183,7 +1317,24 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
     n.classList.add('hit');
     const box = $('notes'); box.scrollTop = Math.max(0, n.offsetTop - box.offsetTop - 80);
   }
+  let rindMode = 'ai', currentView = 'loops', simulateHallucination = false, aiResult = null, aiLoading = false, aiError = null, aiFetchSeq = 0, aiClaimStore = [], rawKwFilter = 'ALL', rawCatFilter = 'ALL';
   function setView(v) {
+    currentView = v;
+    if (v === 'home') {
+      document.querySelectorAll('.view').forEach(x => { x.hidden = x.id !== 'v-home'; });
+      document.querySelectorAll('.nav[data-v]').forEach(b => b.removeAttribute('aria-current'));
+      document.body.classList.remove('wide');
+      window.scrollTo(0, 0);
+      return;
+    }
+    if (rindMode === 'raw') {
+      document.querySelectorAll('.view').forEach(x => { x.hidden = x.id !== 'v-raw-non-ai'; });
+      document.querySelectorAll('.nav[data-v]').forEach(b => b.removeAttribute('aria-current'));
+      document.body.classList.remove('wide', 'noPatient');
+      renderRawKeywordView();
+      window.scrollTo(0, 0);
+      return;
+    }
     document.querySelectorAll('.view').forEach(x => { x.hidden = x.id !== 'v-' + v; });
     document.querySelectorAll('.nav[data-v]').forEach(b => { if (b.dataset.v === v) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
     document.body.classList.toggle('wide', v === 'journey');
@@ -1361,6 +1512,443 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
     if (e.target.id === 'myNote') { if (!myNote[cur.id]) log('Clinician added a line to the summary'); myNote[cur.id] = e.target.value; drawHandover(lastR); }
   });
 
+  /* ---------- Mode A (Claude API + 3-Layer Guardrail) & Mode B (Non-AI Raw Keywords) ---------- */
+  const RAW_KEYWORDS = [
+    { key: 'Allergy', cat: 'risk', catLabel: 'Allergy / Risk', re: /\ballerg(?:y|ies|ic)\b/gi },
+    { key: 'Penicillin', cat: 'risk', catLabel: 'Allergy / Risk', re: /\bpenicillins?\b/gi },
+    { key: 'refused', cat: 'risk', catLabel: 'Allergy / Risk', re: /\brefused\b/gi },
+    { key: 'Administered', cat: 'med', catLabel: 'Medications', re: /\badministered\b/gi },
+    { key: 'Prescribed', cat: 'med', catLabel: 'Medications', re: /\bprescribed\b/gi },
+    { key: 'pending', cat: 'med', catLabel: 'Medications', re: /\bpending\b/gi },
+    { key: 'SpO2', cat: 'obs', catLabel: 'Observations', re: /\bSpO2\b/gi },
+    { key: 'RR', cat: 'obs', catLabel: 'Observations', re: /\bRR\b/g },
+    { key: 'HR', cat: 'obs', catLabel: 'Observations', re: /\bHR\b/g },
+    { key: 'BP', cat: 'obs', catLabel: 'Observations', re: /\bBP\b/g },
+    { key: 'Temp', cat: 'obs', catLabel: 'Observations', re: /\bTemp\b/gi },
+    { key: 'Dementia', cat: 'plan', catLabel: 'Conditions & Plans', re: /\bdementia\b/gi },
+    { key: 'COPD', cat: 'plan', catLabel: 'Conditions & Plans', re: /\bCOPD\b/gi },
+    { key: 'target', cat: 'plan', catLabel: 'Conditions & Plans', re: /\btarget\b/gi },
+    { key: 'plan', cat: 'plan', catLabel: 'Conditions & Plans', re: /\bplan\b/gi }
+  ];
+  const ADMIN_LABEL = {
+    ADMINISTERED: 'Administered ✓',
+    PRESCRIBED_ONLY: 'Prescribed only (no MAR confirmation)',
+    WITHHELD_OR_NOT_GIVEN: 'Withheld / Not given',
+    INSUFFICIENT_DATA: 'INSUFFICIENT_DATA · Unconfirmed'
+  };
+
+  function registerClaim(label, claimObj) {
+    const id = aiClaimStore.length;
+    aiClaimStore.push({ id, label, claim: claimObj });
+    return id;
+  }
+
+  function badgeHtml(claimObj, label) {
+    const qid = registerClaim(label, claimObj);
+    const ok = claimObj && claimObj.verification_passed !== false;
+    const docId = claimObj && claimObj.source_doc_id ? claimObj.source_doc_id : 'Source';
+    const conf = (claimObj && claimObj.confidence) || 'LOW';
+    return `<span class="aiClaimMeta">
+      <button type="button" class="verified-badge${ok ? '' : ' blocked'}" data-quote-id="${qid}" title="Click to inspect verbatim source quote in raw clinical note">
+        ${ok ? 'Verified Source ✓' : 'Blocked ✗'} · ${esc(docId)}
+      </button>
+      <span class="conf-pill ${esc(conf)}" title="${esc((claimObj && claimObj.confidence_reason) || '')}">${esc(conf)} confidence</span>
+    </span>`;
+  }
+
+  function highlightVerbatimQuote(rawText, quote) {
+    if (!quote || quote === 'INSUFFICIENT_DATA' || !rawText) return esc(rawText || '');
+    const exactIdx = rawText.indexOf(quote);
+    if (exactIdx !== -1) {
+      return esc(rawText.slice(0, exactIdx)) + `<mark class="verbatim-highlight">${esc(rawText.slice(exactIdx, exactIdx + quote.length))}</mark>` + esc(rawText.slice(exactIdx + quote.length));
+    }
+    const tokens = quote.trim().split(/\s+/).map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+    if (!tokens.length) return esc(rawText);
+    const re = new RegExp(tokens.join('\\s+'));
+    const m = rawText.match(re);
+    if (!m || m.index === undefined) return esc(rawText);
+    return esc(rawText.slice(0, m.index)) + `<mark class="verbatim-highlight">${esc(m[0])}</mark>` + esc(rawText.slice(m.index + m[0].length));
+  }
+
+  function openQuoteModal(qid) {
+    const entry = aiClaimStore[qid];
+    if (!entry || !entry.claim) return;
+    const c = entry.claim;
+    const docs = (aiResult && aiResult.source_documents) || [];
+    const doc = docs.find(d => d.doc_id === c.source_doc_id) || docs.find(d => c.exact_source_quote && d.raw_text.includes(c.exact_source_quote));
+    const pill = $('qmStatusPill');
+    const passed = c.verification_passed !== false;
+    pill.textContent = passed ? 'Verified Source ✓' : 'Unverified Claim Blocked ✗';
+    pill.className = 'verified-badge' + (passed ? '' : ' blocked');
+    $('qmTitle').textContent = `Source Verification · ${entry.label}`;
+    $('qmMeta').innerHTML = `
+      <dt>Source Document ID</dt><dd>${esc(c.source_doc_id || 'NONE')}</dd>
+      <dt>Service &amp; Time</dt><dd>${doc ? `${esc(doc.timestamp)} · ${esc(doc.service)}${doc.role ? ' (' + esc(doc.role) + ')' : ''}` : 'Not matched to document'}</dd>
+      <dt>Confidence</dt><dd><span class="conf-pill ${esc(c.confidence)}">${esc(c.confidence)}</span></dd>`;
+    $('qmClaim').textContent = c.claim_text || '';
+    $('qmReason').textContent = c.confidence_reason || '';
+    $('qmRawNote').innerHTML = doc
+      ? highlightVerbatimQuote(doc.raw_text, c.exact_source_quote)
+      : (c.exact_source_quote === 'INSUFFICIENT_DATA'
+          ? '<em>No verbatim source note exists because source data is missing or insufficient for this field.</em>'
+          : `<span class="bad">HALLUCINATION BLOCKED: Quoted text "${esc(c.exact_source_quote || '')}" does not exist in any raw source document.</span>`);
+    let matchedNoteIdx = -1;
+    if (doc && lastR && lastR.E) {
+      matchedNoteIdx = lastR.E.findIndex(e => e.text === doc.raw_text || e.text.includes(doc.raw_text) || (c.exact_source_quote && e.text.includes(c.exact_source_quote)));
+    }
+    const jumpBtn = $('qmOpenInNotes');
+    jumpBtn.hidden = matchedNoteIdx < 0;
+    jumpBtn.dataset.jumpNoteIdx = String(matchedNoteIdx);
+    $('quoteModal').hidden = false;
+    $('qmClose').focus();
+    log(`Verified source quote inspected: ${c.source_doc_id} (${entry.label})`);
+  }
+
+  function renderSafetyBanner() {
+    const banner = $('safetyStopBanner');
+    const pill = $('aiGatePill');
+    if (document.body.classList.contains('noPatient')) {
+      banner.hidden = true;
+      return;
+    }
+    if (rindMode === 'raw') {
+      banner.hidden = true;
+      pill.className = 'gatePill';
+      pill.textContent = 'Non-AI Mode · Deterministic Keyword Scan';
+      return;
+    }
+    if (aiLoading) {
+      banner.hidden = true;
+      pill.className = 'gatePill warn';
+      pill.textContent = 'Synthesising & Verifying Quotes...';
+      return;
+    }
+    if (aiError) {
+      pill.className = 'gatePill halt';
+      pill.textContent = 'Backend API Unreachable';
+      banner.hidden = false;
+      banner.innerHTML = `<div class="safetyHead">
+        <div class="safetyTitle"><span class="safetyBadge">Clinical Safety Alert</span><span>AI Output Halted / Low Confidence Detected — Unverified clinical claim blocked. Switch to Raw Keyword View or inspect source notes.</span></div>
+        <button type="button" class="btn sm" data-switch-raw="1">Switch to Raw Keyword View (Non-AI)</button>
+      </div>
+      <p style="font-size:13.5px;margin:0">FastAPI backend endpoint <code>POST /api/summarise</code> failed (${esc(aiError)}). Ensure the Python backend is running (<code>uvicorn main:app --reload</code>) or switch to Raw Keyword View.</p>`;
+      return;
+    }
+    if (!aiResult) {
+      banner.hidden = true;
+      return;
+    }
+    const stats = aiResult.verification_stats || { verified_claims: 0, total_claims_checked: 0, blocked_claims: 0 };
+    const halted = !!aiResult.clinical_safety_halt;
+    const review = !!aiResult.requires_clinician_review;
+
+    if (halted) {
+      pill.className = 'gatePill halt';
+      pill.textContent = `SAFETY HALT · ${stats.blocked_claims} Blocked`;
+    } else if (review) {
+      pill.className = 'gatePill warn';
+      pill.textContent = `Low Confidence Review · ${stats.verified_claims}/${stats.total_claims_checked} Verified`;
+    } else {
+      pill.className = 'gatePill';
+      pill.textContent = `Verified · ${stats.verified_claims}/${stats.total_claims_checked} Quotes Passed`;
+    }
+
+    if (halted || review) {
+      banner.hidden = false;
+      const allReasons = [...(aiResult.safety_halt_reasons || []), ...(aiResult.low_confidence_reasons || [])];
+      const qHtml = (aiResult.quarantined_claims || []).map(q => `<div class="quarantineBox">
+        <b>Quarantined Unverified Claim [${esc(q.section)}]:</b> ${esc(q.blocked_claim_text)}<br>
+        <span>Attempted quote:</span> <code>${esc(q.failed_quote)}</code><br>
+        <span>Safety Gate Reason:</span> ${esc(q.reason)}
+      </div>`).join('');
+      banner.innerHTML = `<div class="safetyHead">
+        <div class="safetyTitle">
+          <span class="safetyBadge">${halted ? 'NHS Safety Stop' : 'Clinician Review Required'}</span>
+          <span>AI Output Halted / Low Confidence Detected — Unverified clinical claim blocked. Switch to Raw Keyword View or inspect source notes.</span>
+        </div>
+        <button type="button" class="btn sm" data-switch-raw="1">Switch to Raw Keyword View (Non-AI)</button>
+      </div>
+      ${allReasons.length ? `<ul class="safetyReasons">${allReasons.map(r => `<li>${esc(r)}</li>`).join('')}</ul>` : ''}
+      ${qHtml}`;
+    } else {
+      banner.hidden = true;
+    }
+  }
+
+  function renderAiSkeleton() {
+    return `<div class="ai-skel" aria-live="polite">
+      <div class="ai-skelHead"><span class="skel-spin" aria-hidden="true"></span><span>Calling FastAPI + Claude (<code>claude-sonnet-5-5</code>) &amp; running 3-layer verbatim substring verification gate...</span></div>
+      <div class="skel-line w75"></div>
+      <div class="skel-line w90"></div>
+      <div class="skel-line w60"></div>
+      <div class="skel-line w40"></div>
+    </div>`;
+  }
+
+  function renderAiSynthesisHtml() {
+    aiClaimStore = [];
+    if (aiLoading) return renderAiSkeleton();
+    if (aiError) return `<div class="notice bad"><b>AI Synthesis unavailable:</b> ${esc(aiError)}. Switch to <b>Raw Clinical Notes &amp; Keyword Extraction (Non-AI)</b> or start FastAPI with <code>uvicorn main:app</code>.</div>`;
+    if (!aiResult) return '';
+
+    const r = aiResult;
+    const modeNote = r.notice ? `<p class="notice warn" style="margin:0 0 14px"><b>Pipeline Status:</b> ${esc(r.notice)}</p>` : '';
+    const stats = r.verification_stats || {};
+    return `<div class="aiCardHead">
+        <div class="aiCardBrand">
+          <span class="rindMark">RIND)</span>
+          <div>
+            <b style="font-size:17px">Acute Pathway Summary — Verified Synthesis</b>
+            <div class="aiSubMeta">Model: <code>${esc(r.model_used)}</code> · Mode: <code>${esc(r.generation_mode)}</code> · Verbatim Gate: ${stats.verified_claims || 0}/${stats.total_claims_checked || 0} quotes verified (${stats.blocked_claims || 0} blocked)</div>
+          </div>
+        </div>
+        <div class="aiClaimMeta">
+          <span class="conf-pill ${r.clinical_safety_halt ? 'LOW' : r.requires_clinician_review ? 'MEDIUM' : 'HIGH'}">${r.clinical_safety_halt ? 'SAFETY HALTED' : r.requires_clinician_review ? 'MANUAL REVIEW FLAGGED' : 'ALL CRITICAL HIGH CONFIDENCE'}</span>
+        </div>
+      </div>
+      ${modeNote}
+      <div class="aiSection" style="margin-bottom:14px">
+        <div class="aiSecH"><span>Reason for Attendance</span>${badgeHtml(r.reason_for_attendance, 'Reason for Attendance')}</div>
+        <div class="aiClaimText">${esc(r.reason_for_attendance.claim_text)}</div>
+        <div class="hint" style="margin-top:4px">${esc(r.reason_for_attendance.confidence_reason)}</div>
+      </div>
+      <div class="aiGrid">
+        <div>
+          <div class="aiSection">
+            <div class="aiSecH"><span>Treatment &amp; Administration (Current Episode)</span><span class="hint">${(r.medications || []).length} entries</span></div>
+            <table class="meds" style="margin:0">
+              <thead><tr><th>Medication / Intervention</th><th>Prescribed by</th><th>Time</th><th>Administration Status</th><th>Provenance</th></tr></thead>
+              <tbody>
+                ${(r.medications || []).map(m => `<tr>
+                  <td><b>${esc(m.medication_name)}</b><div class="hint" style="margin-top:2px">${esc(m.claim_text)}</div></td>
+                  <td>${esc(m.prescribed_by)}</td>
+                  <td>${esc(m.time)}</td>
+                  <td><span class="admin-pill ${esc(m.administration_status)}">${esc(ADMIN_LABEL[m.administration_status] || m.administration_status)}</span></td>
+                  <td>${badgeHtml(m, `Medication · ${m.medication_name}`)}</td>
+                </tr>`).join('') || '<tr><td colspan="5">INSUFFICIENT_DATA — No medications documented.</td></tr>'}
+              </tbody>
+            </table>
+          </div>
+          <div class="aiSection">
+            <div class="aiSecH"><span>Acute Journey (Chronological)</span><span class="hint">${(r.journey_events || []).length} steps</span></div>
+            <div class="aiTimeline">
+              ${(r.journey_events || []).map(ev => `<div class="aiEvent">
+                <div class="aiEventHead">
+                  <span class="aiEventWho">${esc(ev.service)}</span>
+                  <span class="aiEventWhen">${esc(ev.timestamp)}</span>
+                </div>
+                <div class="aiClaimText">${esc(ev.claim_text)}</div>
+                ${ev.treatment_note ? `<div class="aiEventTx">${esc(ev.treatment_note)}</div>` : ''}
+                <div style="margin-top:6px">${badgeHtml(ev, `Journey · ${ev.service}`)}</div>
+              </div>`).join('') || '<p class="hint">No verified journey events.</p>'}
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="aiSection">
+            <div class="aiSecH"><span>Allergies &amp; Contraindications</span><span class="hint">${(r.allergies || []).length}</span></div>
+            <ul class="aiClaimList">
+              ${(r.allergies || []).map(a => `<li class="aiClaimItem">
+                <div class="aiClaimText">${esc(a.claim_text)}</div>
+                <div class="hint">${esc(a.confidence_reason)}</div>
+                ${badgeHtml(a, 'Allergies')}
+              </li>`).join('') || '<li class="aiClaimItem">INSUFFICIENT_DATA</li>'}
+            </ul>
+          </div>
+          <div class="aiSection">
+            <div class="aiSecH"><span>Key Clinical Information &amp; Care Plan</span></div>
+            <ul class="aiClaimList">
+              ${(r.key_clinical_info || []).map(k => `<li class="aiClaimItem">
+                <div class="aiClaimText">${esc(k.claim_text)}</div>
+                ${badgeHtml(k, 'Key Clinical Info')}
+              </li>`).join('')}
+            </ul>
+          </div>
+          <div class="aiSection">
+            <div class="aiSecH"><span>Reasonable Adjustments &amp; Family</span></div>
+            <ul class="aiClaimList">
+              ${(r.reasonable_adjustments || []).map(adj => `<li class="aiClaimItem">
+                <div class="aiClaimText">${esc(adj.claim_text)}</div>
+                ${badgeHtml(adj, 'Reasonable Adjustments')}
+              </li>`).join('') || '<li class="aiClaimItem"><span class="hint">None explicitly documented.</span></li>'}
+            </ul>
+          </div>
+          <div class="aiSection">
+            <div class="aiSecH"><span>Outstanding / Open Loops to Confirm</span></div>
+            <ul class="aiClaimList">
+              ${(r.open_loops || []).map(lp => `<li class="aiClaimItem">
+                <div class="aiClaimText">${esc(lp.claim_text)}</div>
+                ${badgeHtml(lp, 'Open Loop')}
+              </li>`).join('') || '<li class="aiClaimItem"><span class="hint">None identified.</span></li>'}
+            </ul>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  function renderAiContainers() {
+    renderSafetyBanner();
+    const loopsPanel = $('aiLoopsPanel');
+    if (loopsPanel) {
+      const html = renderAiSynthesisHtml();
+      loopsPanel.innerHTML = html ? `<div style="margin-bottom:18px;padding-bottom:16px;border-bottom:1px solid var(--line)">${html}</div>` : '';
+      loopsPanel.hidden = !built;
+    }
+    const aiSum = $('aiSummarySlot');
+    if (aiSum) {
+      aiSum.innerHTML = renderAiSynthesisHtml();
+    }
+  }
+
+  async function fetchAiSynthesis() {
+    const seq = ++aiFetchSeq;
+    aiLoading = true;
+    aiError = null;
+    renderAiContainers();
+    try {
+      const resp = await fetch('/api/summarise', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          patient_id: cur.id,
+          patient_name: cur.name,
+          raw_notes_text: notesText,
+          simulate_hallucination: simulateHallucination
+        })
+      });
+      if (!resp.ok) {
+        const errTxt = await resp.text();
+        throw new Error(`HTTP ${resp.status}: ${errTxt.slice(0, 140)}`);
+      }
+      const data = await resp.json();
+      if (seq !== aiFetchSeq) return;
+      aiResult = data;
+      aiLoading = false;
+      aiError = null;
+      log(`Clinical guardrail synthesis finished (${data.generation_mode}; ${data.verification_stats.verified_claims}/${data.verification_stats.total_claims_checked} verified${data.clinical_safety_halt ? '; SAFETY HALTED' : ''})`);
+      renderAiContainers();
+    } catch (err) {
+      if (seq !== aiFetchSeq) return;
+      aiLoading = false;
+      aiError = err && err.message ? err.message : String(err);
+      renderAiContainers();
+    }
+  }
+
+  function highlightRawKeywords(text, docsList) {
+    // Deterministic non-AI highlighter over exact high-risk NHS clinical keywords
+    const activeList = rawKwFilter !== 'ALL'
+      ? RAW_KEYWORDS.filter(k => k.key === rawKwFilter)
+      : rawCatFilter !== 'ALL'
+        ? RAW_KEYWORDS.filter(k => k.cat === rawCatFilter)
+        : RAW_KEYWORDS;
+    if (!activeList.length) return esc(text);
+
+    // Build non-overlapping span matches by scanning each regex safely
+    const spans = [];
+    activeList.forEach(k => {
+      const re = new RegExp(k.re.source, k.re.flags);
+      let m;
+      while ((m = re.exec(text)) !== null) {
+        spans.push({ start: m.index, end: m.index + m[0].length, cat: k.cat, key: k.key });
+        if (m.index === re.lastIndex) re.lastIndex++;
+      }
+    });
+    spans.sort((a, b) => a.start - b.start || (b.end - b.start) - (a.end - a.start));
+    const merged = [];
+    spans.forEach(sp => {
+      if (!merged.length || sp.start >= merged[merged.length - 1].end) merged.push(sp);
+    });
+    let out = '', pos = 0;
+    merged.forEach(sp => {
+      out += esc(text.slice(pos, sp.start));
+      out += `<mark class="kw-mark kw-cat-${sp.cat}" title="Keyword: ${esc(sp.key)}">${esc(text.slice(sp.start, sp.end))}</mark>`;
+      pos = sp.end;
+    });
+    out += esc(text.slice(pos));
+    return out;
+  }
+
+  function renderRawKeywordView() {
+    const el = $('v-raw-non-ai');
+    if (!el || !lastR) return;
+    const docs = lastR.E.map(e => ({
+      i: e.i,
+      when: when(e.i, lastR.E),
+      svc: e.svc,
+      who: e.who,
+      text: e.text
+    }));
+
+    const counts = {};
+    RAW_KEYWORDS.forEach(k => {
+      const re = new RegExp(k.re.source, k.re.flags);
+      let c = 0;
+      docs.forEach(d => { const m = d.text.match(re); if (m) c += m.length; });
+      counts[k.key] = c;
+    });
+
+    const cats = [
+      { id: 'ALL', label: 'All Categories' },
+      { id: 'risk', label: 'Allergy / Risk' },
+      { id: 'med', label: 'Medications' },
+      { id: 'obs', label: 'Observations (Vitals)' },
+      { id: 'plan', label: 'Conditions & Plans' }
+    ];
+
+    const matchingDocs = docs.filter(d => {
+      if (rawKwFilter !== 'ALL') {
+        const kw = RAW_KEYWORDS.find(k => k.key === rawKwFilter);
+        return kw ? new RegExp(kw.re.source, kw.re.flags.replace('g', '')).test(d.text) : true;
+      }
+      if (rawCatFilter !== 'ALL') {
+        const kws = RAW_KEYWORDS.filter(k => k.cat === rawCatFilter);
+        return kws.some(kw => new RegExp(kw.re.source, kw.re.flags.replace('g', '')).test(d.text));
+      }
+      return true;
+    });
+
+    el.innerHTML = `<div class="rawBanner">
+        <div>
+          <b style="font-size:17px">Raw Clinical Notes &amp; Deterministic Keyword Extraction</b>
+          <div class="hint">Zero AI / LLM active. Showing ${matchingDocs.length} of ${docs.length} chronological source documents with deterministic NHS high-risk term highlighting.</div>
+        </div>
+        <button type="button" class="btn sm" data-rind-mode="ai">Return to AI Synthesis (Verified)</button>
+      </div>
+      <div class="jf" style="margin-bottom:6px">
+        <span class="jfL">Category</span>
+        ${cats.map(c => `<button type="button" class="chip" data-raw-cat="${c.id}" aria-pressed="${rawCatFilter === c.id && rawKwFilter === 'ALL'}">${esc(c.label)}</button>`).join('')}
+      </div>
+      <div class="kwBar" aria-label="High-risk clinical keyword filters">
+        <button type="button" class="kwChip" data-raw-kw="ALL" aria-pressed="${rawKwFilter === 'ALL' && rawCatFilter === 'ALL'}"><span>Show All Notes</span><span class="cnt">${docs.length}</span></button>
+        ${RAW_KEYWORDS.map(k => `<button type="button" class="kwChip" data-raw-kw="${esc(k.key)}" aria-pressed="${rawKwFilter === k.key}">
+          <span class="kw-mark kw-cat-${k.cat}" style="padding:0 5px">${esc(k.key)}</span>
+          <span class="cnt">${counts[k.key]}</span>
+        </button>`).join('')}
+      </div>
+      <div class="rawDocs">
+        ${matchingDocs.map(d => `<article class="rawDocCard">
+          <div class="rawDocHead">
+            <div><b>${esc(d.svc)}</b> <span class="hint">· ${esc(d.who)} · ${esc(d.when)}</span></div>
+            <span class="rawDocId">Entry #${d.i + 1}</span>
+          </div>
+          <div class="rawDocText">${highlightRawKeywords(d.text, docs)}</div>
+        </article>`).join('') || '<p class="none">No raw clinical notes contain that keyword.</p>'}
+      </div>`;
+  }
+
+  function setRindMode(mode) {
+    rindMode = mode;
+    document.querySelectorAll('[data-rind-mode]').forEach(btn => {
+      btn.setAttribute('aria-pressed', String(btn.dataset.rindMode === mode));
+    });
+    renderSafetyBanner();
+    if (!document.body.classList.contains('noPatient')) {
+      setView(currentView === 'home' ? 'loops' : currentView);
+    }
+    log(`Switched display mode to: ${mode === 'ai' ? 'AI Clinical Synthesis (Verified)' : 'Raw Clinical Notes & Keyword Extraction (Non-AI)'}`);
+  }
+
   /* ---------- pages ---------- */
   const NF = '<span class="nf">Not found in these notes</span>';
   const dk = l => `${cur.id}|${l.key}|${l.start}`;
@@ -1381,12 +1969,14 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
       <p class="sign">${reviewed[cur.id] ? `<span class="okTag">Reviewed at ${reviewed[cur.id]}</span> Logged in the audit trail.` : `<button type="button" class="btn" id="signBtn">Mark this page as reviewed</button>`}</p>
       <p class="next"><button type="button" class="btn" data-go="journey">Next: see where each one started</button></p>`;
     $('out').hidden = false;
-    // 2 summary: problems in order of importance, then medicines
+    // 2 summary: Claude verified clinical synthesis first, plus deterministic rules breakdown below
     const st = { held: 'Held', stopped: 'Stopped', restarted: 'Held, then restarted', continuing: 'Continuing', given: 'Given', prescribed: 'Prescribed', mentioned: 'Mentioned' };
     const openRx = n => open.some(l => l.key === 'rx:' + n);
     const openDrug = n => open.some(l => l.key === 'drug:' + n);
     const medRow = m => `<tr><td>${esc(cap(m.name))}</td><td>${openDrug(m.name) ? '<b class="bad">Held, not restarted</b>' : openRx(m.name) ? '<b class="bad">Prescribed, no record it was given</b>' : st[m.status]}</td><td>${m.home ? 'Yes' : ''}</td><td>${m.now ? 'Yes' : ''}</td><td>${chips([m.first, m.last], E)}</td></tr>`;
-    $('v-summary').innerHTML = `<h2 class="cardH">Summary</h2>
+    $('v-summary').innerHTML = `<div id="aiSummarySlot">${renderAiSynthesisHtml()}</div>
+      <details class="prob" style="margin-top:20px"><summary><span class="pn">Deterministic Rule-Based Breakdown &amp; Additions</span><span class="pl">Non-AI cross-check by clinical problem and medicines</span></summary>
+      <div style="padding:8px 0 4px">
       <div class="row"><div class="k">Presenting problem</div><div>${f(S.admitted)}</div></div>
       <div class="row"><div class="k">Latest entry</div><div>${f(S.now)}</div></div>
       <div class="row"><div class="k"><label for="myNote">Your additions</label></div><div><textarea id="myNote" rows="2" placeholder="Add or correct anything. It is marked as yours and goes into every document.">${esc(myNote[cur.id] || '')}</textarea></div></div>
@@ -1400,7 +1990,6 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
       ${R.obs.length > 1 ? `<h3 class="subH">Observations across the journey</h3>
       <table class="meds"><thead><tr><th>When</th><th>Where</th><th>Breathing rate</th><th>Oxygen</th><th>Heart rate</th><th>Temp</th><th>NEWS2</th></tr></thead><tbody>${R.obs.map(o => `<tr><td>${chips([o.i], E)}</td><td>${esc(E[o.i].svc)}</td><td>${o.rr || ''}</td><td>${esc(o.spo2 || '')}</td><td>${o.hr || ''}</td><td>${o.temp || ''}</td><td>${o.news || ''}</td></tr>`).join('')}</tbody></table>` : ''}
       <h3 class="subH">Problems, most important first</h3>
-      
       ${(() => { const row = p => { const last = p.items[p.items.length - 1]; return `<details class="prob" data-pn="${esc(p.name)}"><summary><span class="pn">${esc(p.name)}</span>${p.loops.length ? `<span class="badge">${p.loops.length} open</span>` : ''}<span class="pl">${esc(last.text.length > 70 ? last.text.slice(0, 68) + '…' : last.text)}</span></summary>
         <ol class="tl">${p.items.map(it => `<li>${dayLink(it.i, E)}<span>${esc(it.text)}</span></li>`).join('')}</ol>${open.filter(l => p.loops.includes(l.key)).map(l => `<p class="pLoop"><button type="button" class="linkbtn" data-ql="${open.indexOf(l)}"><i class="qDot" aria-hidden="true"></i>${esc(l.title)}</button></p>`).join('')}</details>`; }; const top = problems.filter(p => p.loops.length), rest = problems.filter(p => !p.loops.length);
         return (top.length ? top : rest.slice(0, 3)).map(row).join('') + ((top.length ? rest : rest.slice(3)).length ? `<details class="prob more"><summary><span class="pn">${(top.length ? rest : rest.slice(3)).length} more mentioned</span><span class="pl">${(top.length ? rest : rest.slice(3)).map(p => esc(p.name)).join(', ')}</span></summary><div class="nest">${(top.length ? rest : rest.slice(3)).map(row).join('')}</div></details>` : ''); })()}
@@ -1410,7 +1999,10 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
         <details class="prob"><summary><span class="pn">Full medicines list</span><span class="pl">${meds.all.length} medicines mentioned in the notes</span></summary>
         <table class="meds"><thead><tr><th>Medicine</th><th>In the notes</th><th>Home</th><th>Latest list</th><th>First and last mention</th></tr></thead><tbody>${meds.all.map(medRow).join('')}</tbody></table></details>`
       : `<table class="meds"><thead><tr><th>Medicine</th><th>In the notes</th><th>First and last mention</th></tr></thead><tbody>${meds.all.map(m => `<tr><td>${esc(cap(m.name))}</td><td>${openRx(m.name) ? '<b class="bad">Prescribed, no record it was given</b>' : st[m.status]}</td><td>${chips([m.first, m.last], E)}</td></tr>`).join('')}</tbody></table>`}
+      </div></details>
       <p class="next"><button type="button" class="btn" data-go="handover">Next: hand over to the right team</button></p>`;
+    renderAiContainers();
+    if (rindMode === 'raw') renderRawKeywordView();
     // 3 handover
     drawHandover(R);
     // 4 journey extras
@@ -1448,7 +2040,7 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
       <span class="ptRowId"><b>${esc(p.name)}</b><span>${p.age} · ${p.sex === 'F' ? 'Female' : 'Male'} · Born ${esc(p.dob)} · NHS no ${esc(p.nhsNo)}</span><span>${esc(p.story)}</span>${p.prealert ? `<span class="pre">${esc(p.prealert)}</span>` : ''}</span>
 </button>`).join('');
   }
-  function goHome() { $('q').placeholder = 'Find a patient by name or NHS number'; document.body.classList.add('noPatient'); setNotes(false); document.body.classList.remove('paper'); $('paperBack').hidden = true; setView('home'); }
+  function goHome() { $('q').placeholder = 'Find a patient by name or NHS number'; document.body.classList.add('noPatient'); setNotes(false); document.body.classList.remove('paper'); $('paperBack').hidden = true; setView('home'); renderSafetyBanner(); }
   let pending = null;
   function askIdentity(id) {
     const p = PATIENTS.find(x => x.id === id); closeList(); $('q').value = ''; query = '';
@@ -1461,9 +2053,12 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
     $('idModal').hidden = true; pending = null;
     if (!$('editor').hidden) { $('editor').hidden = true; $('notes').hidden = false; $('addForm').hidden = false; $('editBtn').textContent = 'Edit notes'; }
     cur = p; notesText = p.notes; $('addIn').value = p.demoEntry; $('addErr').hidden = true; audience = ''; doc = 'handover'; jStage = null; jSel = null; nSvc = null; nUn = false; query = ''; built = false;
+    simulateHallucination = false; aiResult = null; rawKwFilter = 'ALL'; rawCatFilter = 'ALL';
+    if ($('simHallucBtn')) { $('simHallucBtn').setAttribute('aria-pressed', 'false'); $('simHallucBtn').textContent = 'Simulate Hallucination (Test Stop-Gate)'; }
     document.body.classList.remove('noPatient'); $('q').placeholder = 'Find a patient or search these notes'; $('out').hidden = true;
-    drawBanner(); refresh(false); setView('loops'); $('notes').scrollTop = 0;
+    drawBanner(); refresh(false); setRindMode('ai'); setView('loops'); $('notes').scrollTop = 0;
     log(`Access confirmed for direct care and record opened: ${p.name}, NHS no ${p.nhsNo}`);
+    fetchAiSynthesis();
     build();
   }
   function heroText(R, show) {
@@ -1504,7 +2099,7 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
   function toggleEdit() {
     const ed = $('editor');
     if (ed.hidden) { setNotes(true); $('ta').value = notesText; ed.hidden = false; $('notes').hidden = true; $('addForm').hidden = true; $('editBtn').textContent = 'Done editing, rebuild'; }
-    else { notesText = $('ta').value.replace(/\s+$/, ''); ed.hidden = true; $('notes').hidden = false; $('addForm').hidden = false; $('editBtn').textContent = 'Edit notes'; refresh(false); }
+    else { notesText = $('ta').value.replace(/\s+$/, ''); ed.hidden = true; $('notes').hidden = false; $('addForm').hidden = false; $('editBtn').textContent = 'Edit notes'; refresh(false); fetchAiSynthesis(); }
   }
   function showLoop(i, R0) {
     const R = R0 || lastR, l = R.loops[i]; if (!l) return;
@@ -1518,25 +2113,41 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
   document.addEventListener('click', e => {
     const t = e.target;
     if (!t.closest('.search')) closeList();
+    const rm = t.closest('[data-rind-mode]'); if (rm) { setRindMode(rm.dataset.rindMode); return; }
+    if (t.closest('[data-switch-raw]')) { setRindMode('raw'); return; }
+    if (t.id === 'simHallucBtn') {
+      simulateHallucination = !simulateHallucination;
+      t.setAttribute('aria-pressed', String(simulateHallucination));
+      t.textContent = simulateHallucination ? 'Hallucination Simulation Active (Reset)' : 'Simulate Hallucination (Test Stop-Gate)';
+      if (rindMode !== 'ai') setRindMode('ai');
+      fetchAiSynthesis();
+      return;
+    }
+    if (t.id === 'reverifyBtn') { if (rindMode !== 'ai') setRindMode('ai'); fetchAiSynthesis(); return; }
+    const qbtn = t.closest('[data-quote-id]'); if (qbtn) { openQuoteModal(+qbtn.dataset.quoteId); return; }
+    if (t.id === 'qmClose' || t.id === 'quoteModal') { $('quoteModal').hidden = true; return; }
+    if (t.id === 'qmOpenInNotes') { const idx = +t.dataset.jumpNoteIdx; $('quoteModal').hidden = true; if (idx >= 0) showNote(idx); return; }
+    const rkw = t.closest('[data-raw-kw]'); if (rkw) { rawKwFilter = rkw.dataset.rawKw; rawCatFilter = 'ALL'; renderRawKeywordView(); return; }
+    const rcat = t.closest('[data-raw-cat]'); if (rcat) { rawCatFilter = rcat.dataset.rawCat; rawKwFilter = 'ALL'; renderRawKeywordView(); return; }
     const ns = t.closest('[data-ns]'); if (ns) { nSvc = ns.dataset.ns || null; if (!nSvc) nUn = false; if (!$('editor').hidden) toggleEdit(); setNotes(true); renderNotes(lastR); return; }
     if (t.closest('[data-nu]')) { nUn = !nUn; renderNotes(lastR); return; }
-    const pb = t.closest('[data-prob]'); if (pb) { e.preventDefault(); setView('summary'); const d = [...document.querySelectorAll('details.prob[data-pn]')].find(x => x.dataset.pn === pb.dataset.prob); if (d) { const up = d.parentElement.closest('details'); if (up) up.open = true; d.open = true; d.scrollIntoView({ block: 'center' }); } return; }
+    const pb = t.closest('[data-prob]'); if (pb) { e.preventDefault(); if (rindMode === 'raw') setRindMode('ai'); setView('summary'); const d = [...document.querySelectorAll('details.prob[data-pn]')].find(x => x.dataset.pn === pb.dataset.prob); if (d) { const up = d.parentElement.closest('details'); if (up) up.open = true; d.open = true; d.scrollIntoView({ block: 'center' }); } return; }
     const qs = t.closest('[data-qs]'); if (qs) { $('q').value = qs.dataset.qs; $('q').focus(); drawList(); return; }
     const jr = t.closest('#journey [data-loop]'); if (jr) { showLoop(+jr.dataset.loop); return; }
     const b = t.closest('.src'); if (b) { showNote(+b.dataset.i); return; }
     const g = t.closest('.loopHit'); if (g) { showLoop(+g.dataset.loop); return; }
-    const nv = t.closest('.nav[data-v]'); if (nv) { setView(nv.dataset.v); return; }
-    const go = t.closest('[data-go]'); if (go) { setView(go.dataset.go); return; }
+    const nv = t.closest('.nav[data-v]'); if (nv) { if (rindMode === 'raw') setRindMode('ai'); setView(nv.dataset.v); return; }
+    const go = t.closest('[data-go]'); if (go) { if (rindMode === 'raw') setRindMode('ai'); setView(go.dataset.go); return; }
     const jk = t.closest('[data-jk]'); if (jk) { if (jk.dataset.jk === 'open') jOpen = !jOpen; else jClosed = !jClosed; drawJourney(lastR, true, false); return; }
     const js = t.closest('[data-js]'); if (js) { jStage = js.dataset.js === 'all' || jStage === +js.dataset.js ? null : +js.dataset.js; drawJourney(lastR, true, false); return; }
     const dc = t.closest('[data-doc]'); if (dc) { doc = dc.dataset.doc; drawHandover(lastR); return; }
     if (t.id === 'docReset') { delete edits[docKey()]; log(`${DOCS.find(d => d[0] === doc)[1]} put back to Rind's draft`); drawHandover(lastR); return; }
     const au = t.closest('#aud button'); if (au) { audience = au.dataset.a; drawHandover(lastR); return; }
-    const sub = t.closest('.nav.sub'); if (sub) { audience = sub.dataset.aud; drawHandover(lastR); setView('handover'); return; }
+    const sub = t.closest('.nav.sub'); if (sub) { audience = sub.dataset.aud; drawHandover(lastR); if (rindMode === 'raw') setRindMode('ai'); setView('handover'); return; }
     const qp = t.closest('#qList [data-p]'); if (qp) { pickPatient(qp.dataset.p); return; }
     if (t.closest('#qList [data-notes]')) { searchNotes(); return; }
     const qn = t.closest('#qList [data-qn]'); if (qn) { query = $('q').value; closeList(); if (!$('editor').hidden) toggleEdit(); setNotes(true); renderNotes(lastR); showNote(+qn.dataset.qn); return; }
-    const ql = t.closest('[data-ql]'); if (ql) { closeList(); setView('loops'); const d = $('flag' + ql.dataset.ql); if (d) { d.open = true; d.scrollIntoView({ block: 'center' }); } return; }
+    const ql = t.closest('[data-ql]'); if (ql) { closeList(); if (rindMode === 'raw') setRindMode('ai'); setView('loops'); const d = $('flag' + ql.dataset.ql); if (d) { d.open = true; d.scrollIntoView({ block: 'center' }); } return; }
     if (t.id === 'changePt') { goHome(); return; }
     const row = t.closest('.ptRow'); if (row) { askIdentity(row.dataset.p); return; }
     if (t.id === 'idOpen' && pending && $('idTick').checked) { openPatient(pending); return; }
@@ -1570,7 +2181,7 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
   document.addEventListener('keydown', e => {
     if ((e.key === 'Enter' || e.key === ' ') && e.target.classList && e.target.classList.contains('loopHit')) { e.preventDefault(); showLoop(+e.target.dataset.loop); }
     if (e.key === '/' && !/INPUT|TEXTAREA/.test(e.target.tagName)) { e.preventDefault(); $('q').focus(); }
-    if (e.key === 'Escape') { hidePop(); if (!$('idModal').hidden) { $('idModal').hidden = true; pending = null; } if (!$('docView').hidden) { $('docView').hidden = true; document.body.classList.remove('docView'); } }
+    if (e.key === 'Escape') { hidePop(); if ($('quoteModal') && !$('quoteModal').hidden) { $('quoteModal').hidden = true; } if (!$('idModal').hidden) { $('idModal').hidden = true; pending = null; } if (!$('docView').hidden) { $('docView').hidden = true; document.body.classList.remove('docView'); } }
   });
   $('notesBtn').addEventListener('click', () => { const on = $('left').hidden; setNotes(on); if (on) log(`Source notes opened: ${cur.name}`); });
   /* header search: finds a patient, or searches this patient's notes */
@@ -1621,6 +2232,7 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
     const R = refresh(true, nice(analyse(notesText)).E.length - 1);
     if ($('n' + (R.E.length - 1))) { const box = $('notes'); box.scrollTop = box.scrollHeight; }
     $('addIn').value = '';
+    fetchAiSynthesis();
   });
   $('addIn').addEventListener('input', () => { $('addErr').hidden = true; });
   /* offline copy: the page is one file with no network calls, so saving it is the whole install */
