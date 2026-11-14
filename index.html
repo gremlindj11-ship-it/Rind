@@ -609,6 +609,13 @@ body.paper .aiSum{display:none}
 .ptRowId .ptTop .pre{margin:0;font-size:13px;color:#6e4700}
 .ptRowId .ptTop b{color:var(--ink);font-size:16px;font-weight:600}
 
+/* v26: quieter summary */
+.kvMiss{margin:8px 0 0;padding:9px 14px;border:1px solid #f1d27a;background:#fffdf6;border-radius:8px;font-size:14px;color:#6e4700}
+.kvMiss b{font-weight:600}
+.aDot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--amber);margin-right:8px;vertical-align:1px}
+.aiSlim{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 16px;padding:8px 14px;margin:10px 0 4px}
+.aiSlim .aiHead{margin:0}.aiSlim .aiBtns{margin:0}
+
 </style>
 </head>
 <body>
@@ -694,6 +701,8 @@ body.paper .aiSum{display:none}
           <h3 class="subH">Audit trail</h3>
           <p class="hint" style="margin:0 0 8px">Every record opened, note viewed, and document edited, copied or printed is logged against the person signed in: ED clinician (demo sign-in).</p>
           <ol class="tl" id="auditList"></ol>
+          <h3 class="subH">How the summary is ordered</h3>
+          <p class="hint">Situation, Background, Assessment, the order used in an SBAR handover, then what is still open. Problems with something open come first, then the order an acute assessment runs: allergy and limits on treatment, breathing, circulation, infection, confusion. Red needs someone to act, amber was not found in the notes, green was found or closed.</p>
           <h3 class="subH">How it checks</h3>
           <div id="checksBody"></div>
         </section>
@@ -1421,7 +1430,7 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
     const head = `<div class="aiHead"><b>AI summary</b><span>${aiAvail ? 'server connected' : 'optional · needs the team\'s server running on this computer'}</span></div>`;
     if (aiState === 'loading') return `<div class="aiBox aiSum">${head}<p class="hint">Asking the model, then checking every claim's quote against the notes…</p></div>`;
     if (aiState === 'error') return `<div class="aiBox aiSum">${head}<p class="notice bad"><b>No AI summary.</b> ${/fetch|network|load/i.test(aiErr) ? 'The AI server is not running on this computer. In the Rind folder run <code>python -m uvicorn main:app --port 8000</code>, then press the button again' : esc(aiErr)}. Everything else on this page is from Rind's own checks and does not depend on it.</p>${btns}</div>`;
-    if (aiState !== 'done' || !aiData) return `<div class="aiBox aiSum">${head}<p class="hint">Sends these synthetic notes to a language model. Every claim must carry a word-for-word quote from the notes, or it is blocked before it reaches this page.</p>${btns}</div>`;
+    if (aiState !== 'done' || !aiData) return `<div class="aiBox aiSum aiSlim"><div class="aiHead"><b>AI summary</b><span>optional · every claim must quote the notes word for word, or it is blocked</span></div>${btns}</div>`;
     const d = aiData, st = d.verification_stats || {}, fb = /DETERMINISTIC|FALLBACK/i.test(d.generation_mode || '');
     let dropped = 0;
     const line = (c, lead) => { if (!c || !c.verification_passed) return ''; const i = findQuote(R, c.exact_source_quote); if (i == null) { dropped++; return ''; }
@@ -1736,17 +1745,15 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
     const kv = (k, x, wide) => `<div class="kv${wide ? ' wide' : ''}${x ? '' : ' miss'}"><span>${k}</span><div>${f(x)}</div></div>`;
     const nowTwo = S.now ? { text: S.now.text.split(/(?<=\.)\s/).slice(0, 2).join(' '), src: S.now.src } : null;
     $('v-summary').innerHTML = `<h2 class="cardH">Summary</h2>
-      <details class="how"><summary>How this page is ordered</summary>
-        <p>Laid out as Situation, Background, Assessment, the order used in an SBAR handover. Rind does not recommend treatment, so the last part is what is still open.</p>
-        <p>Problems with something still open come first. After that they follow the order an acute assessment runs: allergy and limits on treatment, then breathing, circulation, infection, confusion, and then everything else.</p>
-        <p>Colour means the same thing everywhere: red needs someone to act, amber was not found in the notes, green was found or closed.</p></details>
+
       <div id="aiPanel">${aiPanelHtml(R)}</div>
       <h3 class="subH">Situation</h3>
       <p class="sit">${f(nowTwo)}</p>
       ${R.trend ? `<div class="trendG flat">${R.trend.items.map(x => `<div class="${x.wide ? 'wide' : ''}"><span>${esc(x.k)}</span>${trendVals(x, E)}</div>`).join('')}</div>` : ''}
       ${R.obs.length > 1 ? `<details class="prob"><summary><span class="pn">All observations</span><span class="pl">${R.obs.length} sets across the journey</span></summary><table class="meds"><thead><tr><th>When</th><th>Where</th><th>Breathing rate</th><th>Oxygen</th><th>Heart rate</th><th>Temp</th><th>NEWS2</th></tr></thead><tbody>${R.obs.map(o => `<tr><td>${chips([o.i], E)}</td><td>${esc(E[o.i].svc)}</td><td>${o.rr || ''}</td><td>${esc(o.spo2 || '')}</td><td>${o.hr || ''}</td><td>${o.temp || ''}</td><td>${o.news || ''}</td></tr>`).join('')}</tbody></table></details>` : ''}
       <h3 class="subH">Background</h3>
-      <div class="kvG">${kv('Presenting problem', S.admitted, true)}${kv('Allergies', S.allergies)}${kv('Limits on treatment', S.resus)}${kv('Next of kin', S.nok)}${kv('Family last told', S.familyTold)}${cur.where ? `<div class="kv"><span>Lives</span><div>${esc(cur.where)}</div></div>` : kv('Lives', S.living)}${kv('What helps this person', S.adjust)}</div>
+      <div class="kvG">${S.admitted ? kv('Presenting problem', S.admitted, true) : ''}${[['Allergies', S.allergies], ['Limits on treatment', S.resus], ['Next of kin', S.nok], ['Family last told', S.familyTold]].filter(x => x[1]).map(x => kv(x[0], x[1])).join('')}${cur.where ? `<div class="kv"><span>Lives</span><div>${esc(cur.where)}</div></div>` : S.living ? kv('Lives', S.living) : ''}${S.adjust ? kv('What helps this person', S.adjust) : ''}</div>
+      ${(() => { const miss = [['Presenting problem', S.admitted], ['Allergies', S.allergies], ['Limits on treatment', S.resus], ['Next of kin', S.nok], ['Family last told', S.familyTold], ['Where they live', cur.where || S.living], ['What helps this person', S.adjust]].filter(x => !x[1]).map(x => x[0]); return miss.length ? `<p class="kvMiss"><i class="aDot" aria-hidden="true"></i><b>Not found in these notes:</b> ${miss.map(esc).join(', ').toLowerCase()}</p>` : ''; })()}
       <h3 class="subH">Assessment, by problem</h3>
       ${(() => { const row = p => { const last = p.items[p.items.length - 1]; return `<details class="prob" data-pn="${esc(p.name)}"><summary><span class="pn">${esc(p.name)}</span>${p.loops.length ? `<span class="badge">${p.loops.length} open</span>` : ''}<span class="pl">${esc(last.text.length > 70 ? last.text.slice(0, 68) + '…' : last.text)}</span></summary>
         ${p.items.length > 6 ? `<details class="earlier"><summary>${p.items.length - 5} earlier mentions</summary><ol class="tl">${p.items.slice(0, -5).map(it => `<li>${dayLink(it.i, E)}<span>${esc(it.text)}</span></li>`).join('')}</ol></details>` : ''}<ol class="tl">${(p.items.length > 6 ? p.items.slice(-5) : p.items).map(it => `<li>${dayLink(it.i, E)}<span>${esc(it.text)}</span></li>`).join('')}</ol>${open.filter(l => p.loops.includes(l.key)).map(l => `<p class="pLoop"><button type="button" class="linkbtn" data-ql="${open.indexOf(l)}"><i class="qDot" aria-hidden="true"></i>${esc(l.title)}</button></p>`).join('')}</details>`; }; const top = problems.filter(p => p.loops.length), rest = problems.filter(p => !p.loops.length);
