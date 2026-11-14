@@ -616,6 +616,31 @@ body.paper .aiSum{display:none}
 .aiSlim{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 16px;padding:8px 14px;margin:10px 0 4px}
 .aiSlim .aiHead{margin:0}.aiSlim .aiBtns{margin:0}
 
+/* v27: summary, most important first */
+.keyG{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr) minmax(0,1fr);gap:10px;margin-top:6px}
+.keyCard{border:1px solid var(--line);border-top:4px solid var(--blue);border-radius:8px;padding:10px 14px 12px;display:grid;gap:4px;align-content:start;min-width:0;background:var(--surface)}
+.keyCard>span{font-size:12px;font-weight:600;color:var(--mute)}
+.keyCard>div{font-size:15px;line-height:1.45;color:var(--ink);font-weight:500}
+.keyCard.alg{border-top-color:var(--red)}
+.keyCard.alg>span{color:var(--red)}
+.keyCard.alg>div{font-weight:600}
+.keyCard.miss{border-top-color:var(--amber);background:#fffdf6}
+#v-summary .subH{margin:26px 0 10px;padding-top:16px;border-top:1px solid var(--line);font-size:16px;font-weight:700;color:var(--bluedk);display:flex;align-items:center;gap:10px}
+#v-summary .subH.act{color:var(--red);border-top:0;padding-top:0;margin-top:20px}
+.openL{border:1px solid var(--line);border-left:4px solid var(--red);border-radius:8px;padding:2px 14px}
+.openL .openRow{padding:10px 0;font-size:15px}
+.openL .openRow:first-child{border-top:0}
+.openL .openRow:last-of-type{border-bottom:0}
+.openL .openRow b{color:var(--ink)}
+.openMore>summary{display:inline-flex;align-items:center;gap:8px;padding:9px 0;font-size:14px;font-weight:600;color:var(--blue);cursor:pointer;list-style:none}
+.openMore>summary::-webkit-details-marker{display:none}
+.openMore>summary::after{margin-left:0;border-color:var(--blue)}
+.openMore{border-top:1px solid var(--soft)}
+.openMore[open]>summary{border-bottom:1px solid var(--soft);width:100%}
+.openMore .openRow:first-of-type{border-top:0}
+#v-summary .sit{font-size:16px;color:var(--ink)}
+@media(max-width:900px){.keyG{grid-template-columns:minmax(0,1fr)}}
+
 </style>
 </head>
 <body>
@@ -1744,17 +1769,23 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
     const medRow = m => `<tr><td>${esc(cap(m.name))}</td><td>${openDrug(m.name) ? '<b class="bad">Held, not restarted</b>' : openRx(m.name) ? '<b class="bad">Prescribed, no record it was given</b>' : st[m.status]}</td><td>${m.home ? 'Yes' : ''}</td><td>${m.now ? 'Yes' : ''}</td><td>${chips([m.first, m.last], E)}</td></tr>`;
     const kv = (k, x, wide) => `<div class="kv${wide ? ' wide' : ''}${x ? '' : ' miss'}"><span>${k}</span><div>${f(x)}</div></div>`;
     const nowTwo = S.now ? { text: S.now.text.split(/(?<=\.)\s/).slice(0, 2).join(' '), src: S.now.src } : null;
+    const oRow = (l, k) => `<button type="button" class="openRow" data-ql="${k}"><i class="qDot" aria-hidden="true"></i><b>${esc(l.t1)}</b><span>${esc(l.t2 || '')}</span><em>${age(l.ageFrom != null ? l.ageFrom : l.start, E).startsWith('since') ? age(l.ageFrom != null ? l.ageFrom : l.start, E) : 'open ' + age(l.ageFrom != null ? l.ageFrom : l.start, E)}</em></button>`;
     $('v-summary').innerHTML = `<h2 class="cardH">Summary</h2>
-
-      <div id="aiPanel">${aiPanelHtml(R)}</div>
-      <h3 class="subH">Situation</h3>
+      <div class="keyG">
+        <div class="keyCard why"><span>Why ${cur.sex === 'F' ? 'she' : 'he'} is here</span><div>${S.admitted ? f(S.admitted) : NF}</div></div>
+        <div class="keyCard ${S.allergies ? 'alg' : 'miss'}"><span>Allergies</span><div>${S.allergies ? f(S.allergies) : NF}</div></div>
+        <div class="keyCard ${S.resus ? '' : 'miss'}"><span>Limits on treatment</span><div>${S.resus ? f(S.resus) : NF}</div></div>
+      </div>
+      <h3 class="subH act">Still open<span class="badge">${open.length}</span></h3>
+      ${open.length ? `<div class="openL">${open.slice(0, 5).map(oRow).join('')}${open.length > 5 ? `<details class="openMore"><summary>Show ${open.length - 5} more</summary>${open.slice(5).map((l, k) => oRow(l, k + 5)).join('')}</details>` : ''}</div>` : '<p class="hint">None found by these checks.</p>'}
+      <h3 class="subH">Latest note and readings</h3>
       <p class="sit">${f(nowTwo)}</p>
       ${R.trend ? `<div class="trendG flat">${R.trend.items.map(x => `<div class="${x.wide ? 'wide' : ''}"><span>${esc(x.k)}</span>${trendVals(x, E)}</div>`).join('')}</div>` : ''}
       ${R.obs.length > 1 ? `<details class="prob"><summary><span class="pn">All observations</span><span class="pl">${R.obs.length} sets across the journey</span></summary><table class="meds"><thead><tr><th>When</th><th>Where</th><th>Breathing rate</th><th>Oxygen</th><th>Heart rate</th><th>Temp</th><th>NEWS2</th></tr></thead><tbody>${R.obs.map(o => `<tr><td>${chips([o.i], E)}</td><td>${esc(E[o.i].svc)}</td><td>${o.rr || ''}</td><td>${esc(o.spo2 || '')}</td><td>${o.hr || ''}</td><td>${o.temp || ''}</td><td>${o.news || ''}</td></tr>`).join('')}</tbody></table></details>` : ''}
       <h3 class="subH">Background</h3>
-      <div class="kvG">${S.admitted ? kv('Presenting problem', S.admitted, true) : ''}${[['Allergies', S.allergies], ['Limits on treatment', S.resus], ['Next of kin', S.nok], ['Family last told', S.familyTold]].filter(x => x[1]).map(x => kv(x[0], x[1])).join('')}${cur.where ? `<div class="kv"><span>Lives</span><div>${esc(cur.where)}</div></div>` : S.living ? kv('Lives', S.living) : ''}${S.adjust ? kv('What helps this person', S.adjust) : ''}</div>
-      ${(() => { const miss = [['Presenting problem', S.admitted], ['Allergies', S.allergies], ['Limits on treatment', S.resus], ['Next of kin', S.nok], ['Family last told', S.familyTold], ['Where they live', cur.where || S.living], ['What helps this person', S.adjust]].filter(x => !x[1]).map(x => x[0]); return miss.length ? `<p class="kvMiss"><i class="aDot" aria-hidden="true"></i><b>Not found in these notes:</b> ${miss.map(esc).join(', ').toLowerCase()}</p>` : ''; })()}
-      <h3 class="subH">Assessment, by problem</h3>
+      <div class="kvG">${[['Family last told', S.familyTold], ['Next of kin', S.nok]].filter(x => x[1]).map(x => kv(x[0], x[1])).join('')}${cur.where ? `<div class="kv"><span>Lives</span><div>${esc(cur.where)}</div></div>` : S.living ? kv('Lives', S.living) : ''}${S.adjust ? kv('What helps this person', S.adjust) : ''}</div>
+      ${(() => { const miss = [['Next of kin', S.nok], ['Family last told', S.familyTold], ['Where they live', cur.where || S.living], ['What helps this person', S.adjust]].filter(x => !x[1]).map(x => x[0]); return miss.length ? `<p class="kvMiss"><i class="aDot" aria-hidden="true"></i><b>Not found in these notes:</b> ${miss.map(esc).join(', ').toLowerCase()}</p>` : ''; })()}
+      <h3 class="subH">By problem</h3>
       ${(() => { const row = p => { const last = p.items[p.items.length - 1]; return `<details class="prob" data-pn="${esc(p.name)}"><summary><span class="pn">${esc(p.name)}</span>${p.loops.length ? `<span class="badge">${p.loops.length} open</span>` : ''}<span class="pl">${esc(last.text.length > 70 ? last.text.slice(0, 68) + '…' : last.text)}</span></summary>
         ${p.items.length > 6 ? `<details class="earlier"><summary>${p.items.length - 5} earlier mentions</summary><ol class="tl">${p.items.slice(0, -5).map(it => `<li>${dayLink(it.i, E)}<span>${esc(it.text)}</span></li>`).join('')}</ol></details>` : ''}<ol class="tl">${(p.items.length > 6 ? p.items.slice(-5) : p.items).map(it => `<li>${dayLink(it.i, E)}<span>${esc(it.text)}</span></li>`).join('')}</ol>${open.filter(l => p.loops.includes(l.key)).map(l => `<p class="pLoop"><button type="button" class="linkbtn" data-ql="${open.indexOf(l)}"><i class="qDot" aria-hidden="true"></i>${esc(l.title)}</button></p>`).join('')}</details>`; }; const top = problems.filter(p => p.loops.length), rest = problems.filter(p => !p.loops.length);
         return (top.length ? top : rest.slice(0, 3)).map(row).join('') + ((top.length ? rest : rest.slice(3)).length ? `<details class="prob more"><summary><span class="pn">${(top.length ? rest : rest.slice(3)).length} more mentioned</span><span class="pl">${(top.length ? rest : rest.slice(3)).map(p => esc(p.name)).join(', ')}</span></summary><div class="nest">${(top.length ? rest : rest.slice(3)).map(row).join('')}</div></details>` : ''); })()}
@@ -1764,8 +1795,7 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
         <details class="prob"><summary><span class="pn">Full medicines list</span><span class="pl">${meds.all.length} medicines mentioned in the notes</span></summary>
         <table class="meds"><thead><tr><th>Medicine</th><th>In the notes</th><th>Home</th><th>Latest list</th><th>First and last mention</th></tr></thead><tbody>${meds.all.map(medRow).join('')}</tbody></table></details>`
       : `<table class="meds"><thead><tr><th>Medicine</th><th>In the notes</th><th>First and last mention</th></tr></thead><tbody>${meds.all.map(m => `<tr><td>${esc(cap(m.name))}</td><td>${openRx(m.name) ? '<b class="bad">Prescribed, no record it was given</b>' : st[m.status]}</td><td>${chips([m.first, m.last], E)}</td></tr>`).join('')}</tbody></table>`}
-      <h3 class="subH">Still open</h3>
-      ${open.length ? open.map((l, k) => `<button type="button" class="openRow" data-ql="${k}"><i class="qDot" aria-hidden="true"></i><b>${esc(l.t1)}</b><span>${esc(l.t2 || '')}</span><em>${age(l.ageFrom != null ? l.ageFrom : l.start, E).startsWith('since') ? age(l.ageFrom != null ? l.ageFrom : l.start, E) : 'open ' + age(l.ageFrom != null ? l.ageFrom : l.start, E)}</em></button>`).join('') : '<p class="hint">None found by these checks.</p>'}
+      <div id="aiPanel">${aiPanelHtml(R)}</div>
       <details class="noteBox"${myNote[cur.id] ? ' open' : ''}><summary>${myNote[cur.id] ? 'Clinician note' : 'Add a clinician note'}</summary>
         <p class="hint">Written by you, not taken from the notes. It is marked as added by the clinician and goes into the handover and every document.</p>
         <textarea id="myNote" rows="3" aria-label="Clinician note">${esc(myNote[cur.id] || '')}</textarea></details>
