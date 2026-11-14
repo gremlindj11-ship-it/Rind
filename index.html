@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Rind — the layer that holds the rest together</title>
+<title>Rind: the layer that holds the rest together</title>
 <style>
 /* Rind. One calm system: navy header, white surfaces on a cool grey, NHS blue as the only accent,
    red only for open loops, amber only for "not found". Colours from the NHS design system palette.
@@ -494,6 +494,37 @@ details.loop.actioned .age{visibility:hidden}
 @media(max-width:900px){.trendG{grid-template-columns:repeat(3,minmax(0,1fr))}.trendG .wide{grid-column:1/-1;padding-left:0;border-left:0}}
 
 #out>.trend:first-child,#out>.plan:first-child{margin-top:12px}
+
+/* v18: summary as one system. tiles for facts, figures for numbers, rows for problems, red/amber/green mean one thing */
+.lt b{font-weight:600}
+.lt i{font-style:normal;font-weight:400;color:var(--mute);margin-left:10px}
+details.loop.actioned .lt b{font-weight:500;color:var(--mute)}
+#v-summary .subH{margin:26px 0 10px;font-size:15px}
+#v-summary .cardH{margin-bottom:2px}
+.how{font-size:13px;color:var(--mute);margin:0 0 4px}
+.how>summary{cursor:pointer;color:var(--blue);display:inline-block;list-style:none;text-decoration:underline;text-decoration-color:#a9c9ea;text-underline-offset:3px}
+.how>summary::-webkit-details-marker{display:none}
+.how p{margin:8px 0 0;max-width:72ch;line-height:1.5}
+.sit{font-size:16px;line-height:1.5;margin:0 0 12px;max-width:80ch}
+.trendG.flat{border:1px solid var(--line);border-radius:8px;padding:12px 16px;margin-bottom:8px}
+.kvG{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.kv{border:1px solid var(--line);border-radius:8px;padding:10px 14px 12px;display:grid;gap:3px;align-content:start;min-width:0}
+.kv.wide{grid-column:1/-1}
+.kv>span{font-size:12px;color:var(--faint)}
+.kv>div{font-size:14px;line-height:1.45}
+.kv.miss{border-color:#f1d27a;background:#fffaf0}
+.openRow{display:flex;align-items:baseline;gap:8px;width:100%;text-align:left;background:none;border:0;border-top:1px solid var(--soft);border-radius:0;padding:9px 2px;font-size:14px}
+.openRow:last-of-type{border-bottom:1px solid var(--soft)}
+.openRow:hover b{color:var(--blue)}
+.openRow b{font-weight:600}.openRow span{color:var(--mute);flex:1;min-width:0}
+.openRow em{font-style:normal;font-size:12px;color:var(--mute);white-space:nowrap}
+.openRow .qDot{flex:none;align-self:center;margin:0 4px 0 0}
+.noteBox{margin-top:22px;border-top:1px solid var(--soft);padding-top:14px}
+.noteBox>summary{cursor:pointer;color:var(--blue);font-size:14px;font-weight:600;display:inline-block;list-style:none}
+.noteBox>summary::-webkit-details-marker{display:none}
+.noteBox .hint{margin:8px 0}
+#myNote{min-height:72px}
+@media(max-width:900px){.kvG{grid-template-columns:1fr}.openRow{flex-wrap:wrap}}
 
 </style>
 </head>
@@ -1071,7 +1102,9 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
       l.problem = byLabel ? byLabel.name : null;
       const p = problems.find(x => x.name === l.problem); if (p && l.status === 'open') p.loops.push(l.key);
     });
-    problems.sort((a, b) => (b.loops.length - a.loops.length) || (a.order - b.order));
+    const ACUTE = ['Allergy', 'Treatment escalation', 'Breathing', 'Heart and circulation', 'Infection', 'Blood thinning', 'Kidneys', 'Confusion and dementia', 'Diabetes'];
+    const rank = p => { const k = ACUTE.indexOf(p.name); return k < 0 ? ACUTE.length + p.order : k; };
+    problems.sort((a, b) => ((b.loops.length > 0) - (a.loops.length > 0)) || (rank(a) - rank(b)));
 
     // medicines: what she came in on, what the latest list says, and the difference
     const medsIn = c => MEDS.filter(m => m.re.test(c)).map(m => m.name);
@@ -1144,7 +1177,7 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
   const when = (i, E) => { const e = E[i], L = cur.dayLabels; if (!L) return `Day ${e.day}, ${e.time}`; return e.day === 0 ? L[0] : `${L[e.day] || 'Day ' + e.day}, ${e.time}`; };
   const whenShort = (i, E) => { const e = E[i], L = cur.dayLabels; return !L ? `Day ${e.day}` : e.day === 0 ? L[0] : e.time; };
   const dayWords = t => t ? t.replace(/\bD(\d+)\b/g, 'day $1') : t;
-  const nice = R => { if (!cur.dayLabels) R.loops.forEach(l => { l.title = dayWords(l.title); l.detail = dayWords(l.detail); l.text = dayWords(l.text); }); return R; };
+  const nice = R => { R.loops.forEach(l => { if (!cur.dayLabels) { l.title = dayWords(l.title); l.detail = dayWords(l.detail); l.text = dayWords(l.text); } if (l.title) { const p = l.title.split(' — '); l.t1 = p[0]; l.t2 = p.slice(1).join(', '); l.title = l.t1 + (l.t2 ? ': ' + l.t2 : ''); } }); return R; };
   const mins = e => e.day * 1440 + +e.time.slice(0, 2) * 60 + +e.time.slice(3, 5);
   const dur = m => m < 60 ? `${m} min` : m < 2880 ? `${Math.floor(m / 60)} h${m % 60 ? ' ' + (m % 60) + ' min' : ''}` : `${Math.round(m / 1440)} days`;
   const age = (i, E) => { const a = E[i], b = E[E.length - 1]; return cur.dayLabels && a.day === 0 && b.day !== 0 ? 'since ' + cur.dayLabels[0] : dur(Math.max(0, mins(b) - mins(a))); };
@@ -1235,9 +1268,9 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
       <div class="jh jrind" role="columnheader"><b>Rind</b><span>now</span></div>`;
     rows.forEach((l, r) => {
       const open = l.status !== 'closed', a = stageOf(l.start), b = open ? G.length : stageOf(l.end), idx = R.loops.indexOf(l);
-      const t = open ? l.title.split(' — ') : [cap(l.label), 'closed ' + when(l.end, E)];
+      const t = open ? [l.t1, l.t2] : [cap(l.label), 'closed ' + when(l.end, E)];
       const acted = open && done[dk(l)];
-      h += `<button type="button" class="loopHit jlab ${open ? 'open' : 'closed'}" data-loop="${idx}" style="--k:${r}"><b>${esc(t[0])}</b><span>${esc(t.slice(1).join(' — '))}</span></button>`;
+      h += `<button type="button" class="loopHit jlab ${open ? 'open' : 'closed'}" data-loop="${idx}" style="--k:${r}"><b>${esc(t[0])}</b><span>${esc(t[1] || '')}</span></button>`;
       G.forEach((g, k) => {
         if (k < a || k > b) { h += `<div class="jc${jStage === k ? ' on' : ''}" data-loop="${idx}"></div>`; return; }
         const ids = [...new Set([l.start, ...l.src, ...(open ? [] : [l.end])])].filter(i => stageOf(i) === k).sort((x, y) => x - y);
@@ -1391,7 +1424,7 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
       <div class="trendG">${R.trend.items.map(x => `<div class="${x.wide ? 'wide' : ''}"><span>${esc(x.k)}</span><b><i>${esc(String(x.a))}</i><em aria-hidden="true">→</em>${esc(String(x.b))}</b></div>`).join('')}</div></div>` : '';
     const planCard = plan ? `<details class="plan" open><summary><b>Treatment plan already on record</b><span>${esc(plan.svc)}, ${when(plan.lines[0].i, E)} · ${esc(plan.why)}</span></summary><ul>${plan.lines.map(x => `<li>${esc(x.c)} ${chips([x.i], E)}</li>`).join('')}</ul></details>` : '';
     $('out').innerHTML = `${trendCard}${planCard}<section class="loops">${open.length ? open.map((o, k) => `<details class="loop${done[dk(o)] ? ' actioned' : ''}" id="flag${k}" ${k === 0 && !done[dk(o)] ? 'open' : ''}>
-        <summary><span class="dot" aria-hidden="true"></span><span class="lt">${esc(o.title)}</span><span class="age">${age(o.start, E).startsWith('since') ? age(o.start, E) : 'open ' + age(o.start, E)}</span>${o.problem ? `<button type="button" class="tag" data-prob="${esc(o.problem)}" title="See this problem in the summary">${esc(o.problem)}</button>` : ''}</summary>
+        <summary><span class="dot" aria-hidden="true"></span><span class="lt"><b>${esc(o.t1)}</b>${o.t2 ? `<i>${esc(o.t2)}</i>` : ''}</span><span class="age">${age(o.start, E).startsWith('since') ? age(o.start, E) : 'open ' + age(o.start, E)}</span>${o.problem ? `<button type="button" class="tag" data-prob="${esc(o.problem)}" title="See this problem in the summary">${esc(o.problem)}</button>` : ''}</summary>
         <div class="lb">${loopBody(o, E)}<p class="act">${done[dk(o)] ? `<span class="okTag">Actioned at ${done[dk(o)]}</span> <button type="button" class="linkbtn" data-undo="${k}">Undo</button>` : `<button type="button" class="btn" data-done="${k}">Mark as actioned</button>`}</p></div></details>`).join('')
         : '<p class="notice">None found by these checks. That is not the same as none. The notes are still the record.</p>'}</section>
       ${closed.filter(c => c.found && !plan).map(c => `<p class="notice good"><b>Found in the record.</b> ${esc(c.text)}. ${chips(c.src, E)}</p>`).join('')}
@@ -1405,21 +1438,20 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
     const openRx = n => open.some(l => l.key === 'rx:' + n);
     const openDrug = n => open.some(l => l.key === 'drug:' + n);
     const medRow = m => `<tr><td>${esc(cap(m.name))}</td><td>${openDrug(m.name) ? '<b class="bad">Held, not restarted</b>' : openRx(m.name) ? '<b class="bad">Prescribed, no record it was given</b>' : st[m.status]}</td><td>${m.home ? 'Yes' : ''}</td><td>${m.now ? 'Yes' : ''}</td><td>${chips([m.first, m.last], E)}</td></tr>`;
+    const kv = (k, x, wide) => `<div class="kv${wide ? ' wide' : ''}${x ? '' : ' miss'}"><span>${k}</span><div>${f(x)}</div></div>`;
+    const nowTwo = S.now ? { text: S.now.text.split(/(?<=\.)\s/).slice(0, 2).join(' '), src: S.now.src } : null;
     $('v-summary').innerHTML = `<h2 class="cardH">Summary</h2>
-      <div class="row"><div class="k">Presenting problem</div><div>${f(S.admitted)}</div></div>
-      <div class="row"><div class="k">Latest entry</div><div>${f(S.now)}</div></div>
-      <div class="row"><div class="k"><label for="myNote">Your additions</label></div><div><textarea id="myNote" rows="2" placeholder="Add or correct anything. It is marked as yours and goes into every document.">${esc(myNote[cur.id] || '')}</textarea></div></div>
-      <h3 class="subH">The person</h3>
-      <div class="row"><div class="k">Next of kin</div><div>${f(S.nok)}</div></div>
-      ${S.phone && S.nok && S.phone.text === S.nok.text ? '' : `<div class="row"><div class="k">Phone</div><div>${f(S.phone)}</div></div>`}
-      <div class="row"><div class="k">Family last told</div><div>${f(S.familyTold)}</div></div>
-      <div class="row"><div class="k">Lives</div><div>${f(S.living)}</div></div>
-      <div class="row"><div class="k">Adjustments</div><div>${f(S.adjust)}</div></div>
-      <div class="row"><div class="k">Resus / escalation</div><div>${f(S.resus)}</div></div>
-      ${R.obs.length > 1 ? `<h3 class="subH">Observations across the journey</h3>
-      <table class="meds"><thead><tr><th>When</th><th>Where</th><th>Breathing rate</th><th>Oxygen</th><th>Heart rate</th><th>Temp</th><th>NEWS2</th></tr></thead><tbody>${R.obs.map(o => `<tr><td>${chips([o.i], E)}</td><td>${esc(E[o.i].svc)}</td><td>${o.rr || ''}</td><td>${esc(o.spo2 || '')}</td><td>${o.hr || ''}</td><td>${o.temp || ''}</td><td>${o.news || ''}</td></tr>`).join('')}</tbody></table>` : ''}
-      <h3 class="subH">Problems, most important first</h3>
-      
+      <details class="how"><summary>How this page is ordered</summary>
+        <p>Laid out as Situation, Background, Assessment, the order used in an SBAR handover. Rind does not recommend treatment, so the last part is what is still open.</p>
+        <p>Problems with something still open come first. After that they follow the order an acute assessment runs: allergy and limits on treatment, then breathing, circulation, infection, confusion, and then everything else.</p>
+        <p>Colour means the same thing everywhere: red needs someone to act, amber was not found in the notes, green was found or closed.</p></details>
+      <h3 class="subH">Situation</h3>
+      <p class="sit">${f(nowTwo)}</p>
+      ${R.trend ? `<div class="trendG flat">${R.trend.items.map(x => `<div class="${x.wide ? 'wide' : ''}"><span>${esc(x.k)}</span><b><i>${esc(String(x.a))}</i><em aria-hidden="true">→</em>${esc(String(x.b))}</b></div>`).join('')}</div>` : ''}
+      ${R.obs.length > 1 ? `<details class="prob"><summary><span class="pn">All observations</span><span class="pl">${R.obs.length} sets across the journey</span></summary><table class="meds"><thead><tr><th>When</th><th>Where</th><th>Breathing rate</th><th>Oxygen</th><th>Heart rate</th><th>Temp</th><th>NEWS2</th></tr></thead><tbody>${R.obs.map(o => `<tr><td>${chips([o.i], E)}</td><td>${esc(E[o.i].svc)}</td><td>${o.rr || ''}</td><td>${esc(o.spo2 || '')}</td><td>${o.hr || ''}</td><td>${o.temp || ''}</td><td>${o.news || ''}</td></tr>`).join('')}</tbody></table></details>` : ''}
+      <h3 class="subH">Background</h3>
+      <div class="kvG">${kv('Presenting problem', S.admitted, true)}${kv('Allergies', S.allergies)}${kv('Limits on treatment', S.resus)}${kv('Next of kin', S.nok)}${kv('Family last told', S.familyTold)}${kv('Lives', S.living)}${kv('What helps this person', S.adjust)}</div>
+      <h3 class="subH">Assessment, by problem</h3>
       ${(() => { const row = p => { const last = p.items[p.items.length - 1]; return `<details class="prob" data-pn="${esc(p.name)}"><summary><span class="pn">${esc(p.name)}</span>${p.loops.length ? `<span class="badge">${p.loops.length} open</span>` : ''}<span class="pl">${esc(last.text.length > 70 ? last.text.slice(0, 68) + '…' : last.text)}</span></summary>
         <ol class="tl">${p.items.map(it => `<li>${dayLink(it.i, E)}<span>${esc(it.text)}</span></li>`).join('')}</ol>${open.filter(l => p.loops.includes(l.key)).map(l => `<p class="pLoop"><button type="button" class="linkbtn" data-ql="${open.indexOf(l)}"><i class="qDot" aria-hidden="true"></i>${esc(l.title)}</button></p>`).join('')}</details>`; }; const top = problems.filter(p => p.loops.length), rest = problems.filter(p => !p.loops.length);
         return (top.length ? top : rest.slice(0, 3)).map(row).join('') + ((top.length ? rest : rest.slice(3)).length ? `<details class="prob more"><summary><span class="pn">${(top.length ? rest : rest.slice(3)).length} more mentioned</span><span class="pl">${(top.length ? rest : rest.slice(3)).map(p => esc(p.name)).join(', ')}</span></summary><div class="nest">${(top.length ? rest : rest.slice(3)).map(row).join('')}</div></details>` : ''); })()}
@@ -1429,6 +1461,11 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
         <details class="prob"><summary><span class="pn">Full medicines list</span><span class="pl">${meds.all.length} medicines mentioned in the notes</span></summary>
         <table class="meds"><thead><tr><th>Medicine</th><th>In the notes</th><th>Home</th><th>Latest list</th><th>First and last mention</th></tr></thead><tbody>${meds.all.map(medRow).join('')}</tbody></table></details>`
       : `<table class="meds"><thead><tr><th>Medicine</th><th>In the notes</th><th>First and last mention</th></tr></thead><tbody>${meds.all.map(m => `<tr><td>${esc(cap(m.name))}</td><td>${openRx(m.name) ? '<b class="bad">Prescribed, no record it was given</b>' : st[m.status]}</td><td>${chips([m.first, m.last], E)}</td></tr>`).join('')}</tbody></table>`}
+      <h3 class="subH">Still open</h3>
+      ${open.length ? open.map((l, k) => `<button type="button" class="openRow" data-ql="${k}"><i class="qDot" aria-hidden="true"></i><b>${esc(l.t1)}</b><span>${esc(l.t2 || '')}</span><em>${age(l.start, E).startsWith('since') ? age(l.start, E) : 'open ' + age(l.start, E)}</em></button>`).join('') : '<p class="hint">None found by these checks.</p>'}
+      <details class="noteBox"${myNote[cur.id] ? ' open' : ''}><summary>${myNote[cur.id] ? 'Clinician note' : 'Add a clinician note'}</summary>
+        <p class="hint">Written by you, not taken from the notes. It is marked as added by the clinician and goes into the handover and every document.</p>
+        <textarea id="myNote" rows="3" aria-label="Clinician note">${esc(myNote[cur.id] || '')}</textarea></details>
       <p class="next"><button type="button" class="btn" data-go="handover">Next: hand over to the right team</button></p>`;
     // 3 handover
     drawHandover(R);
@@ -1490,7 +1527,7 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
     const demo = (notesText.match(/\b\d{2,3}[FM]\b/) || ['patient'])[0];
     const nd = R.open.filter(l => done[dk(l)]).length;
     const left = R.open.filter(l => !done[dk(l)]);
-    const short = l => { const base = l.kind === 'confirm' ? l.title.split(' — ')[0].split(',')[0] : (l.label || l.title.split(' — ')[0]); return (base + ({ decision: ' decision', finding: ' follow-up', referral: ' reply', pending: ' result' }[l.kind] || '')).toLowerCase(); };
+    const short = l => { const base = l.kind === 'confirm' ? l.t1.split(',')[0] : (l.label || l.t1); return (base + ({ decision: ' decision', finding: ' follow-up', referral: ' reply', pending: ' result' }[l.kind] || '')).toLowerCase(); };
     $('heroTitle').textContent = !show ? 'What was started and never closed?' : !n ? 'No open loops found by these checks' : !left.length ? `All ${n} open loops marked as actioned` : (cur.prealert ? `Before ${cur.sex === 'F' ? 'she' : 'he'} arrives: ` : 'Still open: ') + left.slice(0, 3).map(short).join(', ') + (left.length > 3 ? ` + ${left.length - 3} more` : '');
     const st0 = epStart(R.E), topL = left.find(l => !(cur.dayLabels && R.E[l.start].day === 0));
     $('heroClock').innerHTML = !show ? '' : `<b>${age(st0.i, R.E)}</b> since first seen (${esc(st0.svc)}, ${when(st0.i, R.E)})` + (topL ? ` · ${esc(short(topL))} waiting <b>${age(topL.start, R.E)}</b>` : '');
