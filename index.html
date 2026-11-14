@@ -1878,7 +1878,7 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
       <span class="ptRowId">${inc ? `<span class="ptTop"><b>${esc(p.name)}</b><span class="pre">${esc(p.moments[0].pre)}</span></span>` : `<b>${esc(p.name)}</b>`}<span>${p.age} · ${p.sex === 'F' ? 'Female' : 'Male'} · Born ${esc(p.dob)} · NHS no ${esc(p.nhsNo)}</span>${inc ? open : `<span>${esc(p.story)}</span>`}</span>
 </button>`; };
     const inc = PATIENTS.filter(p => p.moments && p.moments[0].pre), rest = PATIENTS.filter(p => !inc.includes(p));
-    $('ptList').innerHTML = (inc.length ? `<h3 class="subH">On the way in by ambulance</h3>${inc.map(p => row(p, true)).join('')}` : '') + `<h3 class="subH">Recent patients</h3>${rest.map(p => row(p, false)).join('')}`;
+    $('ptList').innerHTML = (inc.length ? `<h3 class="subH">On the way in</h3>${inc.map(p => row(p, true)).join('')}` : '') + `<h3 class="subH">Recent patients</h3>${rest.map(p => row(p, false)).join('')}`;
   }
   function goHome() { $('q').placeholder = 'Find a patient by name or NHS number'; document.body.classList.add('noPatient'); setNotes(false); document.body.classList.remove('paper'); $('paperBack').hidden = true; setView('home'); }
   let pending = null;
