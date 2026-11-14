@@ -882,7 +882,8 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
     'Medicine given or prescribed against a recorded allergy',
     'Allergy recorded differently by different services',
     'Getting worse across services: breathing rate, heart rate, NEWS2, new oxygen',
-    'Essentials missing from the whole record: allergies, escalation status, next of kin'
+    'Essentials missing from the whole record: allergies, escalation status, next of kin',
+    'The same medicine recorded as given twice in one day by two services'
   ];
 
   /* Problem-oriented summary: each sentence is filed under the problems it mentions.
@@ -1095,6 +1096,29 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
       else loops.push({ key: 'family', kind: 'family', label: 'Family', status: 'open', start: e.i, end: null, maybe: null, title: `Family to be told ${e.time} — no record they were`, detail: `"${c}"`, src: [e.i] });
     }));
 
+    // 15. the same medicine recorded as given at two different times on one day, by two services
+    const PRN = /^(salbutamol|ipratropium|paracetamol|morphine|oramorph|codeine|insulin|noradrenaline|furosemide|enoxaparin)$/;
+    const toMin = t => +t.slice(0, 2) * 60 + +t.slice(3, 5);
+    MEDS.forEach(m => {
+      if (PRN.test(m.name)) return;
+      const ev = [];
+      E.forEach(e => clauses(e.text).forEach(c => {
+        if (!m.re.test(c) || !/\b(given|administered|taken)\b/i.test(c) || NEG.test(c) || /\b(prescribed|to be given|if|plan)\b/i.test(c)) return;
+        const tm = c.match(/\b(?:at|approx\.?|around|@)\s*(\d{1,2})[:.](\d{2})\b/);
+        ev.push({ e, c, t: tm ? +tm[1] * 60 + +tm[2] : toMin(e.time), day: e.day });
+      }));
+      for (let a = 0; a < ev.length; a++) for (let b = a + 1; b < ev.length; b++) {
+        const x = ev[a], y = ev[b];
+        if (x.day !== y.day || Math.abs(x.t - y.t) < 120 || x.e.svc === y.e.svc || loops.some(l => l.key === 'dup:' + m.name)) continue;
+        const hh = n => String(Math.floor(n / 60)).padStart(2, '0') + ':' + String(n % 60).padStart(2, '0');
+        const ok = later(y.e.i, z => clauses(z.text).some(c => m.re.test(c) && /\b(intended|intentional|second dose reviewed|both doses reviewed|aware of the earlier dose)\b/i.test(c)));
+        if (ok) loops.push({ key: 'dup:' + m.name, kind: 'dup', label: cap(m.name), status: 'closed', start: x.e.i, end: ok.i, text: `${cap(m.name)} given twice, reviewed ${ok.time}`, src: [x.e.i, y.e.i, ok.i] });
+        else loops.push({ key: 'dup:' + m.name, kind: 'dup', label: cap(m.name), status: 'open', start: x.e.i, end: null, maybe: null,
+          title: `${cap(m.name)} recorded as given twice — ${hh(x.t)} (${x.e.svc}) and ${hh(y.t)} (${y.e.svc})`,
+          detail: `"${x.c}" · "${y.c}" · possible duplicate, check the chart`, src: [x.e.i, y.e.i] });
+      }
+    });
+
     // 11. a medicine given or prescribed that the allergy record rules out
     const PEN = /\b(amoxicillin|amoxil|co-?amoxiclav|augmentin|flucloxacillin|fluclox|tazocin|pip-?taz|piperacillin|benzylpenicillin|benpen|phenoxymethylpenicillin|penicillin v|pen v|pivmecillinam|temocillin)\b/i;
     let penAl = null;
@@ -1118,7 +1142,7 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
     E.forEach(e => { const l = strip[strip.length - 1]; if (l && l.svc === e.svc) { l.n++; l.i1 = e.i; } else strip.push({ svc: e.svc, n: 1, i0: e.i, i1: e.i }); });
     const path = i => { const p = [E[i].svc]; E.slice(i + 1).forEach(x => { if (x.svc !== p[p.length - 1]) p.push(x.svc); }); return p; };
     loops.forEach(l => { if (l.status === 'open') l.path = path(l.start); });
-    const RANK = ['conflict', 'rx', 'drug', 'decision', 'confirm', 'pending', 'finding', 'referral', 'device', 'doc', 'family'];
+    const RANK = ['conflict', 'dup', 'rx', 'drug', 'decision', 'confirm', 'pending', 'finding', 'referral', 'device', 'doc', 'family'];
     loops.sort((a, b) => (RANK.indexOf(a.kind) - RANK.indexOf(b.kind)) || (a.start - b.start));
 
     // coverage: which sentences did any check have something to look at
@@ -1252,6 +1276,7 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
     case 'device': return [['Removed', `${d} removed at [time].`], ['Stays in', `${d} to stay in: [reason]; review on [date].`]];
     case 'doc': return [['Received', `${d} received from [who] at [time].`]];
     case 'family': return [['Family told', 'Family told at [time] by [who]: [what was said].']];
+    case 'dup': return [['Reviewed', `${d} second dose reviewed at [time] with [who]: [intended or not, and what was done].`]];
     case 'conflict': return [['Reviewed', 'Allergy reviewed at [time] with [who]: [what was done].']];
     default: return [['Done', '[What was done], at [time].']]; } };
   let flash = '', aiItems = [];
@@ -1391,7 +1416,7 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
     if (l.kind === 'drug') return u(['GP', now]);
     if (l.kind === 'device') return u([now, 'GP']);
     if (l.kind === 'rx') return u([now, has('Care home') ? 'Care home' : 'GP']);
-    if (l.kind === 'decision' || l.kind === 'confirm' || l.kind === 'family') return [now];
+    if (l.kind === 'decision' || l.kind === 'confirm' || l.kind === 'family' || l.kind === 'dup' || l.kind === 'conflict') return [now];
     if (l.kind === 'doc') return u([has('Care home') ? 'Care home' : now]);
     return ['GP'];
   }
@@ -1617,7 +1642,7 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
     const demo = (notesText.match(/\b\d{2,3}[FM]\b/) || ['patient'])[0];
     const nd = R.open.filter(l => done[dk(l)]).length;
     const left = R.open.filter(l => !done[dk(l)]);
-    const short = l => { const base = l.kind === 'confirm' ? l.t1.split(',')[0] : (l.label || l.t1); return (base + ({ decision: ' decision', finding: ' follow-up', referral: ' reply', pending: ' result' }[l.kind] || '')).toLowerCase(); };
+    const short = l => { const base = l.kind === 'confirm' ? l.t1.split(',')[0] : (l.label || l.t1); return (base + ({ decision: ' decision', finding: ' follow-up', referral: ' reply', pending: ' result', dup: ' given twice' }[l.kind] || '')).toLowerCase(); };
     $('heroTitle').textContent = !show ? 'What was started and never closed?' : !n ? 'No open loops found by these checks' : !left.length ? `All ${n} open loops have an entry recorded` : (cur.prealert ? `Before ${cur.sex === 'F' ? 'she' : 'he'} arrives: ` : 'Still open: ') + left.slice(0, 3).map(short).join(', ') + (left.length > 3 ? ` + ${left.length - 3} more` : '');
     const st0 = epStart(R.E), topL = left.find(l => !(cur.dayLabels && R.E[l.start].day === 0));
     $('heroClock').innerHTML = !show ? '' : `<b>${age(st0.i, R.E)}</b> since first seen (${esc(st0.svc)}, ${when(st0.i, R.E)})` + (topL ? ` · ${esc(short(topL))} waiting <b>${age(topL.start, R.E)}</b>` : '');
