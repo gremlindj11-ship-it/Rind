@@ -548,6 +548,10 @@ body.paper .recF,body.paper div.act .btn{display:none}
 .aiBox q{color:var(--mute);font-size:13px}
 .aiBox .hint{margin:6px 0 12px}
 
+.note.dup details{font-size:13px;color:var(--mute)}
+.note.dup summary{cursor:pointer;color:var(--mute)}
+.note.dup details[open]{color:var(--ink)}
+
 </style>
 </head>
 <body>
@@ -1293,7 +1297,10 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
     const list = R.E.filter(e => !q || qHit(e, W)).filter(e => !nSvc || e.svc === nSvc).filter(e => !nUn || R.cover.unchk.includes(e.i));
     if ($('noteF')) $('noteF').innerHTML = `<button type="button" class="chip" data-ns="" aria-pressed="${!nSvc && !nUn && !q}">All</button>` + [...new Set(R.E.map(e => e.svc))].map(x => `<button type="button" class="chip" data-ns="${esc(x)}" aria-pressed="${nSvc === x}">${esc(x)}</button>`).join('') + (built && R.cover.unchk.length ? `<button type="button" class="chip" data-nu="1" aria-pressed="${nUn}">Not touched by a check ${R.cover.unchk.length}</button>` : '');
     $('noteHead').textContent = q || nSvc || nUn ? `${list.length} of ${R.E.length} entries${q ? ` match "${q}"` : ''}${nSvc ? ' · ' + nSvc : ''}${nUn ? ' · not touched by a check' : ''}` : `Source notes · ${R.E.length} entries · ${R.days} days`;
-    $('notes').innerHTML = list.map(e => `<div class="note${e.i === newIdx ? ' new' : ''}" id="n${e.i}"><span class="meta">${when(e.i, R.E)} · ${esc(e.svc)} · ${hl(e.who)}</span>${hl(e.text)}</div>`).join('') || '<p class="none">No entries match.</p>';
+    const firstOf = {}, dupOf = {}; R.E.forEach(e => { const k = e.text.toLowerCase().replace(/\s+/g, ' ').trim(); if (k in firstOf) dupOf[e.i] = firstOf[k]; else firstOf[k] = e.i; });
+    const nDup = list.filter(e => e.i in dupOf).length;
+    if (nDup && !(q || nSvc || nUn)) $('noteHead').textContent += ` · ${nDup} repeated ${nDup === 1 ? 'entry' : 'entries'} folded`;
+    $('notes').innerHTML = list.map(e => `<div class="note${e.i === newIdx ? ' new' : ''}${e.i in dupOf && !q ? ' dup' : ''}" id="n${e.i}"><span class="meta">${when(e.i, R.E)} · ${esc(e.svc)} · ${hl(e.who)}</span>${e.i in dupOf && !q ? `<details><summary>Same wording as the note from ${when(dupOf[e.i], R.E)}</summary>${esc(e.text)}</details>` : hl(e.text)}</div>`).join('') || '<p class="none">No entries match.</p>';
     if (built) R.cover.unchk.forEach(i => { const n = $('n' + i); if (n) n.classList.add('unchk'); });
   }
   function setNotes(on) { $('left').hidden = !on; document.body.classList.toggle('showNotes', on); $('notesBtn').setAttribute('aria-pressed', on); $('notesLb').textContent = on ? 'Hide notes' : 'Show notes'; }
@@ -1367,7 +1374,7 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
   }
 
   /* ---------- one loop, in full: used on the loops page and under the journey ---------- */
-  const evidence = l => { const n = new Set(l.src).size; return l.maybe ? 'Unclear wording in the notes, a person needs to confirm' : n >= 3 ? `Strong, ${n} notes say the same` : n === 2 ? 'Moderate, 2 notes' : 'One note only'; };
+  const evidence = l => { const n = new Set(l.src.map(i => lastR.E[i].text.toLowerCase().replace(/\s+/g, ' ').trim())).size; return l.maybe ? 'Unclear wording in the notes, a person needs to confirm' : n >= 3 ? `Strong, ${n} notes say the same` : n === 2 ? 'Moderate, 2 notes' : 'One note only'; };
   function loopBody(l, E) {
     if (l.status === 'closed') return `<p class="quote">${esc(l.text)}. Started and finished in the notes.</p><dl class="meta2"><dt>Source</dt><dd>${chips(l.src, E)}</dd></dl>`;
     return `<p class="quote">${esc(l.detail)}</p>
@@ -1632,8 +1639,9 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
     try {
       if (!reduced) {
         const n = lastR.E.length; ring.classList.add('live'); arc.style.strokeDashoffset = 84;
-        for (let i = 0; i < n; i++) { arc.style.strokeDashoffset = (84 * (1 - (i + 1) / n)).toFixed(1); $('heroSub').textContent = `Reading entry ${i + 1} of ${n}`; await sleep(28); }
-        await sleep(160);
+        const steps = Math.min(n, 14);
+        for (let k = 1; k <= steps; k++) { const i = Math.round(k / steps * n); arc.style.strokeDashoffset = (84 * (1 - i / n)).toFixed(1); $('heroSub').textContent = `Reading entry ${i} of ${n}`; await sleep(360 / steps); }
+        await sleep(60);
       }
     } catch (e) { /* the animation is decoration; never let it block the result */ }
     ring.classList.remove('live'); arc.style.strokeDashoffset = '';
