@@ -572,6 +572,31 @@ body.paper #moments{display:none}
 .aiBtns .btn{padding:5px 12px;font-size:13px}
 body.paper .aiSum{display:none}
 
+/* v23 */
+.how>summary::after,.noteBox>summary::after{content:none}
+.tl li{grid-template-columns:104px minmax(0,1fr)}
+.tl .src.day{white-space:nowrap;text-align:left;justify-self:start}
+.earlier{margin:0 4px}
+.earlier>summary{display:inline-flex;align-items:center;gap:8px;padding:6px 0;font-size:13px;color:var(--blue);cursor:pointer;list-style:none}
+.earlier>summary::-webkit-details-marker{display:none}
+.earlier>summary::after{margin-left:0;border-color:var(--blue)}
+.trendG .tv{font:inherit;color:var(--mute);font-weight:400;background:none;border:0;padding:0 1px;cursor:pointer;text-decoration:none;border-bottom:1px dotted var(--faint);border-radius:0}
+.trendG .tv.last{color:var(--ink);font-weight:700}
+.trendG .tv:hover,.trendG .tv:focus-visible{color:var(--blue);border-bottom-color:var(--blue)}
+.trendG small{display:block;margin-top:4px;font-size:12px;color:var(--faint);font-weight:400}
+.trendG .wide .tv{border-bottom:1px dotted var(--faint)}
+.tryRow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:8px 0 0}
+.tryRow:empty{display:none}
+.tryRow>span{font-size:12px;color:var(--faint);margin-right:2px}
+/* v24: readings as rows, one per measure */
+.trendG{grid-template-columns:minmax(0,1fr);gap:0}
+.trendG>div,.trendG>div:first-child,.trendG .wide{display:grid;grid-template-columns:112px minmax(0,1fr) auto;align-items:baseline;gap:4px 14px;padding:5px 0;border-left:0;grid-column:auto}
+.trendG span{font-size:13px;color:var(--mute)}
+.trendG b,.trendG .wide b{font-size:16px;line-height:1.5;white-space:normal}
+.trendG em{margin:0 6px}
+.trendG small{margin:0;white-space:nowrap}
+@media(max-width:900px){.trendG{grid-template-columns:minmax(0,1fr)}.trendG>div,.trendG>div:first-child,.trendG .wide{grid-template-columns:minmax(0,1fr)}.trendG small{white-space:normal}}
+
 </style>
 </head>
 <body>
@@ -669,6 +694,7 @@ body.paper .aiSum{display:none}
         <form id="addForm" class="add" autocomplete="off">
           <label for="addIn">Add an entry</label>
           <div class="addRow"><input id="addIn" type="text" spellcheck="false"><button type="submit" class="btn">Add</button></div>
+          <p id="addTry" class="tryRow"></p>
           <p id="addErr" class="err" hidden></p>
         </form>
         <div id="notes"></div>
@@ -715,36 +741,37 @@ body.paper .aiSum{display:none}
     ],
     dayLabels: { 0: 'before 14 Nov', 1: '14 Nov', 2: '15 Nov' },
     notes: `D0 00:00 | North Mersey respiratory clinic (RESP-22019) | Clinic letter 21 Aug: COPD/asthma overlap. Respiratory management plan, SpO2 target and escalation guidance held in North Mersey record.
-D0 00:00 | GP summary (GP-SUM-44182) | Problems: COPD/asthma overlap, moderate dementia, hypertension, frailty. Allergy: penicillin, reaction details not confirmed. Regular: budesonide/formoterol inhaler, donepezil; salbutamol inhaler PRN.
+D0 00:00 | GP summary (GP-SUM-44182) | Problems: COPD/asthma overlap, moderate dementia, hypertension, frailty. Allergy: penicillin, reaction details not confirmed. Regular: budesonide/formoterol inhaler, donepezil, ramipril; salbutamol inhaler PRN.
 D0 20:00 | Care home MAR (RB MAR) | 13 Nov 20:00, donepezil given. Budesonide/formoterol evening dose given.
 D1 08:15 | Care home carer | Usual morning. Up, dressed and ate breakfast.
 D1 09:00 | GP (GP-RX-91827) | Prednisolone prescribed for current respiratory exacerbation.
 D1 09:30 | Care home MAR (RB MAR) | Prednisolone given at 09:30.
-D1 14:30 | Care home MAR (RB MAR) | Salbutamol inhaler given at approx. 14:30 for breathlessness.
-D1 15:22 | Care home senior carer | More breathless this afternoon and newly confused. RR 20, SpO2 94% on room air, HR 88. Prednisolone given at 09:30. Salbutamol inhaler at approx. 14:30. NHS 111 contacted. Daughter informed.
-D1 15:30 | NHS 111 clinician | Care home reports breathlessness and new confusion. Prednisolone given at 09:30, salbutamol inhaler at approx. 14:30. Penicillin allergy. Referred to Urgent Community Response.
+D1 14:30 | Care home MAR (RB MAR) | Salbutamol inhaler given at around 14:30 for breathlessness.
+D1 15:22 | Care home senior carer | More breathless this afternoon and newly confused. RR 20, SpO2 94% on room air, HR 88. Prednisolone given at 09:30. Salbutamol inhaler at around 14:30. NHS 111 contacted. Daughter informed.
+D1 15:30 | NHS 111 clinician | Care home reports breathlessness and new confusion. Prednisolone given at 09:30, salbutamol inhaler at around 14:30. Penicillin allergy. Referred to Urgent Community Response.
 D1 17:03 | UCR practitioner (UCR-OBS-1703) | RR 26, SpO2 91% on room air, HR 104. Alert; slower responses.
 D1 17:10 | UCR practitioner (UCR-TX-1710) | Nebuliser given. Nebuliser product and dose: see originating chart. Partial response.
 D1 17:28 | UCR practitioner | Ambulance requested. Daughter informed.
-D1 18:05 | Paramedic (NWAS-OBS-1805) | RR 28, SpO2 92% on room air, HR 108. GCS 14/15, confused. Prednisolone given at 09:30 at the care home, salbutamol inhaler at approx. 14:30.
+D1 18:05 | Paramedic (NWAS-OBS-1805) | RR 28, SpO2 92% on room air, HR 108. GCS 14/15, confused. Prednisolone given at 09:30 at the care home, salbutamol inhaler at around 14:30.
 D1 18:12 | Paramedic | Pre-alert to ED: 82F, breathless with new confusion, COPD/asthma overlap, penicillin allergy. ETA 18:15.
 D1 18:20 | ED triage nurse (HOSP-B-TRI-1820) | RR 28, SpO2 91% on room air, HR 112. AVPU: Alert. Handover from ambulance crew at 18:15.
 D1 18:25 | ED nurse (ED MAR) | Salbutamol nebuliser given at 18:25.
-D1 18:32 | ED registrar (HOSP-B-MED-1832) | Exacerbation of COPD/asthma overlap with new confusion. Had prednisolone at 09:30 at the care home. Penicillin allergy, reaction details not confirmed. Amoxicillin considered but not administered. Check respiratory management plan held at North Mersey. Chest imaging as indicated. Bloods and ECG requested.
+D1 18:32 | ED registrar (HOSP-B-MED-1832) | Exacerbation of COPD/asthma overlap with new confusion. Had prednisolone at 09:30 at the care home. Penicillin allergy, reaction details not confirmed. Amoxicillin considered but not administered. Antibiotics deferred until chest imaging. Check respiratory management plan held at North Mersey. Chest imaging as indicated. Bloods and ECG requested.
 D1 18:40 | ED nurse (ED MAR) | Prednisolone given at 18:40.
 D1 18:55 | ED nurse (ED MAR) | Salbutamol nebuliser given at 18:55.
-D1 19:20 | ED nurse | ECG obtained. Remains breathless at rest.
+D1 19:20 | ED nurse | ECG obtained. Remains breathless at rest. RR 28, SpO2 93% on 2 L/min oxygen, HR 110. Urinary catheter inserted for fluid balance.
 D1 19:40 | ED lab (HOSP-B-LAB-1940) | Bloods: potassium 2.8. ECG: sinus tachycardia. Remaining results filed in lab record.
 D1 19:48 | ED doctor (HOSP-B-REV-1948) | Potassium 2.8, manage per protocol.
-D1 20:05 | ED pharmacist (HOSP-B-PHARM-2005) | Medicines history: prednisolone recorded at 09:30 (care home) and at 18:40 (ED). Penicillin allergy, reaction details to be sought.
+D1 20:05 | ED pharmacist (HOSP-B-PHARM-2005) | Medicines history: prednisolone recorded at 09:30 (care home) and at 18:40 (ED). Penicillin allergy, reaction details to be sought. Care home medicines record not attached to the transfer paperwork.
 D1 20:12 | ED nurse (HOSP-B-COMM-2012) | Daughter informed by phone of the plan to admit.
 D1 21:05 | ED registrar | Decision to admit to AMU.
-D1 21:35 | AMU doctor (HOSP-B-AMU-2135) | Admitted with exacerbation of COPD/asthma overlap and new confusion. Correct potassium. Repeat U&E planned. Review respiratory management plan from North Mersey. Care home collateral planned.
+D1 21:35 | AMU doctor (HOSP-B-AMU-2135) | Admitted with exacerbation of COPD/asthma overlap and new confusion. Correct potassium. Repeat U&E planned. Review respiratory management plan from North Mersey. Care home collateral planned. Ramipril held while acutely unwell. Referred to frailty team.
 D1 22:05 | AMU nurse | Transferred from ED. Settled on the ward.
 D2 08:40 | AMU pharmacist (HOSP-B-PHARM-150826) | Medicines reconciliation: prednisolone recorded twice on 14 Nov, at 09:30 and 18:40. Penicillin allergy, reaction details not confirmed.
-D2 09:15 | AMU doctor (HOSP-B-MED-0915) | Ward round. Repeat U&E to follow potassium replacement. Respiratory management plan requested from North Mersey. Care home contacted for collateral.`,
-    expectedOpen: ['rx:potassium', 'dup:prednisolone', 'confirm:respiratory plan and oxygen target', 'confirm:penicillin reaction', 'confirm:nebuliser product and dose', 'confirm:care home collateral', 'pending:chest imaging', 'pending:repeat U&E'],
-    demoEntry: 'D2 09:40 | AMU nurse | Potassium replacement given at 09:40 as charted.'
+D2 09:15 | AMU doctor (HOSP-B-MED-0915) | Ward round. Repeat U&E to follow potassium replacement. Respiratory management plan requested from North Mersey. Care home contacted for collateral. Daughter to be updated after ward round.`,
+    expectedOpen: ['rx:potassium', 'dup:prednisolone', 'confirm:respiratory plan and oxygen target', 'confirm:penicillin reaction', 'confirm:nebuliser product and dose', 'confirm:care home collateral', 'pending:chest imaging', 'pending:repeat U&E', 'drug:ramipril', 'decision:antibiotic', 'referral:frailty team', 'device:urinary catheter', 'family'],
+    demoEntry: 'D2 09:40 | AMU nurse | Potassium replacement given at 09:40 as charted.',
+    tryEntries: [['Potassium is given', 'D2 09:40 | AMU nurse | Potassium replacement given at 09:40 as charted.'], ['A penicillin is prescribed', 'D2 09:50 | AMU doctor | Co-amoxiclav 1.2 g IV prescribed for chest infection.'], ['The catheter comes out', 'D2 10:10 | AMU nurse | Urinary catheter removed.'], ['Another service records no allergies', 'D2 10:20 | Frailty team | Reviewed on AMU. NKDA.']]
   },
     {
       id: 'C', hidden: true, name: 'Margaret Thompson', age: 82, sex: 'F', dob: '14 Mar 1943', nhsNo: '999 654 3210', where: 'Maple View Care Home',
@@ -1317,10 +1344,11 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
     if (today.length >= 3) {
       const num = k => today.map(o => parseFloat(o[k])).filter(n => !isNaN(n)), lines = [], items = [], last = a => a[a.length - 1];
       const rrs = num('rr'), hrs = num('hr'), nws = num('news'), o2 = today.map(o => o.spo2).filter(Boolean);
-      if (rrs.length >= 2 && last(rrs) - rrs[0] >= 6 && last(rrs) >= 25) { lines.push('Breathing rate ' + rrs.join(' → ')); items.push({ k: 'Breathing rate', a: rrs[0], b: last(rrs) }); }
-      if (hrs.length >= 2 && last(hrs) - hrs[0] >= 15 && last(hrs) >= 100) { lines.push('Heart rate ' + hrs.join(' → ')); items.push({ k: 'Heart rate', a: hrs[0], b: last(hrs) }); }
-      if (nws.length >= 2 && last(nws) - nws[0] >= 3) { lines.push('NEWS2 ' + nws.join(' → ')); items.push({ k: 'NEWS2', a: nws[0], b: last(nws) }); }
-      if (o2.length >= 2 && /air/i.test(o2[0]) && /L\/min|oxygen/i.test(last(o2))) { lines.push('Oxygen ' + o2[0] + ' → ' + last(o2)); items.push({ k: 'Oxygen', a: o2[0], b: last(o2), wide: true }); }
+      const pts = k => today.filter(o => !isNaN(parseFloat(o[k]))).map(o => ({ v: parseFloat(o[k]), i: o.i })), opts = today.filter(o => o.spo2).map(o => ({ v: o.spo2, i: o.i }));
+      if (rrs.length >= 2 && last(rrs) - rrs[0] >= 6 && last(rrs) >= 25) { lines.push('Breathing rate ' + rrs.join(' → ')); items.push({ k: 'Breathing rate', a: rrs[0], b: last(rrs), pts: pts('rr') }); }
+      if (hrs.length >= 2 && last(hrs) - hrs[0] >= 15 && last(hrs) >= 100) { lines.push('Heart rate ' + hrs.join(' → ')); items.push({ k: 'Heart rate', a: hrs[0], b: last(hrs), pts: pts('hr') }); }
+      if (nws.length >= 2 && last(nws) - nws[0] >= 3) { lines.push('NEWS2 ' + nws.join(' → ')); items.push({ k: 'NEWS2', a: nws[0], b: last(nws), pts: pts('news') }); }
+      if (o2.length >= 2 && /air/i.test(o2[0]) && /L\/min|oxygen/i.test(last(o2))) { lines.push('Oxygen ' + o2[0] + ' → ' + last(o2)); items.push({ k: 'Oxygen', a: o2[0], b: last(o2), wide: true, pts: [opts[0], opts[opts.length - 1]] }); }
       if (lines.length) trend = { lines, items, src: today.map(o => o.i) };
     }
 
@@ -1373,12 +1401,15 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
     default: return [['Done', '[What was done], at [time].']]; } };
   let flash = '', aiItems = [], aiAvail = false, aiState = 'idle', aiData = null, aiErr = '';
   const findQuote = (R, q) => { const n = String(q || '').replace(/\s+/g, ' ').trim().toLowerCase(); if (n.length < 8) return null; const e = R.E.find(y => y.text.replace(/\s+/g, ' ').toLowerCase().includes(n)); return e ? e.i : null; };
+  const trendVals = (x, E) => { const p = (x.pts || []).filter(Boolean); if (p.length < 2) return `<b><i>${esc(String(x.a))}</i><em aria-hidden="true">→</em>${esc(String(x.b))}</b>`;
+    const a = p[0], z = p[p.length - 1];
+    return `<b>${p.map((q, k) => `<button type="button" class="src tv${k === p.length - 1 ? ' last' : ''}" data-i="${q.i}" aria-label="${esc(String(q.v))}, ${when(q.i, E)}, ${esc(E[q.i].svc)}">${esc(String(q.v))}</button>`).join('<em aria-hidden="true">→</em>')}</b><small>${esc(E[a.i].svc)} ${E[a.i].time} to ${esc(E[z.i].svc)} ${E[z.i].time}</small>`; };
+  const AI_LOCAL = /^(localhost|127\.0\.0\.1)$/.test(location.hostname), AI_BASE = AI_LOCAL ? '' : ['http:', '', '127.0.0.1:8000'].join('/');
   function aiPanelHtml(R) {
-    if (!aiAvail) return '';
     const btns = `<p class="aiBtns"><button type="button" class="btn" data-ai="run">${aiState === 'done' ? 'Run again' : 'Write an AI summary'}</button> <button type="button" class="btn" data-ai="test">Test the safety gate</button>${aiState === 'done' ? ' <button type="button" class="linkbtn" data-ai="clear">Clear</button>' : ''}</p>`;
-    const head = `<div class="aiHead"><b>AI summary</b><span>optional · through the team's local server</span></div>`;
+    const head = `<div class="aiHead"><b>AI summary</b><span>${aiAvail ? 'server connected' : 'optional · needs the team\'s server running on this computer'}</span></div>`;
     if (aiState === 'loading') return `<div class="aiBox aiSum">${head}<p class="hint">Asking the model, then checking every claim's quote against the notes…</p></div>`;
-    if (aiState === 'error') return `<div class="aiBox aiSum">${head}<p class="notice bad"><b>No AI summary.</b> ${esc(aiErr)}. Everything else on this page is from Rind's own checks and does not depend on it.</p>${btns}</div>`;
+    if (aiState === 'error') return `<div class="aiBox aiSum">${head}<p class="notice bad"><b>No AI summary.</b> ${/fetch|network|load/i.test(aiErr) ? 'The AI server is not running on this computer. In the Rind folder run <code>python -m uvicorn main:app --port 8000</code>, then press the button again' : esc(aiErr)}. Everything else on this page is from Rind's own checks and does not depend on it.</p>${btns}</div>`;
     if (aiState !== 'done' || !aiData) return `<div class="aiBox aiSum">${head}<p class="hint">Sends these synthetic notes to a language model. Every claim must carry a word-for-word quote from the notes, or it is blocked before it reaches this page.</p>${btns}</div>`;
     const d = aiData, st = d.verification_stats || {}, fb = /DETERMINISTIC|FALLBACK/i.test(d.generation_mode || '');
     let dropped = 0;
@@ -1398,9 +1429,9 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
   async function aiRun(sim) {
     aiState = 'loading'; const p = $('aiPanel'); if (p) p.innerHTML = aiPanelHtml(lastR);
     try {
-      const r = await fetch('/api/summarise', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ patient_id: cur.id, patient_name: cur.name, raw_notes_text: viewText(), simulate_hallucination: !!sim }) });
+      const r = await fetch(AI_BASE + '/api/summarise', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ patient_id: cur.id, patient_name: cur.name, raw_notes_text: viewText(), simulate_hallucination: !!sim }) });
       if (!r.ok) throw new Error('the server answered ' + r.status);
-      aiData = await r.json(); aiState = 'done';
+      aiData = await r.json(); aiState = 'done'; aiAvail = true;
       aiItems = (aiData.open_loops || []).filter(c => c.verification_passed).map(c => ({ text: c.claim_text, quote: c.exact_source_quote }));
       const st = aiData.verification_stats || {};
       log(`AI summary ${sim ? '(safety gate test) ' : ''}received: ${st.verified_claims}/${st.total_claims_checked} claims verified${aiData.clinical_safety_halt ? ', safety gate stopped ' + (aiData.quarantined_claims || []).length : ''}`);
@@ -1666,7 +1697,7 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
     // 1 open loops
     const plan = planOf(R);
     const trendCard = R.trend ? `<div class="trend"><div class="trendH"><b>${E[R.trend.src[0]].day === E[E.length - 1].day ? 'Getting worse today' : 'Got worse on ' + (cur.dayLabels ? cur.dayLabels[E[R.trend.src[0]].day] : 'day ' + E[R.trend.src[0]].day)}</b><span>${R.trend.src.length} sets of observations, ${chips([R.trend.src[0]], E)} to ${chips([R.trend.src[R.trend.src.length - 1]], E)}</span></div>
-      <div class="trendG">${R.trend.items.map(x => `<div class="${x.wide ? 'wide' : ''}"><span>${esc(x.k)}</span><b><i>${esc(String(x.a))}</i><em aria-hidden="true">→</em>${esc(String(x.b))}</b></div>`).join('')}</div></div>` : '';
+      <div class="trendG">${R.trend.items.map(x => `<div class="${x.wide ? 'wide' : ''}"><span>${esc(x.k)}</span>${trendVals(x, E)}</div>`).join('')}</div></div>` : '';
     const planCard = plan ? `<details class="plan" open><summary><b>Treatment plan already on record</b><span>${esc(plan.svc)}, ${when(plan.lines[0].i, E)} · ${esc(plan.why)}</span></summary><ul>${plan.lines.map(x => `<li>${esc(x.c)} ${chips([x.i], E)}</li>`).join('')}</ul></details>` : '';
     const ai = aiCheck(R), kept = ai.filter(x => x.ok), drop = ai.length - kept.length;
     const aiCard = ai.length ? `<details class="aiBox" open><summary><b>Suggested by AI</b><span>${kept.length} backed by a line in the notes${drop ? ` · ${drop} dropped, no matching line` : ''}</span></summary>${kept.length ? `<ul>${kept.map(x => `<li>${esc(x.text)} <q>${esc(x.quote)}</q> ${chips([x.i], E)}</li>`).join('')}</ul>` : ''}<p class="hint">Written by a language model, not by the checks. A line is shown only if its quote is found word for word in the notes. AI lines never open or close a loop.</p></details>` : '';
@@ -1701,13 +1732,13 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
       <div id="aiPanel">${aiPanelHtml(R)}</div>
       <h3 class="subH">Situation</h3>
       <p class="sit">${f(nowTwo)}</p>
-      ${R.trend ? `<div class="trendG flat">${R.trend.items.map(x => `<div class="${x.wide ? 'wide' : ''}"><span>${esc(x.k)}</span><b><i>${esc(String(x.a))}</i><em aria-hidden="true">→</em>${esc(String(x.b))}</b></div>`).join('')}</div>` : ''}
+      ${R.trend ? `<div class="trendG flat">${R.trend.items.map(x => `<div class="${x.wide ? 'wide' : ''}"><span>${esc(x.k)}</span>${trendVals(x, E)}</div>`).join('')}</div>` : ''}
       ${R.obs.length > 1 ? `<details class="prob"><summary><span class="pn">All observations</span><span class="pl">${R.obs.length} sets across the journey</span></summary><table class="meds"><thead><tr><th>When</th><th>Where</th><th>Breathing rate</th><th>Oxygen</th><th>Heart rate</th><th>Temp</th><th>NEWS2</th></tr></thead><tbody>${R.obs.map(o => `<tr><td>${chips([o.i], E)}</td><td>${esc(E[o.i].svc)}</td><td>${o.rr || ''}</td><td>${esc(o.spo2 || '')}</td><td>${o.hr || ''}</td><td>${o.temp || ''}</td><td>${o.news || ''}</td></tr>`).join('')}</tbody></table></details>` : ''}
       <h3 class="subH">Background</h3>
       <div class="kvG">${kv('Presenting problem', S.admitted, true)}${kv('Allergies', S.allergies)}${kv('Limits on treatment', S.resus)}${kv('Next of kin', S.nok)}${kv('Family last told', S.familyTold)}${cur.where ? `<div class="kv"><span>Lives</span><div>${esc(cur.where)}</div></div>` : kv('Lives', S.living)}${kv('What helps this person', S.adjust)}</div>
       <h3 class="subH">Assessment, by problem</h3>
       ${(() => { const row = p => { const last = p.items[p.items.length - 1]; return `<details class="prob" data-pn="${esc(p.name)}"><summary><span class="pn">${esc(p.name)}</span>${p.loops.length ? `<span class="badge">${p.loops.length} open</span>` : ''}<span class="pl">${esc(last.text.length > 70 ? last.text.slice(0, 68) + '…' : last.text)}</span></summary>
-        <ol class="tl">${p.items.map(it => `<li>${dayLink(it.i, E)}<span>${esc(it.text)}</span></li>`).join('')}</ol>${open.filter(l => p.loops.includes(l.key)).map(l => `<p class="pLoop"><button type="button" class="linkbtn" data-ql="${open.indexOf(l)}"><i class="qDot" aria-hidden="true"></i>${esc(l.title)}</button></p>`).join('')}</details>`; }; const top = problems.filter(p => p.loops.length), rest = problems.filter(p => !p.loops.length);
+        ${p.items.length > 6 ? `<details class="earlier"><summary>${p.items.length - 5} earlier mentions</summary><ol class="tl">${p.items.slice(0, -5).map(it => `<li>${dayLink(it.i, E)}<span>${esc(it.text)}</span></li>`).join('')}</ol></details>` : ''}<ol class="tl">${(p.items.length > 6 ? p.items.slice(-5) : p.items).map(it => `<li>${dayLink(it.i, E)}<span>${esc(it.text)}</span></li>`).join('')}</ol>${open.filter(l => p.loops.includes(l.key)).map(l => `<p class="pLoop"><button type="button" class="linkbtn" data-ql="${open.indexOf(l)}"><i class="qDot" aria-hidden="true"></i>${esc(l.title)}</button></p>`).join('')}</details>`; }; const top = problems.filter(p => p.loops.length), rest = problems.filter(p => !p.loops.length);
         return (top.length ? top : rest.slice(0, 3)).map(row).join('') + ((top.length ? rest : rest.slice(3)).length ? `<details class="prob more"><summary><span class="pn">${(top.length ? rest : rest.slice(3)).length} more mentioned</span><span class="pl">${(top.length ? rest : rest.slice(3)).map(p => esc(p.name)).join(', ')}</span></summary><div class="nest">${(top.length ? rest : rest.slice(3)).map(row).join('')}</div></details>` : ''); })()}
       <h3 class="subH">Medicines</h3>
       ${meds.now ? `${meds.missing.length ? `<p class="notice bad"><b>Home medicine not on the latest list:</b> ${meds.missing.map(cap).map(esc).join(', ')}. ${chips([meds.now.i], E)}</p>` : '<p class="notice">Every home medicine is on the latest list.</p>'}
@@ -1771,7 +1802,7 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
   function openPatient(p) {
     $('idModal').hidden = true; pending = null;
     if (!$('editor').hidden) { $('editor').hidden = true; $('notes').hidden = false; $('addForm').hidden = false; $('editBtn').textContent = 'Edit notes'; }
-    cur = p; notesText = p.notes; $('addIn').value = p.demoEntry; $('addErr').hidden = true; audience = ''; doc = 'handover'; asOf = 0; aiItems = []; aiData = null; aiState = 'idle'; jStage = null; jSel = null; nSvc = null; nUn = false; query = ''; built = false;
+    cur = p; notesText = p.notes; $('addIn').value = p.demoEntry; $('addTry').innerHTML = (p.tryEntries || []).length ? '<span>Try</span>' + p.tryEntries.map((t, k) => `<button type="button" class="chip" data-try="${k}">${esc(t[0])}</button>`).join('') : ''; $('addErr').hidden = true; audience = ''; doc = 'handover'; asOf = 0; aiItems = []; aiData = null; aiState = 'idle'; jStage = null; jSel = null; nSvc = null; nUn = false; query = ''; built = false;
     document.body.classList.remove('noPatient'); $('q').placeholder = 'Find a patient or search these notes'; $('out').hidden = true;
     drawBanner(); refresh(false); setView('loops'); $('notes').scrollTop = 0;
     log(`Access confirmed for direct care and record opened: ${p.name}, NHS no ${p.nhsNo}`);
@@ -1841,6 +1872,7 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
     const go = t.closest('[data-go]'); if (go) { setView(go.dataset.go); return; }
     const jk = t.closest('[data-jk]'); if (jk) { jOpen = jk.dataset.jk !== 'closed'; jClosed = jk.dataset.jk !== 'open'; drawJourney(lastR, true, false); return; }
     const js = t.closest('[data-js]'); if (js) { jStage = js.dataset.js === 'all' || jStage === +js.dataset.js ? null : +js.dataset.js; drawJourney(lastR, true, false); return; }
+    const tr = t.closest('[data-try]'); if (tr && cur.tryEntries) { $('addIn').value = cur.tryEntries[+tr.dataset.try][1]; $('addErr').hidden = true; $('addIn').focus(); return; }
     const ab = t.closest('[data-ai]'); if (ab) { if (ab.dataset.ai === 'clear') { aiData = null; aiState = 'idle'; aiItems = []; refresh(false); } else aiRun(ab.dataset.ai === 'test'); return; }
     const mo = t.closest('[data-mo]'); if (mo) { asOf = +mo.dataset.mo; jSel = null; aiData = null; aiState = 'idle'; aiItems = []; drawBanner(); refresh(false); log(`Viewing the record as it stood at: ${mom().label}`); return; }
     const dc = t.closest('[data-doc]'); if (dc) { doc = dc.dataset.doc; drawHandover(lastR); return; }
