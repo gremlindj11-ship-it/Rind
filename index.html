@@ -682,6 +682,42 @@ body.paper .recF,body.paper div.act .btn{display:none}
 /* Synthetic patients written for this prototype on 14 Nov 2026. No real patient data. */
 (function (root) {
   const PATIENTS = [
+  {
+    id: 'S', name: 'Margaret Stilton', age: 82, sex: 'F', dob: '3 Feb 1944', nhsNo: '999 311 4082', where: 'Rosebank Residential Care Home',
+    story: 'Care home resident, breathless and newly confused, seven services in one day, now on AMU',
+    dayLabels: { 0: 'before 14 Nov', 1: '14 Nov', 2: '15 Nov' },
+    notes: `D0 00:00 | North Mersey respiratory clinic (RESP-22019) | Clinic letter 21 Aug: COPD/asthma overlap. Respiratory management plan, SpO2 target and escalation guidance held in North Mersey record.
+D0 00:00 | GP summary (GP-SUM-44182) | Problems: COPD/asthma overlap, moderate dementia, hypertension, frailty. Allergy: penicillin, reaction details not confirmed. Regular: budesonide/formoterol inhaler, donepezil; salbutamol inhaler PRN.
+D0 20:00 | Care home MAR (RB MAR) | 13 Nov 20:00, donepezil given. Budesonide/formoterol evening dose given.
+D1 08:15 | Care home carer | Usual morning. Up, dressed and ate breakfast.
+D1 09:00 | GP (GP-RX-91827) | Prednisolone prescribed for current respiratory exacerbation.
+D1 09:30 | Care home MAR (RB MAR) | Prednisolone given at 09:30.
+D1 14:30 | Care home MAR (RB MAR) | Salbutamol inhaler given at approx. 14:30 for breathlessness.
+D1 15:22 | Care home senior carer | More breathless this afternoon and newly confused. Prednisolone given at 09:30. Salbutamol inhaler at approx. 14:30. NHS 111 contacted. Daughter informed.
+D1 15:30 | NHS 111 clinician | Care home reports breathlessness and new confusion. Prednisolone given at 09:30, salbutamol inhaler at approx. 14:30. Penicillin allergy. Referred to Urgent Community Response.
+D1 17:03 | UCR practitioner (UCR-OBS-1703) | RR 26, SpO2 91% on room air. Alert; slower responses.
+D1 17:10 | UCR practitioner (UCR-TX-1710) | Nebuliser given. Nebuliser product and dose: see originating chart. Partial response.
+D1 17:28 | UCR practitioner | Ambulance requested. Daughter informed.
+D1 18:05 | Paramedic (NWAS-OBS-1805) | SpO2 92% on room air. GCS 14/15, confused. Prednisolone given at 09:30 at the care home, salbutamol inhaler at approx. 14:30.
+D1 18:12 | Paramedic | Pre-alert to ED: 82F, breathless with new confusion, COPD/asthma overlap, penicillin allergy. ETA 18:15.
+D1 18:20 | ED triage nurse (HOSP-B-TRI-1820) | SpO2 91% on room air. AVPU: Alert. Handover from ambulance crew at 18:15.
+D1 18:25 | ED nurse (ED MAR) | Salbutamol nebuliser given at 18:25.
+D1 18:32 | ED registrar (HOSP-B-MED-1832) | Exacerbation of COPD/asthma overlap with new confusion. Had prednisolone at 09:30 at the care home. Penicillin allergy, reaction details not confirmed. Amoxicillin considered but not administered. Check respiratory management plan held at North Mersey. Chest imaging as indicated. Bloods and ECG requested.
+D1 18:40 | ED nurse (ED MAR) | Prednisolone given at 18:40.
+D1 18:55 | ED nurse (ED MAR) | Salbutamol nebuliser given at 18:55.
+D1 19:20 | ED nurse | ECG obtained. Remains breathless at rest.
+D1 19:40 | ED lab (HOSP-B-LAB-1940) | Bloods: potassium 2.8. ECG: sinus tachycardia. Remaining results filed in lab record.
+D1 19:48 | ED doctor (HOSP-B-REV-1948) | Potassium 2.8, manage per protocol.
+D1 20:05 | ED pharmacist (HOSP-B-PHARM-2005) | Medicines history: prednisolone recorded at 09:30 (care home) and at 18:40 (ED). Penicillin allergy, reaction details to be sought.
+D1 20:12 | ED nurse (HOSP-B-COMM-2012) | Daughter informed by phone of the plan to admit.
+D1 21:05 | ED registrar | Decision to admit to AMU.
+D1 21:35 | AMU doctor (HOSP-B-AMU-2135) | Admitted with exacerbation of COPD/asthma overlap and new confusion. Correct potassium. Repeat U&E planned. Review respiratory management plan from North Mersey. Care home collateral planned.
+D1 22:05 | AMU nurse | Transferred from ED. Settled on the ward.
+D2 08:40 | AMU pharmacist (HOSP-B-PHARM-150826) | Medicines reconciliation: prednisolone recorded twice on 14 Nov, at 09:30 and 18:40. Penicillin allergy, reaction details not confirmed.
+D2 09:15 | AMU doctor (HOSP-B-MED-0915) | Ward round. Repeat U&E following potassium replacement. Respiratory management plan requested from North Mersey. Care home contacted for collateral.`,
+    expectedOpen: ['rx:potassium', 'dup:prednisolone', 'confirm:respiratory plan and oxygen target', 'confirm:penicillin reaction', 'confirm:nebuliser product and dose', 'confirm:care home collateral', 'pending:chest imaging', 'pending:repeat U&E'],
+    demoEntry: 'D2 09:40 | AMU nurse | Potassium replacement given at 09:40 as charted.'
+  },
     {
       id: 'C', name: 'Margaret Thompson', age: 82, sex: 'F', dob: '14 Mar 1943', nhsNo: '999 654 3210', where: 'Maple View Care Home',
       story: 'Care home resident, breathless, arriving by ambulance', label: 'Margaret Thompson · 82F · COPD, arriving by ambulance',
@@ -779,7 +815,7 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
 /* Rind engine. Rules only, no language model: same notes in, same page out.
    Five checks, each looking for something that was started and never closed. */
 (function (root) {
-  const DRUGS = ['prednisolone','salbutamol','ipratropium','doxycycline','hydrocortisone','apixaban','warfarin','rivaroxaban','edoxaban','dabigatran','bisoprolol','ramipril','amlodipine','metformin','amiodarone','digoxin','atorvastatin','clopidogrel','aspirin','levetiracetam','furosemide','insulin'];
+  const DRUGS = ['potassium','prednisolone','salbutamol','ipratropium','doxycycline','hydrocortisone','apixaban','warfarin','rivaroxaban','edoxaban','dabigatran','bisoprolol','ramipril','amlodipine','metformin','amiodarone','digoxin','atorvastatin','clopidogrel','aspirin','levetiracetam','furosemide','insulin'];
   /* Messy-notes handling. Brand names map to the drug. A one-letter typo in a drug name is read as that drug.
      Class words ("blood thinner") point at a drug class. Typos and class words can OPEN a loop or add a
      "possible" note, but they never CLOSE a loop: unclear evidence stays open for a human to confirm. */
@@ -827,9 +863,12 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
     { name: 'blood gas', re: /\b(ABG|VBG|blood gas)\b/i },
     { name: 'wound swab', re: /\b(wound )?swab\b/i },
     { name: 'stool sample', re: /\bstool (?:sample|culture)\b/i },
-    { name: 'blood tests', re: /\b(bloods|U&Es?|FBC|LFTs?|INR)\b/ }
+    { name: 'repeat U&E', re: /\brepeat U&Es?\b/i },
+    { name: 'chest imaging', re: /\b(CXR|chest (?:imaging|x-?ray|film))\b/i },
+    { name: 'ECG', re: /\bECG\b/ },
+    { name: 'blood tests', re: /\b([Bb]loods|FBC|LFTs?|INR)\b|(?<![Rr]epeat )\bU&Es?\b/ }
   ];
-  const SENT = /\b(sent|awaited|pending|requested|chase)\b/i;
+  const SENT = /\b(sent|awaited|pending|requested|chase|planned|as indicated)\b/i;
   const RESULT = /\b(no growth|grew|negative|positive|resulted|shows|showed|reported|LVEF)\b|:/i;
   const SPECIALTIES = [
     { name: 'cardiology', re: /\bcardio(?:logy)?\b/i },
@@ -894,7 +933,8 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
     { name: 'Heart and circulation', re: /\b(norad\w*|shock|AF|bisoprolol|ramipril|amlodipine|HTN|rate control|[Cc]ardio\w*|TTE|[Ee]cho|LVEF|murmur|HR \d+|irregular|AS)\b/ },
     { name: 'Blood thinning', re: /\b(apixaban|warfarin|rivaroxaban|edoxaban|dabigatran|anticoag\w*|blood[- ]?thinners?|enoxaparin|VTE|plts|INR)\b/i },
     { name: 'Kidneys', re: /\b(AKI|creat|RRT|renal|UO|anuric|eGFR|U&E|nephrotoxics)\b/i },
-    { name: 'Confusion and dementia', re: /\b(delirium|confus\w*|dementia|CAM-ICU|4AT|GCS|sedation)\b/i },
+    { name: 'Confusion and dementia', re: /\b(delirium|confus\w*|dementia|CAM-ICU|4AT|GCS|AVPU|slower responses|sedation)\b/i },
+    { name: 'Potassium and salts', re: /\b(potassium|sodium|hypokal\w+|hyperkal\w+)\b/i },
     { name: 'Allergy', re: /\b(allerg\w*|penicillins?|urticaria)\b/i },
     { name: 'Diabetes', re: /\b(T2DM|[Dd]iabet\w*|[Mm]etformin|[Ii]nsulin|BMs?|HbA1c)\b/ },
     { name: 'Fracture, surgery and bones', re: /\b(NOF|fracture|hemiarthroplasty|wound|drain|post-op|spinal|bone health|falls?|orthogeri\w*)\b/i },
@@ -920,6 +960,9 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
     if (/^ICU\b/i.test(who)) return 'ICU';
     if (/^care home/i.test(who)) return 'Care home';
     if (/^UCR/i.test(who)) return 'UCR';
+    if (/^(NHS )?111\b/i.test(who)) return 'NHS 111';
+    if (/^AMU\b/i.test(who)) return 'AMU';
+    if (/^North Mersey/i.test(who)) return 'North Mersey';
     if (/^hospital a/i.test(who)) return 'Hospital A';
     if (/^(theatre|anaes)/i.test(who)) return 'Theatre';
     if (/^rehab/i.test(who)) return 'Rehab';
@@ -1022,7 +1065,7 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
     // 6 prescribed, no record it was given
     const rx = {};
     E.forEach(e => cn(e.i).forEach((c, k) => {
-      if (!/\bprescribed\b/i.test(c) || NEG.test(c)) return;
+      if (!/\b(prescribed|correct|replacement|manage per protocol)\b/i.test(c) || NEG.test(c)) return;
       DRUGS.forEach(d => { if (!rx[d] && new RegExp('\\b' + d + '\\b', 'i').test(c)) rx[d] = { e, c: cl(e.i)[k] || c }; });
     }));
     Object.entries(rx).forEach(([d, { e, c }]) => {
@@ -1032,9 +1075,9 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
       else {
         const doubts = E.slice(e.i + 1).filter(x => cn(x.i).some(c2 => (dre.test(c2) || cls(c2)) && NEG.test(c2)));
         loops.push({ key: 'rx:' + d, kind: 'rx', label: cap(d), status: 'open', start: e.i, end: null, maybe: null,
-          title: `${cap(d)} prescribed ${e.time} — no record it was given`,
-          detail: `"${c}"` + (doubts.length ? ` · ${doubts.length} later note${doubts.length === 1 ? ' says' : 's say'} this could not be confirmed` : ' · not mentioned again'),
-          src: [e.i, ...doubts.map(x => x.i)] });
+          title: `${cap(d)} ${/\bprescribed\b/i.test(c) ? 'prescribed' : 'replacement planned'} ${e.time} — no record it was given`,
+          detail: `"${c}"` + (doubts.length ? ` · ${doubts.length} later note${doubts.length === 1 ? ' says' : 's say'} this could not be confirmed` : (() => { const m2 = E.slice(e.i + 1).filter(x => dre.test(x.text)); return m2.length ? ` · ${m2.length} later note${m2.length === 1 ? ' mentions' : 's mention'} it, none records it given` : ' · not mentioned again'; })()),
+          src: [e.i, ...(doubts.length ? doubts : E.slice(e.i + 1).filter(x => dre.test(x.text))).map(x => x.i)] });
       }
     });
 
@@ -1066,6 +1109,21 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
         loops.push({ key: 'confirm:' + obj, kind: 'confirm', label: name.split(',')[0], status: 'open', start: e.i, end: null, maybe: null,
         title: `${name} — to ${m[1].toLowerCase()} ${m[3].toLowerCase()} ${m[4].split(/ before | so | to /)[0]}, no record it was done`, detail: `"${c}"`, src: [e.i] }); }
     }));
+
+    const TOPICS = [
+      { key: 'penicillin reaction', name: 'Penicillin allergy, reaction', topic: /\b(penicillin|allergy)\b/i, open: /\b(not confirmed|to be sought|not recorded|not known)\b/i, close: /\b(confirmed|recorded as)\b/i, say: n => `not known in ${n} note${n === 1 ? '' : 's'}, never supplied` },
+      { key: 'respiratory plan and oxygen target', name: 'Respiratory plan and oxygen target', topic: /\b(respiratory (?:management )?plan|SpO2 target|saturation target|oxygen target)\b/i, open: /\b(held (?:at|in)|check|review|requested|not available|to be sought)\b/i, close: /\b(received|obtained|confirmed|now available|target (?:is|of))\b/i, say: n => `asked for in ${n} note${n === 1 ? '' : 's'}, not received` },
+      { key: 'nebuliser product and dose', name: 'Nebuliser product and dose', topic: /\bnebuli[sz]er\b/i, open: /\b(see originating|refer to original|not recorded|not available)\b/i, close: /\b(confirmed|received|obtained)\b/i, say: () => 'in a chart nobody downstream holds' },
+      { key: 'care home collateral', name: 'Care home collateral history', topic: /\bcollateral\b/i, open: /\b(planned|contacted|requested|to be sought|to obtain)\b/i, close: /\b(obtained|received|confirmed|documented)\b/i, say: n => `planned in ${n} note${n === 1 ? '' : 's'}, no record it was obtained` }
+    ];
+    TOPICS.forEach(tp => {
+      const hits = []; E.forEach(e => clauses(e.text).forEach(c => { if (tp.topic.test(c) && tp.open.test(c) && !(tp.close.test(c) && !NEG.test(c))) hits.push({ e, c }); }));
+      if (!hits.length) return;
+      const src = [...new Set(hits.map(h => h.e.i))], first = hits[0];
+      const got = later(first.e.i, x => clauses(x.text).some(c => tp.topic.test(c) && tp.close.test(c) && !NEG.test(c) && !tp.open.test(c)));
+      if (got) loops.push({ key: 'confirm:' + tp.key, kind: 'confirm', label: tp.name, status: 'closed', start: first.e.i, end: got.i, text: `${tp.name} supplied ${got.time}`, src: [...src.filter(i => i < got.i), got.i] });
+      else loops.push({ key: 'confirm:' + tp.key, kind: 'confirm', label: tp.name, status: 'open', start: first.e.i, end: null, maybe: null, title: `${tp.name} — ${tp.say(src.length)}`, detail: `"${first.c}"`, src });
+    });
 
     // 9 a document the team could not see
     const docs = {};
@@ -1142,7 +1200,7 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
     E.forEach(e => { const l = strip[strip.length - 1]; if (l && l.svc === e.svc) { l.n++; l.i1 = e.i; } else strip.push({ svc: e.svc, n: 1, i0: e.i, i1: e.i }); });
     const path = i => { const p = [E[i].svc]; E.slice(i + 1).forEach(x => { if (x.svc !== p[p.length - 1]) p.push(x.svc); }); return p; };
     loops.forEach(l => { if (l.status === 'open') l.path = path(l.start); });
-    const RANK = ['conflict', 'dup', 'rx', 'drug', 'decision', 'confirm', 'pending', 'finding', 'referral', 'device', 'doc', 'family'];
+    const RANK = ['conflict', 'rx', 'dup', 'drug', 'decision', 'confirm', 'pending', 'finding', 'referral', 'device', 'doc', 'family'];
     loops.sort((a, b) => (RANK.indexOf(a.kind) - RANK.indexOf(b.kind)) || (a.start - b.start));
 
     // coverage: which sentences did any check have something to look at
@@ -1154,7 +1212,7 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
     const first = re => { for (let i = 0; i < E.length; i++) { const c = clauses(E[i].text).find(c => re.test(c)); if (c) return { text: c, src: [i] }; } return null; };
     const find = re => { for (let i = E.length - 1; i >= 0; i--) { const c = clauses(E[i].text).find(c => re.test(c)); if (c) return { text: c, src: [i] }; } return null; };
     const events = []; E.forEach(e => clauses(e.text).forEach(c => { if (EVENTS.test(c)) events.push({ text: c, src: [e.i] }); }));
-    const adm = E.find(e => e.svc === 'ED') || E.find(e => /\b(suspected|imp:|impression|working diagnosis)\b/i.test(e.text)) || E[0];
+    const adm = E.find(e => e.svc === 'ED' && /\b(imp:|impression|exacerbation|working diagnosis)\b/i.test(e.text)) || E.find(e => e.svc === 'ED') || E.find(e => /\b(suspected|imp:|impression|working diagnosis)\b/i.test(e.text)) || E[0];
     const summary = {
       admitted: adm ? { text: clauses(adm.text).slice(0, adm.svc === 'ED' ? 5 : 1).join('. ') + '.', src: [adm.i] } : null,
       events,
@@ -1181,7 +1239,7 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
       l.problem = byLabel ? byLabel.name : null;
       const p = problems.find(x => x.name === l.problem); if (p && l.status === 'open') p.loops.push(l.key);
     });
-    const ACUTE = ['Allergy', 'Treatment escalation', 'Breathing', 'Heart and circulation', 'Infection', 'Blood thinning', 'Kidneys', 'Confusion and dementia', 'Diabetes'];
+    const ACUTE = ['Allergy', 'Treatment escalation', 'Breathing', 'Heart and circulation', 'Potassium and salts', 'Infection', 'Blood thinning', 'Kidneys', 'Confusion and dementia', 'Diabetes'];
     const rank = p => { const k = ACUTE.indexOf(p.name); return k < 0 ? ACUTE.length + p.order : k; };
     problems.sort((a, b) => ((b.loops.length > 0) - (a.loops.length > 0)) || (rank(a) - rank(b)));
 
@@ -1256,7 +1314,7 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
   const when = (i, E) => { const e = E[i], L = cur.dayLabels; if (!L) return `Day ${e.day}, ${e.time}`; return e.day === 0 ? L[0] : `${L[e.day] || 'Day ' + e.day}, ${e.time}`; };
   const whenShort = (i, E) => { const e = E[i], L = cur.dayLabels; return !L ? `Day ${e.day}` : e.day === 0 ? L[0] : e.time; };
   const dayWords = t => t ? t.replace(/\bD(\d+)\b/g, 'day $1') : t;
-  const nice = R => { R.loops.forEach(l => { if (!cur.dayLabels) { l.title = dayWords(l.title); l.detail = dayWords(l.detail); l.text = dayWords(l.text); } if (l.title) { const p = l.title.split(' — '); l.t1 = p[0]; l.t2 = p.slice(1).join(', '); l.title = l.t1 + (l.t2 ? ': ' + l.t2 : ''); } }); return R; };
+  const nice = R => { R.loops.forEach(l => { const dl = t => t && cur.dayLabels ? t.replace(/\bD(\d+)\b/g, (m, n) => cur.dayLabels[n] || 'day ' + n) : t; if (!cur.dayLabels) { l.title = dayWords(l.title); l.detail = dayWords(l.detail); l.text = dayWords(l.text); } else { l.title = dl(l.title); l.text = dl(l.text); } if (l.kind === 'pending' && l.title && !/\bsent\b/i.test(l.detail || '')) l.title = l.title.replace(' sent ', ' planned '); if (l.title) { const p = l.title.split(' — '); l.t1 = p[0]; l.t2 = p.slice(1).join(', '); l.title = l.t1 + (l.t2 ? ': ' + l.t2 : ''); } }); return R; };
   const mins = e => e.day * 1440 + +e.time.slice(0, 2) * 60 + +e.time.slice(3, 5);
   const dur = m => m < 60 ? `${m} min` : m < 2880 ? `${Math.floor(m / 60)} h${m % 60 ? ' ' + (m % 60) + ' min' : ''}` : `${Math.round(m / 1440)} days`;
   const age = (i, E) => { const a = E[i], b = E[E.length - 1]; return cur.dayLabels && a.day === 0 && b.day !== 0 ? 'since ' + cur.dayLabels[0] : dur(Math.max(0, mins(b) - mins(a))); };
@@ -1408,7 +1466,7 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
   }
 
   /* ---------- who needs to act on what ---------- */
-  const CARER = { 'Home care': 'Community nurse', Ward: 'Ward team', Rehab: 'Rehab team', ICU: 'ICU team', ED: 'ED', GP: 'GP', Theatre: 'Ward team', Ambulance: 'ED', 'Care home': 'Care home', UCR: 'UCR team', 'Hospital A': 'Hospital A' };
+  const CARER = { 'Home care': 'Community nurse', Ward: 'Ward team', Rehab: 'Rehab team', ICU: 'ICU team', ED: 'ED', GP: 'GP', Theatre: 'Ward team', Ambulance: 'ED', 'Care home': 'Care home', UCR: 'UCR team', 'Hospital A': 'Hospital A', AMU: 'AMU team', 'NHS 111': 'NHS 111', 'North Mersey': 'North Mersey' };
   const carer = R => CARER[R.E[R.E.length - 1].svc] || 'Receiving team';
   function owners(l, R) {
     const now = carer(R), has = s => R.strip.some(x => x.svc === s), u = a => [...new Set(a)];
