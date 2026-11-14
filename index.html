@@ -597,6 +597,17 @@ body.paper .aiSum{display:none}
 .trendG small{margin:0;white-space:nowrap}
 @media(max-width:900px){.trendG{grid-template-columns:minmax(0,1fr)}.trendG>div,.trendG>div:first-child,.trendG .wide{grid-template-columns:minmax(0,1fr)}.trendG small{white-space:normal}}
 
+/* v25: picker shows who is on the way in */
+.ptList .subH{margin:12px 0 0}
+.ptList .subH:first-child{margin-top:0}
+.ptRow.inc{border-color:#f1d27a;background:#fffdf6}
+.ptRow.inc:hover{border-color:#c99a1e;background:#fffaf0}
+.ptRow>.pre{align-self:flex-start;margin-top:2px}
+.ptRowId .ptOpen{color:var(--ink);font-weight:600;margin-top:4px;display:flex;align-items:baseline;gap:7px}
+
+.ptRowId .ptTop{display:flex;align-items:center;justify-content:space-between;gap:6px 12px;flex-wrap:wrap}
+.ptRowId .ptTop .pre{margin:0;font-size:13px;color:#6e4700}
+
 </style>
 </head>
 <body>
@@ -644,7 +655,6 @@ body.paper .aiSum{display:none}
         <section class="card view" id="v-home" hidden>
           <h2 class="cardH">Find a patient</h2>
           <p class="hint" style="margin:0 0 14px">Search by name or NHS number above, or pick a recent patient. You confirm who it is before the record opens.</p>
-          <h3 class="subH" style="margin-top:0">Recent patients</h3>
           <div id="ptList" class="ptList"></div>
         </section>
         <section class="card view" id="v-loops">
@@ -1418,7 +1428,7 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
       return `<li>${lead && !fb ? `<b>${esc(lead)}</b> ` : ''}${esc(c.claim_text)}${same ? '' : ` <q>${esc(c.exact_source_quote)}</q>`} ${chips([i], R.E)}${c.confidence && c.confidence !== 'HIGH' ? ` <span class="aiConf">${esc(c.confidence.toLowerCase())} confidence</span>` : ''}</li>`; };
     const sec = (title, arr, lead) => { const rows = (arr || []).map(c => line(c, lead ? lead(c) : '')).join(''); return rows ? `<h4>${title}</h4><ul>${rows}</ul>` : ''; };
     const admin = { ADMINISTERED: 'given', PRESCRIBED_ONLY: 'prescribed only', WITHHELD_OR_NOT_GIVEN: 'withheld or not given', INSUFFICIENT_DATA: 'not clear' };
-    const body = sec('Reason for attendance', [d.reason_for_attendance]) + sec('Allergies', d.allergies) + sec('Medicines', d.medications, c => `${c.medication_name}, ${admin[c.administration_status] || 'not clear'}:`) + sec('Key clinical information', d.key_clinical_info) + sec('What helps this person', d.reasonable_adjustments) + sec('Open loops the model sees', d.open_loops);
+    const body = sec('Reason for attendance', [d.reason_for_attendance]) + sec('Allergies', d.allergies) + sec('Medicines', d.medications, c => `${c.medication_name}, ${admin[c.administration_status] || 'not clear'}:`) + sec('Key clinical information', d.key_clinical_info) + sec('What helps this person', d.reasonable_adjustments) + sec(fb ? 'Open loops the server picked out' : 'Open loops the model sees', d.open_loops);
     const q = d.quarantined_claims || [];
     return `<div class="aiBox aiSum">${head}
       <p class="aiMeta">${fb ? 'No model was used: the server had no API key or the call failed, so it fell back to plain extraction.' : `Written by <code>${esc(d.model_used || 'a language model')}</code>.`} ${st.verified_claims != null ? `${st.verified_claims} of ${st.total_claims_checked} claims backed by a word-for-word quote.` : ''}${dropped ? ` ${dropped} more dropped by Rind's own check.` : ''}</p>
@@ -1786,9 +1796,14 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
     $('ptPre').hidden = !preText(); $('ptPre').textContent = preText(); drawMoments();
   }
   function drawHome() {
-    $('ptList').innerHTML = PATIENTS.map(p => `<button type="button" class="ptRow" data-p="${p.id}"><span class="avatar" aria-hidden="true">${p.name.split(' ').map(w => w[0]).join('')}</span>
-      <span class="ptRowId"><b>${esc(p.name)}</b><span>${p.age} · ${p.sex === 'F' ? 'Female' : 'Male'} · Born ${esc(p.dob)} · NHS no ${esc(p.nhsNo)}</span><span>${esc(p.story)}</span>${p.prealert ? `<span class="pre">${esc(p.prealert)}</span>` : ''}</span>
-</button>`).join('');
+    const row = (p, inc) => { let open = '';
+      if (inc) { const L = p.notes.split('\n'), k = L.findIndex(x => x.startsWith(p.moments[0].at + ' ')), R0 = analyse(L.slice(0, k + 1).join('\n')), said = ((L[k] || '').split('|')[2] || '').replace(/^\s*Pre-alert to ED:\s*/i, '').replace(/\s*ETA.*$/i, '').trim();
+        open = `${said ? `<span>Crew reports: ${esc(said)}</span>` : ''}<span class="ptOpen"><i class="qDot" aria-hidden="true"></i>${R0.open.length} open before ${p.sex === 'F' ? 'she' : 'he'} arrives: ${esc(R0.open.slice(0, 3).map(l => (l.short || l.label || '').toLowerCase()).join(', '))}</span>`; }
+      return `<button type="button" class="ptRow${inc ? ' inc' : ''}" data-p="${p.id}"><span class="avatar" aria-hidden="true">${p.name.split(' ').map(w => w[0]).join('')}</span>
+      <span class="ptRowId">${inc ? `<span class="ptTop"><b>${esc(p.name)}</b><span class="pre">${esc(p.moments[0].pre)}</span></span>` : `<b>${esc(p.name)}</b>`}<span>${p.age} · ${p.sex === 'F' ? 'Female' : 'Male'} · Born ${esc(p.dob)} · NHS no ${esc(p.nhsNo)}</span>${inc ? open : `<span>${esc(p.story)}</span>`}</span>
+</button>`; };
+    const inc = PATIENTS.filter(p => p.moments && p.moments[0].pre), rest = PATIENTS.filter(p => !inc.includes(p));
+    $('ptList').innerHTML = (inc.length ? `<h3 class="subH">On the way in by ambulance</h3>${inc.map(p => row(p, true)).join('')}` : '') + `<h3 class="subH">Recent patients</h3>${rest.map(p => row(p, false)).join('')}`;
   }
   function goHome() { $('q').placeholder = 'Find a patient by name or NHS number'; document.body.classList.add('noPatient'); setNotes(false); document.body.classList.remove('paper'); $('paperBack').hidden = true; setView('home'); }
   let pending = null;
