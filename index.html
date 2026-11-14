@@ -641,6 +641,27 @@ body.paper .aiSum{display:none}
 #v-summary .sit{font-size:16px;color:var(--ink)}
 @media(max-width:900px){.keyG{grid-template-columns:minmax(0,1fr)}}
 
+/* v28: nothing overlaps when the window is narrow */
+.jh i{font-style:normal}.jh .abbr{display:none}
+#journey{container-type:inline-size}
+@container (max-width:900px){
+  .jg,body.showNotes .jg{grid-template-columns:minmax(112px,1.2fr) repeat(var(--n),minmax(0,1fr)) 62px}
+  .jh{padding:8px 2px 10px}.jh b{font-size:11px;line-height:1.25}.jh span{display:none}
+  .jh .full{display:none}.jh .abbr{display:inline}
+  .jh.jlab{padding-left:8px}
+}
+.banner .facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,max-content));gap:10px 32px;align-items:start}
+.banner .fact,.banner .fact:first-child{border-left:0;padding:0;max-width:none}
+.banner .facts button.fact.src,.banner .facts button.fact.src:first-child,.banner .facts .fact{border-left:0;padding:0;max-width:none;text-align:left;justify-items:start}
+
+.jh .tiny{display:none}
+.jh b{max-width:100%;overflow:hidden}
+@container (max-width:520px){
+  .jg,body.showNotes .jg{grid-template-columns:minmax(104px,1.2fr) repeat(var(--n),minmax(0,1fr)) 58px}
+  .jh .abbr{display:none}.jh .tiny{display:inline}.jh b{font-size:10.5px}
+}
+@media(max-width:1150px){body.showNotes .cols{grid-template-columns:minmax(0,1fr)}body.showNotes #left{position:static}}
+
 </style>
 </head>
 <body>
@@ -1466,10 +1487,10 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
     const body = sec('Reason for attendance', [d.reason_for_attendance]) + sec('Allergies', d.allergies) + sec('Medicines', d.medications, c => `${c.medication_name}, ${admin[c.administration_status] || 'not clear'}:`) + sec('Key clinical information', d.key_clinical_info) + sec('What helps this person', d.reasonable_adjustments) + sec(fb ? 'Open loops the server picked out' : 'Open loops the model sees', d.open_loops);
     const q = d.quarantined_claims || [];
     return `<div class="aiBox aiSum">${head}
-      <p class="aiMeta">${fb ? 'No model was used: the server had no API key or the call failed, so it fell back to plain extraction.' : `Written by <code>${esc(d.model_used || 'a language model')}</code>.`} ${st.verified_claims != null ? `${st.verified_claims} of ${st.total_claims_checked} claims backed by a word-for-word quote.` : ''}${dropped ? ` ${dropped} more dropped by Rind's own check.` : ''}</p>
+      <p class="aiMeta">${fb ? 'No model was used: the server has no API key, or the call failed.' : `Written by <code>${esc(d.model_used || 'a language model')}</code>.`} ${!fb && st.verified_claims != null ? `${st.verified_claims} of ${st.total_claims_checked} claims backed by a word-for-word quote.` : ''}${dropped ? ` ${dropped} more dropped by Rind's own check.` : ''}</p>
       ${d.clinical_safety_halt || q.length ? `<div class="notice bad"><b>Safety gate stopped ${q.length || 'some'} claim${q.length === 1 ? '' : 's'}.</b> The quote was not in the notes, so the claim is not shown as fact.${q.map(x => `<div class="aiBlocked">Blocked: ${esc(x.blocked_claim_text || '')}</div>`).join('')}</div>` : ''}
-      ${body}
-      <p class="hint">${fb ? 'Plain extraction by the server, with no model used.' : 'Written by a language model, not by Rind\'s checks.'} It never opens or closes a loop.</p>${btns}</div>`;
+      ${fb ? '' : body}
+      <p class="hint">${fb ? 'Nothing is shown as an AI summary until a model has written one. Put the key in the .env file next to main.py and restart the server.' : 'Written by a language model, not by Rind\'s checks. It never opens or closes a loop.'}</p>${btns}</div>`;
   }
   async function aiRun(sim) {
     aiState = 'loading'; const p = $('aiPanel'); if (p) p.innerHTML = aiPanelHtml(lastR);
@@ -1583,7 +1604,7 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
     const mark = (idx, i, cls) => `<span class="src jm ${cls}" data-i="${i}" data-loop="${idx}"></span>`;
     let h = `<div class="jg" style="--n:${G.length}" role="table" aria-label="Where each loop started and how far it was carried">
       <div class="jh jlab" role="columnheader">Loop</div>
-      ${G.map((g, k) => `<button type="button" class="jh${jStage === k ? ' on' : ''}" data-js="${k}" aria-pressed="${jStage === k}" title="Show only the loops ${esc(g.svc)} started or mentioned"><b>${esc(g.svc)}</b><span>${g.n} ${g.n === 1 ? 'entry' : 'entries'}</span></button>`).join('')}
+      ${G.map((g, k) => `<button type="button" class="jh${jStage === k ? ' on' : ''}" data-js="${k}" aria-pressed="${jStage === k}" title="Show only the loops ${esc(g.svc)} started or mentioned"><b><i class="full">${esc(g.svc)}</i><i class="abbr">${esc(({ 'Ambulance': 'Amb.', 'North Mersey': 'N. Mersey', 'NHS 111': '111', 'Hospital A': 'Hosp. A', 'Hospital B': 'Hosp. B', 'District nurses': 'DN', 'Community': 'Comm.' })[g.svc] || g.svc)}</i><i class="tiny">${esc(({ 'Ambulance': 'Amb', 'North Mersey': 'NM', 'NHS 111': '111', 'Care home': 'CH', 'Hospital A': 'HA', 'Hospital B': 'HB', 'District nurses': 'DN', 'Community': 'Com', 'Pharmacy': 'Rx' })[g.svc] || g.svc)}</i></b><span>${g.n} ${g.n === 1 ? 'entry' : 'entries'}</span></button>`).join('')}
       <div class="jh jrind" role="columnheader"><b>Rind</b><span>now</span></div>`;
     rows.forEach((l, r) => {
       const open = l.status !== 'closed', a = stageOf(l.start), b = open ? G.length : stageOf(l.end), idx = R.loops.indexOf(l);
