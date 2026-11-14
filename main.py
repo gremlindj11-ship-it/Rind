@@ -958,7 +958,7 @@ def _call_claude_extractor(
     # IMPORTANT: Do NOT pass temperature, top_p, or top_k parameters.
     parsed_msg = client.messages.parse(
         model=CLAUDE_MODEL,
-        max_tokens=4096,
+        max_tokens=12000,
         system=SYSTEM_PROMPT,
         messages=[{"role": "user", "content": user_message}],
         output_format=ClaudeExtractionPayload,
