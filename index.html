@@ -5,158 +5,553 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Rind — the layer that holds the rest together</title>
 <style>
-/* Colours follow the NHS design system palette (service-manual.nhs.uk). No NHS logo or identity is used. */
-:root{--bg:#f0f4f5;--card:#fff;--ink:#212b32;--mute:#4c6272;--line:#d8dde0;--blue:#005eb8;--navy:#002f5c;--red:#d5281b;--green:#007f3b;--yellow:#ffeb3b;--pale:#fff9c4;--grey2:#768692;--rind:#ffb81c;--hotred:#ff6f61;--lime:#78be20}
+/* Rind. One calm system: navy header, white surfaces on a cool grey, NHS blue as the only accent,
+   red only for open loops, amber only for "not found". Colours from the NHS design system palette.
+   No NHS logo or identity is used. System fonts only, so the page needs no network. */
+:root{
+  --bg:#f2f5f7;--surface:#fff;--ink:#1d2a33;--mute:#526675;--faint:#7a8b97;--line:#dfe5ea;--soft:#eef2f5;
+  --blue:#005eb8;--bluedk:#003087;--tint:#eaf2fb;--red:#d5281b;--redtint:#fdf0ee;--green:#007f3b;--amber:#ffb81c;--ambertint:#fff6dc;--yellow:#ffeb3b;
+  --r:10px;--shadow:0 1px 2px rgba(16,32,48,.05),0 1px 1px rgba(16,32,48,.03)}
 *{box-sizing:border-box}
-body{margin:0;font:16px/1.5 "Frutiger W01",Arial,Helvetica,sans-serif;background:var(--bg);color:var(--ink)}
-button{font:inherit;cursor:pointer}
-button:focus-visible,.src:focus-visible,input:focus-visible,textarea:focus-visible,.loopHit:focus-visible{outline:4px solid var(--yellow);outline-offset:0;box-shadow:0 4px 0 0 var(--ink)}
-
-.top{display:flex;align-items:center;gap:14px;padding:12px 24px;background:var(--blue);color:#fff;flex-wrap:wrap}
-.logo{width:36px;height:36px}
-.brand h1{font-size:24px;line-height:1;margin:0;font-weight:700;letter-spacing:.3px}
-.brand p{margin:2px 0 0;font-size:13px;opacity:.95}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;font:15px/1.5 "Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;background:var(--bg);color:var(--ink);font-variant-numeric:tabular-nums}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+h1,h2,h3,p,dl,dd,ol,ul{margin:0}
+:focus-visible{outline:3px solid var(--yellow);outline-offset:1px;box-shadow:0 0 0 5px var(--ink)}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
 .sp{flex:1}
-.pill{font-size:13px;border:1px solid rgba(255,255,255,.6);padding:2px 10px}
-.top button{background:#fff;color:var(--blue);border:0;border-radius:4px;padding:8px 14px;font-weight:700;font-size:15px}
-.top button:hover{background:#e8edee}
 
-.hero{background:var(--navy);color:#fff;padding:20px 24px 18px}
-.heroHead{display:flex;gap:20px;align-items:flex-end;justify-content:space-between;flex-wrap:wrap}
-.hero h2{margin:0;font-size:24px;font-weight:700}
-.hero p{margin:4px 0 0;font-size:15px;color:#c8d7e6;min-height:22px}
-.go{background:var(--green);color:#fff;border:0;border-radius:4px;box-shadow:0 4px 0 #00401e;font-weight:700;font-size:19px;padding:12px 22px;white-space:nowrap}
-.go:hover{background:#00662f}
-.go[disabled]{opacity:.6;cursor:progress}
-#journey{display:block;width:100%;height:auto;margin-top:8px}
-.seg{fill:rgba(255,255,255,.14)} .seg.alt{fill:rgba(255,255,255,.26)}
-.segLab{fill:#fff;font:700 13px Arial,Helvetica,sans-serif}
-.segSub{fill:#c8d7e6;font:12px Arial,Helvetica,sans-serif}
-.slab{fill:rgba(255,255,255,.2)}
-.slabLab{fill:#c8d7e6;font:11px Arial,Helvetica,sans-serif}
-.hole{fill:var(--navy);stroke:rgba(255,255,255,.45);stroke-width:1}
-.rindBar{fill:var(--rind)} .rindEdge{fill:#ed8b00}
-.rindLab{fill:var(--rind);font:700 14px Arial,Helvetica,sans-serif}
-.tick{fill:rgba(255,255,255,.55)}
-.arc{fill:none;stroke:var(--lime);stroke-width:2.5;stroke-linecap:round}
-.arcLab{fill:#d6efb5;font:700 12px Arial,Helvetica,sans-serif;paint-order:stroke;stroke:#002f5c;stroke-width:5px;stroke-linejoin:round}
-.thread{fill:none;stroke:var(--hotred);stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round}
-.threadLab{fill:#fff;font:700 13px Arial,Helvetica,sans-serif}
-.endDot{fill:var(--hotred);stroke:#fff;stroke-width:2}
-.startDot{fill:#fff}
-.loopHit{cursor:pointer}
-.hit{fill:none;stroke:transparent;stroke-width:16;pointer-events:stroke}
-.loopHit:hover .thread{stroke-width:5.5} .loopHit:hover .arc{stroke-width:4.5;stroke:#a6e05a}
-.draw{stroke-dasharray:1;stroke-dashoffset:1;animation:draw .9s ease-out forwards}
-.pop{opacity:0;animation:pop .35s ease-out forwards}
-@keyframes draw{to{stroke-dashoffset:0}}
-@keyframes pop{from{opacity:0}to{opacity:1}}
-.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:10px}
-.tile{background:rgba(255,255,255,.1);padding:6px 14px;border-left:6px solid #c8d7e6}
-.tile b{display:block;font-size:26px;line-height:1.1;font-weight:700}
-.tile span{font-size:14px;color:#dbe6f0}
-.tile.r{border-left-color:var(--hotred)} .tile.g{border-left-color:var(--lime)} .tile.y{border-left-color:var(--rind)}
+/* header */
+.top{background:var(--bluedk);color:#fff}
+.topIn{display:flex;align-items:center;gap:14px;height:56px;padding:0 20px}
+.menu{display:grid;place-items:center;width:36px;height:36px;background:none;border:0;border-radius:8px;color:#fff}
+.menu:hover{background:rgba(255,255,255,.14)}
+.menu svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
+.brand{display:flex;align-items:center;gap:9px;margin-right:18px}
+.logo{width:28px;height:28px}
+.word{font-size:20px;font-weight:600;letter-spacing:.1px}
+.search{position:relative;flex:0 1 460px}
+.search input{width:100%;height:38px;border:1px solid rgba(255,255,255,.28);border-radius:8px;padding:0 12px 0 38px;color:#fff;
+  background:rgba(255,255,255,.12) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='white' stroke-width='1.8' stroke-linecap='round'%3E%3Ccircle cx='9' cy='9' r='5.5'/%3E%3Cpath d='m13.5 13.5 3.5 3.5'/%3E%3C/svg%3E") 11px center/18px no-repeat}
+.search input::placeholder{color:rgba(255,255,255,.78)}
+.search input:focus{background-color:#fff;color:var(--ink);border-color:#fff;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23526675' stroke-width='1.8' stroke-linecap='round'%3E%3Ccircle cx='9' cy='9' r='5.5'/%3E%3Cpath d='m13.5 13.5 3.5 3.5'/%3E%3C/svg%3E")}
+.search input:focus::placeholder{color:var(--faint)}
+.who{margin-left:auto;font-size:13px;color:rgba(255,255,255,.82);white-space:nowrap}
+.qList{position:absolute;left:0;right:0;top:44px;z-index:30;background:#fff;color:var(--ink);border:1px solid var(--line);border-radius:var(--r);box-shadow:0 12px 32px rgba(16,32,48,.18);padding:6px;overflow:hidden}
+.qH{font-size:12px;font-weight:600;color:var(--faint);padding:6px 10px 4px}
+.qList button{display:block;width:100%;text-align:left;background:none;border:0;border-radius:7px;padding:8px 10px}
+.qList button:hover,.qList button:focus-visible{background:var(--tint)}
+.qList button b{display:block;font-weight:600}.qList button span{font-size:13px;color:var(--mute)}
+.qList .qNotes{color:var(--blue);margin-top:4px;border-top:1px solid var(--line);border-radius:0 0 7px 7px;padding-top:10px}
+.qNone{padding:8px 10px;color:var(--mute)}
 
-main{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:24px;padding:24px;align-items:start}
-.pane{background:var(--card);border:1px solid var(--line);padding:20px 24px}
-.pane h2{font-size:19px;font-weight:700;margin:0 0 12px}
-.add{margin:0 0 14px;padding:12px;background:var(--bg);border-left:6px solid var(--blue)}
-.add label{display:block;font-weight:700;font-size:15px;margin-bottom:4px}
+/* shell and menu */
+.shell{display:grid;grid-template-columns:232px minmax(0,1fr);align-items:start;min-height:calc(100vh - 56px)}
+body.noSide .shell{grid-template-columns:minmax(0,1fr)} body.noSide .side{display:none}
+.side{position:sticky;top:0;align-self:stretch;background:var(--surface);border-right:1px solid var(--line);padding:14px 10px}
+.side hr{border:0;border-top:1px solid var(--line);margin:10px 6px}
+.nav{display:flex;align-items:center;gap:10px;width:100%;background:none;border:0;border-radius:8px;padding:9px 10px;text-align:left;color:var(--mute);font-weight:500}
+.nav .lbl{flex:1;min-width:0}
+.ic{flex:none;width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.nav:hover{background:var(--soft);color:var(--ink)}
+.nav[aria-current="page"]{background:var(--tint);color:var(--bluedk);font-weight:600}
+.nav[aria-pressed="true"]{color:var(--bluedk)}
+.nav.sub{padding:6px 10px 6px 40px;font-size:14px;font-weight:400}
+.badge{flex:none;min-width:22px;text-align:center;border-radius:11px;background:var(--red);color:#fff;font-size:12px;font-weight:600;line-height:20px;padding:0 7px}
+.badge.quiet{background:var(--soft);color:var(--mute)}
+.badge:empty{display:none}
+
+/* page frame: banner and cards share one width */
+main{padding:20px 28px 8px;min-width:0}
+.banner,.cols,footer{max-width:1040px}
+body.wide .banner,body.wide .cols,body.wide footer,body.showNotes .banner,body.showNotes .cols,body.showNotes footer{max-width:1320px}
+.banner{display:flex;align-items:center;gap:14px 28px;flex-wrap:wrap;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:14px 20px;margin-bottom:16px}
+.avatar{flex:none;width:44px;height:44px;border-radius:50%;background:var(--tint);color:var(--bluedk);font-weight:600;display:grid;place-items:center}
+.ptId{margin-left:-14px}
+.ptId b{display:block;font-size:18px;font-weight:600;line-height:1.25}
+.ptId span{font-size:13px;color:var(--mute)}
+.facts{display:flex;gap:0;flex-wrap:wrap}
+.fact{padding:0 18px;border-left:1px solid var(--line);display:grid}
+.fact span{font-size:12px;color:var(--faint)}
+.fact b{font-size:14px;font-weight:600}
+.fact.miss b{color:#8a5a00}
+.fact.miss b::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--amber);margin-right:6px}
+.cols{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-items:start}
+body.showNotes .cols{grid-template-columns:minmax(0,6fr) minmax(0,5fr)}
+.col{display:grid;gap:16px;min-width:0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:22px 24px;min-width:0}
+.cardH{font-size:20px;font-weight:600;margin-bottom:10px}
+.subH{font-size:15px;font-weight:600;margin:24px 0 8px}
+.hint{font-size:13px;color:var(--mute)}
+body.showNotes #left{position:sticky;top:12px}
+footer{padding:14px 2px 22px;font-size:12px;color:var(--faint)}
+
+/* buttons and links */
+.btn{background:var(--surface);color:var(--bluedk);border:1px solid #b9c7d3;border-radius:8px;padding:8px 14px;font-weight:600;font-size:14px}
+.btn:hover{background:var(--tint);border-color:var(--blue)}
+.next .btn{background:var(--blue);border-color:var(--blue);color:#fff;padding:9px 16px}
+.next .btn:hover{background:var(--bluedk);border-color:var(--bluedk)}
+.next{margin-top:20px}
+.linkbtn{background:none;border:0;padding:0;color:var(--blue);text-decoration:underline;text-underline-offset:3px;font-size:inherit}
+.linkbtn:hover{color:var(--bluedk)}
+#changePt{font-size:13px}
+.src{background:none;border:0;padding:0;color:var(--blue);font-size:13px;text-decoration:underline;text-decoration-color:#a9c9ea;text-underline-offset:3px;white-space:nowrap}
+.src:hover,.src:focus-visible{color:var(--bluedk);text-decoration-color:var(--bluedk)}
+.sep{color:var(--faint)}
+.arrow{display:inline-block;width:6px;height:6px;border-top:1.5px solid var(--faint);border-right:1.5px solid var(--faint);transform:rotate(45deg);margin:0 9px 1px 5px}
+#pop{position:absolute;z-index:40;background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;font-size:14px;box-shadow:0 12px 32px rgba(16,32,48,.18);pointer-events:none}
+.popMeta{font-size:12px;font-weight:600;color:var(--blue);margin-bottom:4px}
+.popHint{font-size:12px;color:var(--faint);margin-top:8px}
+
+/* opening state */
+.lead{text-align:center;padding:36px 0 28px}
+.ring{width:72px;height:72px;display:block;margin:0 auto 16px}
+.ringTrack{fill:none;stroke:var(--soft);stroke-width:5}
+.ringArc{fill:none;stroke:var(--blue);stroke-width:5;stroke-linecap:round;stroke-dasharray:84 100;stroke-dashoffset:84}
+.ring.live .ringArc{transition:stroke-dashoffset .05s linear}
+.lead h2{font-size:26px;font-weight:600;line-height:1.25;margin-bottom:6px}
+.lead p{font-size:15px;color:var(--mute);margin:0 auto 16px;max-width:520px;min-height:22px}
+.boot{list-style:none;padding:0;display:inline-block;text-align:left;font-size:14px;color:var(--mute)}
+.boot li{opacity:0;animation:fade .3s ease-out forwards;padding:1px 0}
+.boot li:nth-child(1){animation-delay:.1s}.boot li:nth-child(2){animation-delay:.4s}.boot li:nth-child(3){animation-delay:.7s}
+.boot li::before{content:"";display:inline-block;width:5px;height:9px;border:solid var(--green);border-width:0 2px 2px 0;transform:rotate(45deg);margin:0 11px 1px 3px}
+.go{display:none}
+.lead.done{text-align:left;padding:0}
+.lead.done .ring,.lead.done .boot{display:none}
+.lead.done h2{font-size:24px}
+.lead.done p{margin:0;max-width:none;font-size:14px}
+@keyframes fade{to{opacity:1}}
+
+/* open loops */
+.hub{display:flex;flex-wrap:wrap;align-items:center;margin-top:10px;font-size:13px;color:var(--mute)}
+.hubL{margin-right:10px;color:var(--faint)}
+.svc{color:var(--ink);font-weight:500}
+.svc i{font-style:normal;font-weight:400;color:var(--faint);margin-left:3px}
+.loops{margin-top:18px;display:grid;gap:10px}
+details.loop{border:1px solid var(--line);border-left:3px solid var(--red);border-radius:8px;background:var(--surface)}
+details.loop.on,.flag.on{background:var(--ambertint)}
+summary{cursor:pointer;list-style:none}
+summary::-webkit-details-marker{display:none}
+details.loop summary{display:flex;align-items:center;gap:12px;padding:13px 16px}
+details.loop summary:hover{background:#fafbfc;border-radius:0 8px 8px 0}
+summary::after{content:"";flex:none;margin-left:auto;width:7px;height:7px;border-right:1.6px solid var(--faint);border-bottom:1.6px solid var(--faint);transform:rotate(45deg);transition:transform .15s}
+summary::after{margin-top:-4px}
+details[open]>summary::after{transform:rotate(-135deg);margin-top:4px}
+.dot{flex:none;width:9px;height:9px;border-radius:50%;background:var(--red)}
+.dot.ok{background:var(--green)}
+.lt{font-size:16px;font-weight:600}
+.tag{flex:none;font-size:12px;color:var(--mute);background:var(--soft);border-radius:11px;padding:2px 10px}
+details.loop .tag{margin-left:auto}
+details.loop summary::after{margin-left:0}
+.lb{padding:0 16px 14px 37px}
+.quote{font-size:14px;color:var(--ink);border-left:2px solid var(--line);padding:1px 0 1px 12px}
+.q{font-size:14px;margin-top:10px;padding:8px 12px;background:var(--ambertint);border-radius:6px}
+.meta2{display:grid;grid-template-columns:auto 1fr;gap:4px 16px;margin-top:10px;font-size:13px}
+.meta2 dt{color:var(--faint)}
+.meta2 dd{color:var(--mute)}
+.notice{margin-top:14px;padding:10px 14px;background:var(--soft);border-radius:8px;font-size:14px;color:var(--mute)}
+.notice b{color:var(--ink);font-weight:600}
+.notice.warn{background:var(--ambertint)}
+.notice.bad{background:var(--redtint)} .bad{color:var(--red);font-weight:600}
+
+/* summary */
+.row{display:grid;grid-template-columns:150px 1fr;gap:12px;padding:8px 0;border-top:1px solid var(--soft);font-size:14px}
+.row .k{color:var(--mute)}
+.nf{color:#8a5a00;font-weight:600}
+.nf::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--amber);margin-right:6px}
+details.prob{border-top:1px solid var(--line)}
+details.prob:last-of-type{border-bottom:1px solid var(--line)}
+details.prob summary{display:flex;align-items:center;gap:10px;padding:11px 4px}
+details.prob summary:hover{background:#fafbfc}
+.pn{font-weight:600;flex:none}
+.pl{color:var(--mute);font-size:13px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tl{list-style:none;padding:0 4px 12px 4px}
+.tl li{display:grid;grid-template-columns:64px 1fr;gap:8px;padding:5px 0;font-size:14px}
+.src.day{text-align:left}
+table.meds{width:100%;border-collapse:collapse;font-size:14px;margin:2px 0 12px}
+table.meds th{text-align:left;color:var(--faint);font-size:12px;font-weight:600;padding:6px 8px 6px 4px;border-bottom:1px solid var(--line)}
+table.meds td{padding:7px 8px 7px 4px;border-bottom:1px solid var(--soft);vertical-align:top}
+ul.ev{padding-left:20px} ul.ev li{margin-bottom:4px}
+.view p{margin-bottom:10px}
+.val{font-size:12px;color:var(--faint)}
+.closedRow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:14px;padding:5px 4px}
+#closedList{margin-top:14px}
+
+/* handover */
+.recGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:14px}
+.rec{text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:11px 14px;display:grid;gap:1px}
+.rec:hover{border-color:var(--blue)}
+.rec[aria-pressed="true"]{border-color:var(--blue);box-shadow:inset 0 0 0 1px var(--blue);background:var(--tint)}
+.rec b{font-weight:600}.recN{font-size:13px;color:var(--blue);font-weight:600}.recWhy{font-size:12px;color:var(--mute)}
+textarea{width:100%;border:1px solid var(--line);border-radius:8px;padding:12px 14px;font:13px/1.6 ui-monospace,"Cascadia Mono",Consolas,Menlo,monospace;background:#fafbfc;resize:vertical}
+#ta{min-height:480px;background:#fff}
+.copy{margin-top:10px}
+.moreBtns{display:flex;gap:8px;flex-wrap:wrap}
+
+/* notes panel */
+.noteTop{display:flex;justify-content:space-between;align-items:baseline}
+.add{margin:0 0 14px}
+.add label{display:block;font-size:13px;font-weight:600;margin-bottom:5px}
 .addRow{display:flex;gap:8px}
-.add input{flex:1;min-width:0;font:13px/1.4 ui-monospace,Menlo,Consolas,monospace;border:2px solid var(--mute);padding:8px}
-.add button,#resetBtn{background:var(--mute);color:#fff;border:0;border-radius:4px;box-shadow:0 4px 0 #263139;padding:6px 16px;font-weight:700}
-.err{color:var(--red);font-weight:700;font-size:14px;margin:6px 0 0}
-#notes{max-height:720px;overflow:auto}
-.note{font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;padding:6px 8px;border-left:4px solid transparent;margin-bottom:2px}
-.note .meta{color:var(--mute);font-family:Arial,Helvetica,sans-serif}
-.note.unchk{border-left:4px dashed var(--grey2)}
-.note.scan{background:#d2e1ef}
+.add input{flex:1;min-width:0;height:38px;border:1px solid #b9c7d3;border-radius:8px;padding:0 12px;font-size:13px}
+.err{color:var(--red);font-weight:600;font-size:13px;margin-top:6px}
+#notes{max-height:calc(100vh - 290px);min-height:240px;overflow:auto;border-top:1px solid var(--line)}
+.note{font-size:14px;padding:10px 10px 10px 12px;border-bottom:1px solid var(--soft);border-left:3px solid transparent}
+.note .meta{display:block;font-size:12px;color:var(--faint);margin-bottom:1px}
+.note.unchk{border-left:3px dashed #b9c7d3}
 .note.new{animation:flash 1.6s ease-out}
-@keyframes flash{from{background:#b9e3c6}to{background:transparent}}
-.note.hit{background:var(--yellow);border-left:4px solid var(--ink)} .note.hit .meta{color:var(--ink)}
-textarea{width:100%;min-height:520px;font:13px/1.5 ui-monospace,Menlo,Consolas,monospace;border:2px solid var(--mute);padding:8px}
-.hint{font-size:14px;color:var(--mute)}
-.empty{text-align:center;padding:70px 20px;color:var(--mute)} .empty .big{font-size:26px;font-weight:700;color:var(--ink);margin:0 0 6px}
+@keyframes flash{from{background:#dcf1e4}to{background:transparent}}
+.note.hit{background:var(--ambertint);border-left:3px solid var(--amber)}
+mark{background:var(--yellow);color:var(--ink);padding:0 1px;border-radius:2px}
+.none{padding:16px 8px;color:var(--mute)}
 
-.pt{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px;gap:8px;flex-wrap:wrap}
-.pt b{font-size:22px} .pt span{font-size:14px;color:var(--mute)}
-.box{padding:16px 20px;margin-bottom:16px;background:var(--card);border:1px solid var(--line)}
-.box h3{margin:0 0 8px;font-size:19px;font-weight:700}
-.box.red{border-left:8px solid var(--red)} .box.green{border-left:8px solid var(--green)} .box.grey{border-left:8px solid var(--mute);background:var(--bg)}
-.flag{padding:12px 0;border-top:1px solid var(--line)} .flag:first-of-type{border-top:0}
-.flag.on{background:var(--pale);box-shadow:-12px 0 0 var(--pale),12px 0 0 var(--pale)}
-.flag .t{font-weight:700}
-.tagOpen{display:inline-block;background:#f7d4d1;color:#8a1a11;border:1px solid var(--red);font-size:13px;font-weight:700;padding:0 8px;margin-right:8px}
-.flag .d{font-size:15px;color:var(--mute)}
-.route{display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin-top:6px;font-size:14px;font-weight:700}
-.stop{border:1px solid var(--red);color:#8a1a11;background:#fff;padding:0 8px}
-.route i{font-style:normal;color:var(--red)}
-.closedRow{font-size:15px;padding:3px 0}
-.row{display:grid;grid-template-columns:150px 1fr;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
-.row .k{font-weight:700}
-.nf{background:var(--pale);border-left:4px solid var(--yellow);padding:1px 8px;font-weight:700}
-.src{font:700 13px Arial,Helvetica,sans-serif;border:1px solid var(--blue);background:#fff;color:var(--blue);padding:0 6px;margin-left:4px;text-decoration:underline}
-.src:hover{background:var(--blue);color:#fff}
-ul.ev{margin:0;padding-left:20px} ul.ev li{margin-bottom:4px}
-.val{font-size:14px;color:var(--mute);margin-top:12px}
-footer{padding:0 24px 20px;font-size:14px;color:var(--mute)}
+/* journey */
+.jf{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:4px 0 10px}
+.jfL{font-size:13px;color:var(--faint);margin-right:2px}.jfGap{margin-left:14px}
+.chip{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:3px 12px;font-size:13px;color:var(--mute)}
+.chip:hover{border-color:var(--blue);color:var(--ink)}
+.chip[aria-pressed="true"]{background:var(--tint);border-color:var(--blue);color:var(--bluedk);font-weight:600}
+#journey{display:block;width:100%;height:auto}
+#journey text{font-family:"Segoe UI",system-ui,-apple-system,Arial,sans-serif}
+.seg{fill:#e6ebef}.seg.alt{fill:#d7dee4}
+.segLab{fill:var(--ink);font-size:14px;font-weight:600}
+.segSub{fill:var(--faint);font-size:12px}
+.slab{fill:#d7dee4}
+.slabLab{fill:var(--faint);font-size:11px}
+.hole{fill:#fff;stroke:#b9c7d3;stroke-width:1}
+.rindBar{fill:var(--bluedk)}.rindEdge{fill:var(--blue)}
+.rindLab{fill:var(--ink);font-size:14px;font-weight:600}
+.tick{fill:#9aa9b5}
+.arc{fill:none;stroke:var(--green);stroke-width:2.2;stroke-linecap:round}
+.arcLab{fill:#00401e;font-size:12px;font-weight:600;paint-order:stroke;stroke:#fff;stroke-width:5px;stroke-linejoin:round}
+.thread{fill:none;stroke:var(--red);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.threadLab{fill:var(--ink);font-size:14px;font-weight:600}
+.endDot{fill:var(--red);stroke:#fff;stroke-width:2}
+.startDot{fill:var(--mute)}
+.loopHit{cursor:pointer}
+.loopHit:focus,.loopHit:focus-visible{outline:none;box-shadow:none}
+.hit{fill:none;stroke:transparent;stroke-width:16;pointer-events:stroke}
+.loopHit:hover .thread,.loopHit:focus-visible .thread,.loopHit.sel .thread{stroke-width:5.5}
+.loopHit:hover .arc,.loopHit:focus-visible .arc,.loopHit.sel .arc{stroke-width:4.5}
+.draw{stroke-dasharray:1;stroke-dashoffset:1;animation:draw .9s ease-out forwards}
+.pop{opacity:0;animation:fade .35s ease-out forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+.loopDetail{margin:8px 0 0;padding:14px 16px;background:var(--bg);border-radius:8px;min-height:52px}
+.ldHead{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:16px}
+.ldHead b{font-weight:600}
 
-body.paper #left,body.paper footer,body.paper .hero{display:none}
-body.paper main{display:block;max-width:860px;margin:0 auto}
-@media (prefers-reduced-motion:reduce){.draw,.pop,.note.new{animation:none;stroke-dashoffset:0;opacity:1}}
-@media print{.top button,.pill,#left,footer,.hero{display:none!important}.top{background:#fff;color:#000;padding:0 0 8px}main{display:block;padding:0}.pane{border:0;padding:0}body{background:#fff}.src{border:0;padding:0;color:#000;text-decoration:none}}
-@media(max-width:860px){main{grid-template-columns:1fr}}
+/* states */
+body.paper .search,body.paper #left,body.paper .side,body.paper .menu,body.paper #changePt,body.paper .who,body.paper .next{display:none}
+body.paper .shell{grid-template-columns:minmax(0,1fr)}
+body.paper #v-summary{display:block!important}
+body.paper details>*{display:block}
+@media (prefers-reduced-motion:reduce){.draw,.pop,.note.new,.boot li{animation:none;stroke-dashoffset:0;opacity:1}summary::after{transition:none}}
+@media print{.search,.side,.menu,.who,#left,footer,.next,.jf,#changePt{display:none!important}.top{background:#fff;color:#000}.shell{display:block}.card,.banner{border:0;box-shadow:none;padding:0}body{background:#fff}#v-summary{display:block!important}details>*{display:block}}
+@media(max-width:900px){
+  .shell{grid-template-columns:minmax(0,1fr)}
+  .side{position:static;display:flex;flex-wrap:wrap;gap:2px;padding:6px 8px;border-right:0;border-bottom:1px solid var(--line)}
+  .side hr,.recs{display:none}.nav{width:auto;padding:7px 10px}.nav .ic{display:none}
+  main{padding:14px}.card{padding:16px}.banner{padding:12px 14px;gap:10px 14px}.ptId{margin-left:0}.fact{padding:0 12px}.fact:first-child{border-left:0;padding-left:0}
+  body.showNotes .cols{grid-template-columns:minmax(0,1fr)}body.showNotes #left{position:static}
+  .who,.pl{display:none}.brand{margin-right:4px}.row{grid-template-columns:1fr;gap:2px}.lb{padding-left:16px}
+  details.loop summary{flex-wrap:wrap}details.loop .tag{margin-left:21px;order:3}
+  table.meds th:nth-child(5),table.meds td:nth-child(5){display:none}#notes{max-height:420px}}
+
+/* v7: patient finder, identity check, pre-alert, actions and audit */
+body.noPatient .banner,body.noPatient .side{display:none}
+body.noPatient .shell{grid-template-columns:minmax(0,1fr)}
+body.noPatient .cols{max-width:760px;margin:24px auto 0}
+body.noPatient footer{max-width:760px;margin:0 auto}
+.ptList{display:grid;gap:8px}
+.ptRow{display:flex;align-items:center;gap:14px;width:100%;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px}
+.ptRow:hover{border-color:var(--blue);background:#fafcfe}
+.ptRowId{display:grid;flex:1;min-width:0}
+.ptRowId b{font-weight:600;font-size:16px}
+.ptRowId span{font-size:13px;color:var(--mute)}
+.pre{flex:none;font-size:13px;font-weight:600;color:#6e4700;background:var(--ambertint);border:1px solid #f1d27a;border-radius:16px;padding:3px 12px}
+.modal{position:fixed;inset:0;z-index:60;background:rgba(16,32,48,.45);display:grid;place-items:center;padding:16px}
+.modalBox{background:var(--surface);border-radius:12px;box-shadow:0 20px 48px rgba(16,32,48,.3);padding:24px 26px;width:100%;max-width:460px}
+.idList{font-size:15px;gap:8px 20px;margin:4px 0 14px}
+.idList dd{color:var(--ink);font-weight:600}
+.act,.sign{margin-top:12px;font-size:13px;color:var(--mute)}
+.act .btn{padding:5px 12px;font-size:13px}
+.okTag{display:inline-block;font-size:12px;font-weight:600;color:#005a2b;background:#e3f3ea;border-radius:11px;padding:2px 10px;margin-right:6px}
+details.loop.actioned{border-left-color:#b9c7d3}
+details.loop.actioned .dot{background:#b9c7d3}
+details.loop.actioned .lt{color:var(--mute);font-weight:500}
+.notice.good{background:#e3f3ea;color:#1d4a33}
+.notice.good b{color:#005a2b}
+#auditList li{grid-template-columns:52px 1fr}
+#auditList .day{color:var(--faint);font-size:13px}
+body.paper .act,body.paper .sign .btn{display:none}
+@media print{.act,.modal{display:none!important}}
+@media(max-width:900px){.ptRow{flex-wrap:wrap}.pre{margin-left:58px}}
+
+/* v8: simpler. one banner shape on every page, fewer things on show */
+.banner{gap:10px 16px}
+.banner .facts{flex-basis:100%;border-top:1px solid var(--soft);padding-top:10px}
+.banner .fact:first-child{border-left:0;padding-left:0}
+.banner .fact{min-width:0}
+#recs{display:none}
+#heroSub b{font-weight:600;color:var(--ink)}
+.ptRowId .pre{justify-self:start;margin-top:6px;color:#6e4700}
+details.prob.more>summary .pn{font-weight:500;color:var(--mute)}
+.nest{padding:0 0 6px 14px}
+@media(max-width:900px){.pre{margin-left:0}}
+.banner .facts{flex:1 1 calc(100% - 150px);order:8}
+.banner #changePt{order:9;align-self:flex-end;padding-bottom:2px}
+
+/* v9: editable documents */
+#hoText{background:var(--surface)}
+#hoText:focus,#myNote:focus{outline:2px solid var(--blue);outline-offset:1px;border-color:var(--blue)}
+.docState{font-size:13px;color:var(--mute);margin:8px 0 10px}
+.docState .bad{color:var(--red);margin-right:8px}
+#myNote{width:100%;font:inherit;font-size:14px;color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:7px 10px;resize:vertical;background:var(--surface)}
+.jfL{font-size:13px;color:var(--mute);margin-right:4px}
+body.paper #myNote:placeholder-shown,body.paper .docState{display:none}
+
+/* v10: journey as a simple grid, and a printable document */
+.jwrap{overflow-x:auto}
+.jg{display:grid;grid-template-columns:minmax(210px,1.7fr) repeat(var(--n),minmax(74px,1fr)) 92px;min-width:640px;border-bottom:1px solid var(--soft)}
+.jh{display:grid;gap:0;align-content:end;justify-items:center;text-align:center;padding:8px 6px 10px;background:none;border:0;border-left:1px dashed var(--line);border-radius:0;color:var(--ink)}
+.jh b{font-weight:600;font-size:14px}.jh span{font-size:12px;color:var(--faint)}
+button.jh:hover b{color:var(--blue)}
+.jh.on{background:var(--tint)}
+.jh.jlab{justify-items:start;border-left:0;font-size:12px;color:var(--faint);padding-left:0}
+.jh.jrind{background:var(--bluedk);color:#fff;border-left:0;border-radius:8px 8px 0 0}.jh.jrind span{color:#c9d8ee}
+.loopHit.jlab{display:grid;align-content:center;text-align:left;background:none;border:0;border-top:1px solid var(--soft);border-radius:0;padding:9px 10px 9px 0;min-height:52px}
+.loopHit.jlab b{font-size:14px;font-weight:600;color:var(--ink)}
+.loopHit.jlab span{font-size:12px;color:var(--mute)}
+.loopHit.jlab:hover b,.loopHit.jlab.sel b{color:var(--blue)}
+.loopHit.jlab.sel{box-shadow:inset 3px 0 0 var(--blue);padding-left:10px}
+.jc{position:relative;display:flex;align-items:center;justify-content:center;gap:7px;border-top:1px solid var(--soft);border-left:1px dashed var(--line);min-height:52px}
+.jc.on{background:var(--tint)}
+.jc.thru::before,.jc.from::before,.jc.to::before{content:"";position:absolute;top:50%;left:0;right:0;height:3px;margin-top:-1.5px;background:var(--red);border-radius:2px}
+.jc.from::before{left:50%}.jc.to::before{right:50%}
+.jc.ok::before{background:#7fbf9c}
+.jc.jr{border-left:0;background:#f3f6fa}
+.jc.jr.to::before{right:34px}
+.src.jm,i.jm{position:relative;z-index:1;display:inline-block;width:14px;height:14px;padding:0;border-radius:50%;border:2.5px solid var(--red);background:#fff;font-size:0;line-height:0;text-decoration:none;box-shadow:0 0 0 2px #fff}
+.src.jm:hover,.src.jm:focus-visible{transform:scale(1.35);outline:none}
+.jm.start{background:var(--red)}
+.jc.ok .jm{border-color:var(--green)}.jc.ok .jm.start{background:#fff}.jc.ok .jm.end,i.jm.end{background:var(--green);border-color:var(--green)}
+.jc.on .jm{box-shadow:0 0 0 2px var(--tint)}
+.jopen,.jdone{position:relative;z-index:1;font-size:12px;font-weight:600;border-radius:11px;padding:2px 10px;background:var(--red);color:#fff}
+.jopen.acted{background:#8a99a6}
+.jdone{background:#e3f3ea;color:#005a2b}
+.jkey{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:12px;color:var(--mute)}
+.jkey i.jm{width:10px;height:10px;border-width:2px;margin-left:8px;box-shadow:none}
+.jnone{grid-column:1/-1;padding:18px 0;color:var(--mute);font-size:14px}
+@keyframes jgrow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes jpop{from{opacity:0}to{opacity:1}}
+.jg.draw .jc::before{transform-origin:left;animation:jgrow .45s ease-out both;animation-delay:calc(var(--k,0)*110ms + 150ms)}
+.jg.draw .jopen{animation:jpop .3s both;animation-delay:calc(var(--k,0)*110ms + 600ms)}
+#printDoc{display:none}
+@media print{
+  body.printDoc>*{display:none!important}
+  body.printDoc>#printDoc{display:block!important;color:#000;font:11pt/1.45 "Segoe UI",system-ui,Arial,sans-serif;padding:0}
+  #printDoc pre{white-space:pre-wrap;font:10.5pt/1.5 Consolas,Menlo,monospace;margin:14pt 0}
+  .pdHead{border-bottom:1px solid #000;padding-bottom:8pt}.pdFoot{border-top:1px solid #999;padding-top:6pt;font-size:9pt;color:#444}
+}
+
+.tick{display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--ink);background:var(--soft);border-radius:8px;padding:10px 12px;cursor:pointer}
+.tick input{width:18px;height:18px;margin:1px 0 0;accent-color:var(--blue);flex:none}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+
+#closedList{display:none}
+
+.accLine{font-size:12px;color:var(--faint);margin:0 0 8px}
+.who b{font-weight:600;color:#fff}
+
+/* v11: access check, same language as the rest of the page */
+.modalBox{padding:26px 28px 24px}
+.idList{margin:6px 0 16px}
+.tick{display:flex;align-items:flex-start;gap:12px;background:none;border-radius:0;border-top:1px solid var(--soft);padding:16px 0 0;font-size:14px;line-height:1.5;color:var(--ink);cursor:pointer}
+.tick b{font-weight:600}
+.tick input{appearance:none;-webkit-appearance:none;flex:none;width:20px;height:20px;margin:1px 0 0;border:1.5px solid #8696a3;border-radius:5px;background:var(--surface);cursor:pointer;accent-color:auto}
+.tick input:hover{border-color:var(--blue)}
+.tick input:checked{border-color:var(--blue);background:var(--blue) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M5 10.4l3.3 3.3L15 6.9' fill='none' stroke='%23fff' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/100% no-repeat}
+.tick input:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.modalBox .accLine{margin:8px 0 0 32px}
+.modalBox .moreBtns{margin-top:20px!important}
+
+/* v12: live search results */
+.qList{max-height:min(70vh,560px);overflow:auto}
+.qList button b{font-size:13px}
+.qList button span{display:block;color:var(--ink);font-size:14px;line-height:1.4}
+.qList [data-p] span{color:var(--mute);font-size:13px}
+.qList [data-p] b{font-size:15px}
+.qDot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--red);margin-right:7px;vertical-align:1px}
+.qList [data-ql] b{color:var(--red)}
+
+/* v13: journey rows select as a whole, one dot per service, no sideways scroll */
+.jwrap{overflow:visible}
+.jg{min-width:0;grid-template-columns:minmax(150px,1.5fr) repeat(var(--n),minmax(0,1fr)) 78px}
+.jh b{font-size:13px;overflow-wrap:anywhere}
+.jc[data-loop]{cursor:pointer}
+.jc.sel,.loopHit.jlab.sel{background:var(--tint)}
+.jc.jr.sel{background:#dfeaf7}
+.loopHit.jlab.sel{box-shadow:inset 3px 0 0 var(--blue);padding-left:10px}
+.jc.sel .jm{box-shadow:0 0 0 2px var(--tint)}
+span.src.jm{cursor:pointer;border-bottom-width:2.5px}
+.loopHit.jlab{padding-left:10px}
+.jh.jlab{padding-left:10px}
+.jh b{overflow-wrap:normal}
+body.showNotes .jg{grid-template-columns:minmax(118px,1.2fr) repeat(var(--n),minmax(0,1fr)) 62px}
+body.showNotes .jh{padding:8px 1px 10px}
+body.showNotes .jh b{font-size:11.5px}
+body.showNotes .jh span{display:none}
+body.showNotes .jopen,body.showNotes .jdone{padding:2px 7px;font-size:11px}
 
 </style>
 </head>
 <body>
 <header class="top">
-  <svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="11" fill="none" stroke="#ffb81c" stroke-width="7"/><circle cx="16" cy="16" r="4" fill="#fff"/></svg>
-  <div class="brand"><h1>Rind</h1><p>The layer that holds the rest together</p></div>
-  <span class="sp"></span>
-  <span class="pill">Student prototype · not an NHS service · synthetic patient</span>
-  <button id="editBtn" type="button">Edit notes</button>
-  <button id="paperBtn" type="button">Downtime copy</button>
+  <div class="topIn">
+    <button id="menuBtn" class="menu" type="button" aria-expanded="true" aria-controls="side" aria-label="Menu"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 5.5h14M3 10h14M3 14.5h14"/></svg></button>
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="11" fill="none" stroke="#fff" stroke-width="6" pathLength="100" stroke-dasharray="84 16" transform="rotate(-20 16 16)"/><circle cx="23.2" cy="7.7" r="2.7" fill="#fff"/></svg>
+      <span class="word">Rind</span>
+    </div>
+    <div class="search" role="search">
+      <label class="vh" for="q">Find a patient or search the notes</label>
+      <input id="q" type="search" placeholder="Find a patient by name or NHS number" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="false" aria-controls="qList">
+      <div id="qList" class="qList" hidden></div>
+    </div>
+    <span class="who"><b>ED clinician</b> · demo sign-in · synthetic records</span>
+  </div>
 </header>
 
-<section class="hero" aria-label="Patient journey across services">
-  <div class="heroHead">
-    <div>
-      <h2 id="heroTitle">One patient. Five services. Every handover is a slice with holes.</h2>
-      <p id="heroSub"></p>
+<div class="shell">
+  <nav class="side" id="side" aria-label="Sections">
+    <button class="nav" type="button" data-v="loops" aria-current="page"><svg class="ic" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="6.2" stroke-dasharray="30 9" transform="rotate(-25 10 10)"/><circle cx="15.4" cy="6.3" r="1.2" fill="currentColor" stroke="none"/></svg><span class="lbl">Open loops</span><span class="badge" id="nOpen"></span></button>
+    <button class="nav" type="button" data-v="journey"><svg class="ic" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 15c4 0 3-9 7-9h7"/><circle cx="3" cy="15" r="1.4" fill="currentColor" stroke="none"/><circle cx="17" cy="6" r="1.4" fill="currentColor" stroke="none"/></svg><span class="lbl">Journey</span></button>
+    <button class="nav" type="button" data-v="summary"><svg class="ic" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 5.5h12M4 10h12M4 14.5h7"/></svg><span class="lbl">Summary</span></button>
+    <button class="nav" type="button" data-v="handover"><svg class="ic" viewBox="0 0 20 20" aria-hidden="true"><path d="M3.5 10h11M10.5 5.5 15 10l-4.5 4.5"/></svg><span class="lbl">Handover</span></button>
+    <div id="recs" class="recs"></div>
+    <hr>
+    <button class="nav" type="button" id="notesBtn" aria-pressed="false"><svg class="ic" viewBox="0 0 20 20" aria-hidden="true"><rect x="4.5" y="3" width="11" height="14" rx="1.5"/><path d="M7.5 7.5h5M7.5 10.5h5M7.5 13.5h3"/></svg><span class="lbl" id="notesLb">Show notes</span></button>
+    <button class="nav" type="button" data-v="more"><svg class="ic" viewBox="0 0 20 20" aria-hidden="true"><circle cx="5" cy="10" r="1.3" fill="currentColor" stroke="none"/><circle cx="10" cy="10" r="1.3" fill="currentColor" stroke="none"/><circle cx="15" cy="10" r="1.3" fill="currentColor" stroke="none"/></svg><span class="lbl">Audit and more</span></button>
+  </nav>
+
+  <main>
+    <section class="banner" aria-label="Patient">
+      <span class="avatar" id="ptAv" aria-hidden="true"></span>
+      <div class="ptId"><b id="ptName"></b><span id="ptSub"></span></div>
+      <span class="sp"></span>
+      <span class="pre" id="ptPre" hidden></span>
+      <button id="paperBack" class="btn" type="button" hidden>Leave downtime copy</button>
+      <button id="changePt" class="linkbtn" type="button">Change patient</button>
+      <div class="facts" id="facts"></div>
+    </section>
+    <div class="cols">
+      <div class="col">
+        <section class="card view" id="v-home" hidden>
+          <h2 class="cardH">Find a patient</h2>
+          <p class="hint" style="margin:0 0 14px">Search by name or NHS number above, or pick a recent patient. You confirm who it is before the record opens.</p>
+          <h3 class="subH" style="margin-top:0">Recent patients</h3>
+          <div id="ptList" class="ptList"></div>
+        </section>
+        <section class="card view" id="v-loops">
+          <div class="lead" id="lead">
+            <svg class="ring" viewBox="0 0 32 32" aria-hidden="true"><circle class="ringTrack" cx="16" cy="16" r="11"/><circle id="ringArc" class="ringArc" cx="16" cy="16" r="11" pathLength="100" transform="rotate(-20 16 16)"/></svg>
+            <h2 id="heroTitle"></h2>
+            <p id="heroSub"></p>
+            <ul class="boot" id="boot">
+              <li>Runs in this browser</li>
+              <li>Nothing is sent anywhere</li>
+              <li id="bootCount">Notes loaded</li>
+            </ul>
+            <button id="buildBtn" class="go" type="button" hidden>Find the open loops</button>
+          </div>
+          <div id="out" hidden></div>
+        </section>
+        <section class="card view" id="v-journey" hidden>
+          <h2 class="cardH">Journey</h2>
+          <p class="hint" style="margin:0 0 10px">One row for each loop, one column for each service. The line shows how far it was carried without being closed. Hover a dot to read that note; select a row for the detail.</p>
+          <div class="jf" id="jf"></div>
+          <div class="jwrap"><div id="journey"></div></div>
+          <div id="loopDetail" class="loopDetail"></div>
+          <details class="prob" id="closedList"></details>
+          <p class="next"><button type="button" class="btn" data-go="summary">Next: the summary, by problem</button></p>
+        </section>
+        <section class="card view" id="v-summary" hidden></section>
+        <section class="card view" id="v-handover" hidden></section>
+        <section class="card view" id="v-more" hidden>
+          <h2 class="cardH">More</h2>
+          <div class="moreBtns">
+            <button id="editBtn" class="btn" type="button">Edit notes</button>
+            <button id="paperBtn" class="btn" type="button">Downtime copy</button>
+            <button id="dlBtn" class="btn" type="button">Download offline copy</button>
+          </div>
+          <h3 class="subH">Audit trail</h3>
+          <p class="hint" style="margin:0 0 8px">Every record opened, note viewed, and document edited, copied or printed is logged against the person signed in: ED clinician (demo sign-in).</p>
+          <ol class="tl" id="auditList"></ol>
+          <h3 class="subH">How it checks</h3>
+          <div id="checksBody"></div>
+        </section>
+      </div>
+      <section class="card" id="left" hidden>
+        <div class="noteTop"><h2 class="cardH" id="noteHead">Source notes</h2><button type="button" class="linkbtn" id="closeNotes">Close</button></div>
+        <p class="accLine">Requested by ED clinician (demo sign-in). Viewing is logged.</p>
+        <form id="addForm" class="add" autocomplete="off">
+          <label for="addIn">Add an entry</label>
+          <div class="addRow"><input id="addIn" type="text" spellcheck="false"><button type="submit" class="btn">Add</button></div>
+          <p id="addErr" class="err" hidden></p>
+        </form>
+        <div id="notes"></div>
+        <div id="editor" hidden>
+          <textarea id="ta" spellcheck="false" aria-label="All notes"></textarea>
+          <p class="hint">One entry per line: <code>D12 04:30 | Role | free text</code></p>
+          <button id="resetBtn" type="button" class="btn">Reset to original</button>
+        </div>
+      </section>
     </div>
-    <button id="buildBtn" class="go" type="button">Find the open loops</button>
+    <footer>Student prototype, not an NHS service. Synthetic patients only. Decision support: it shows where to look and does not replace reading the notes.</footer>
+  </main>
+</div>
+
+<div id="printDoc"></div>
+<div class="modal" id="idModal" hidden>
+  <div class="modalBox" role="dialog" aria-modal="true" aria-labelledby="idT">
+    <h2 class="cardH" id="idT">Confirm before you open this record</h2>
+    <dl class="meta2 idList" id="idBody"></dl>
+    <label class="tick"><input type="checkbox" id="idTick"> <span id="idSay"></span></label>
+    <p class="accLine" style="margin-top:10px">Requested by ED clinician (demo sign-in). This access is logged.</p>
+    <div class="moreBtns" style="margin-top:14px"><span class="next" style="margin:0"><button type="button" class="btn" id="idOpen" disabled>Confirm and open record</button></span><button type="button" class="btn" id="idCancel">Cancel</button></div>
   </div>
-  <svg id="journey" viewBox="0 0 1200 272" role="img" aria-labelledby="jt"><title id="jt">Journey timeline</title></svg>
-  <div class="tiles" id="tiles"></div>
-</section>
-
-<main>
-  <section class="pane" id="left">
-    <div class="paneHead"><h2 id="noteHead">Source notes</h2></div>
-    <form id="addForm" class="add" autocomplete="off">
-      <label for="addIn">Add an entry</label>
-      <div class="addRow"><input id="addIn" type="text" spellcheck="false"><button type="submit">Add</button></div>
-      <p id="addErr" class="err" hidden></p>
-    </form>
-    <div id="notes"></div>
-    <div id="editor" hidden>
-      <textarea id="ta" spellcheck="false" aria-label="All notes"></textarea>
-      <p class="hint">One entry per line: <code>D12 04:30 | Role | free text</code></p>
-      <button id="resetBtn" type="button">Reset to original</button>
-    </div>
-  </section>
-  <section class="pane" id="right">
-    <div id="empty" class="empty"><p class="big">Nothing has been read yet.</p><p>Press <b>Find the open loops</b> to read every entry and list what was started and never closed.</p></div>
-    <div id="out" hidden></div>
-  </section>
-</main>
-<footer>Synthetic patient written for this prototype. No real patient data. Rules-based: five checks, every statement links to the note it came from. Decision support only. It shows where to look and does not replace reading the notes.</footer>
-
+</div>
 <script>
-/* Synthetic patient written for this prototype on 14 Nov 2026. No real patient data. */
+/* Synthetic patients written for this prototype on 14 Nov 2026. No real patient data. */
 (function (root) {
-  const NOTES = `D1 02:25 | Paramedic | 84F, daughter called 999. Confused, RR 32, sats 79% RA, 91% on 15L. Pre-alert sent. Meds bag brought in: apixaban, bisoprolol, ramipril, atorvastatin.
+  const PATIENTS = [
+    {
+      id: 'C', name: 'Margaret Thompson', age: 82, sex: 'F', dob: '14 Mar 1943', nhsNo: '999 654 3210', where: 'Maple View Care Home',
+      story: 'Care home resident, breathless, arriving by ambulance', label: 'Margaret Thompson · 82F · COPD, arriving by ambulance',
+      prealert: 'Ambulance pre-alert 18:15 · arriving in 15 minutes', dayLabels: { 0: '18 Sep', 1: 'Today' },
+      notes: `D0 00:00 | Hospital A respiratory clinic | Asthma–COPD overlap, FEV1 42% predicted, compensated type 2 respiratory failure on last admission. Target oxygen saturation 88–92% with controlled oxygen. Obtain early blood gas on arrival if needing more than 28% oxygen.
+D0 00:00 | Hospital A respiratory clinic | Exacerbation plan: controlled oxygen, nebulised salbutamol 5 mg + ipratropium 500 mcg, prednisolone 40 mg PO. Avoid penicillins, documented rash and urticaria; check exact timing and reaction with GP or family before choosing antibiotics. Use the non-penicillin guideline such as doxycycline if infective.
+D0 00:00 | Hospital A respiratory clinic | Escalation ceiling: suitable for NIV trial if hypercapnic respiratory acidosis develops; confirm current escalation wishes with daughter Jane Thompson. Moderate dementia: use short simple sentences, allow extra time, explain before touching, low-stimulation bay where possible.
+D1 09:00 | GP Dr Mendes | Seen at Maple View Care Home on weekly ward round. Carer reports increased breathlessness, worsening wheeze and more sputum since yesterday evening. Eating and drinking less. Usual moderate dementia baseline, slightly quieter than usual.
+D1 09:00 | GP Dr Mendes | Alert, full sentences with mild effort. Scattered bilateral expiratory wheeze, no focal crepitations. RR 22, SpO2 92% on room air, HR 92, BP 134/76, Temp 37.2. NEWS2 2.
+D1 09:30 | GP Dr Mendes | Suspected acute exacerbation of COPD/asthma overlap, suitable to remain at care home with close monitoring. Respiratory care plan is with Hospital A respiratory clinic, PDF not attached to GP record. Prescribed prednisolone 40 mg OD for 5 days and salbutamol PRN. Antibiotic deferred pending sputum and clinical course, coded penicillin allergy with no detail recorded. Safety-netted with senior carer: call UCR or 999 if breathlessness worsens, SpO2 below 90% or new confusion. Daughter Jane Thompson (07700 123456) to be updated.
+D1 15:30 | Care home senior carer | Much more breathless after lunch, breathing faster, short words only. More confused than her usual baseline, did not recognise evening staff, distressed by noise. Moved to quiet bedroom. UCR team called for urgent assessment.
+D1 15:30 | Care home senior carer | Medication record sync is delayed. Prednisolone 40 mg prescribed at 09:30 by GP, whether the first dose was given has not been confirmed. Seven-day baseline observation chart not transmitted.
+D1 17:00 | UCR advanced practitioner | Attended after care home call. Sitting upright, visibly breathless, speaking in 3 to 4 word phrases. More confused than morning baseline, calmed when things were explained slowly before examining. Widespread expiratory wheeze, reduced air entry at bases. RR 28, SpO2 90% on room air, HR 104, BP 138/82, Temp 37.6. NEWS2 7.
+D1 17:10 | UCR advanced practitioner | Given ipratropium 500 mcg + salbutamol 2.5 mg nebuliser with controlled nasal oxygen 2 L/min. Care staff say target saturation is 88–92% from Hospital A, paper copy not located in room.
+D1 17:35 | UCR advanced practitioner | After nebuliser SpO2 91% on 2 L/min, RR still 28. Inadequate response, needs hospital assessment, category 2 ambulance called. Daughter Jane informed by care staff. Unable to confirm whether morning prednisolone was given. Hospital A respiratory plan not directly viewable on community record.
+D1 18:00 | Paramedic | Handover from UCR. Tachypnoeic, single phrases, bilateral wheeze, accessory muscle use. Anxious when cuff applied without warning, settles with calm simple explanations. RR 30, SpO2 91% on 2 L/min, HR 110, BP 142/78, Temp 37.8, BM 6.8, GCS 14.
+D1 18:05 | Paramedic | Given salbutamol 5 mg nebuliser, nasal oxygen 2 L/min continued. IV access 20G left arm. Antibiotics not given because of penicillin allergy with rash and urticaria, left for ED to decide.
+D1 18:15 | Paramedic | Pre-alert to ED: 82F, suspected exacerbation of asthma/COPD overlap, deteriorating despite GP and UCR treatment. Penicillin allergy. Moderate dementia, needs quiet area and simple explanations. Morning steroid dose unconfirmed. ETA 15 minutes.`,
+      expectedOpen: ['rx:prednisolone', 'decision:antibiotic', 'confirm:escalation wishes', 'confirm:timing and reaction', 'doc:observation chart'],
+      demoEntry: 'D1 18:40 | Care home senior carer | Phoned by ED: prednisolone 40 mg was given at 10:15, signed on the paper chart.'
+    },
+    {
+      id: 'A', name: 'Joan Ashby', age: 84, sex: 'F', dob: '2 Jun 1942', nhsNo: '999 104 2217', where: 'Own home, lives alone', story: 'Pneumonia, intensive care, now at home', label: 'Patient A · 84F · pneumonia, ICU',
+      notes: `D1 02:25 | Paramedic | 84F, daughter called 999. Confused, RR 32, sats 79% RA, 91% on 15L. Pre-alert sent. Meds bag brought in: apixaban, bisoprolol, ramipril, atorvastatin.
 D1 03:10 | ED SpR | 84F BIBA from home. 3/7 cough, SOB, confusion. Sats 81% RA, RR 34, T 38.9. CXR R lower zone consolidation. Imp: severe CAP, T1RF. PMH: AF (apixaban, bisoprolol), HTN (ramipril), CKD3. NKDA. Lives alone, daughter Karen NOK.
 D1 05:40 | ICU SpR | Tiring on NIV, GCS 11. Intubated 05:25 grade 2 view, size 7.0 ETT. R IJ CVC + L radial art line sited. Norad started 0.12. Urinary catheter inserted. Co-amox + clari.
 D1 11:00 | ICU cons WR | Severe CAP, septic shock. Plts 68, INR 1.6. Apixaban held – plts + lines. Ramipril held – AKI risk on norad. Continue abx. Daughter updated by phone.
@@ -193,26 +588,80 @@ D21 11:15 | Ward nurse | CVC removed, tip intact, site clean. Peripheral cannula
 D22 10:00 | Ward SpR WR | Medically fit. OT + physio happy. Home tomorrow with home nursing visits. TTO: bisoprolol 2.5, ramipril 2.5, lansoprazole, atorvastatin.
 D23 14:20 | Ward FY1 | Discharge letter sent to GP. Dx: severe CAP, AKI resolved, new AF. Plan: GP to repeat U&E in 1/52. Home nursing accepted.
 D25 10:40 | Community nurse | Home visit 1. HR 108 irregular, BP 128/74, sats 95% RA. Eating well, daughter present. Pt asks about her blood thinner – apixaban not on TTO list. Message left for GP.
-D27 16:05 | Community nurse | Home visit 2. HR 112 irregular. No call back from GP yet. Mild ankle swelling.`;
-  const data = {
-    NOTES,
-    EXPECTED_OPEN: ['drug:apixaban', 'finding:nodule', 'pending:blood cultures', 'referral:cardiology'],
-    DEMO_ENTRY: 'D28 09:00 | GP | Apixaban restarted 5mg BD after call from community nurse.'
-  };
+D27 16:05 | Community nurse | Home visit 2. HR 112 irregular. No call back from GP yet. Mild ankle swelling.`,
+      expectedOpen: ['drug:apixaban', 'finding:nodule', 'pending:blood cultures', 'referral:cardiology'],
+      demoEntry: 'D28 09:00 | GP | Apixaban restarted 5mg BD after call from community nurse.'
+    },
+    {
+      id: 'B', name: 'Derek Bannon', age: 71, sex: 'M', dob: '19 Oct 1955', nhsNo: '999 208 4471', where: 'Own home, lives alone', story: 'Hip fracture, surgery, rehab, now at home', label: 'Patient B · 71M · hip fracture, rehab',
+      notes: `D1 14:10 | Paramedic | 71M fall at home, found by neighbour. R leg short + externally rotated. Pain 8/10, morphine 5mg IV. No head injury. Lives alone.
+D1 15:05 | ED SHO | 71M mechanical fall. XR: displaced R intracapsular NOF fracture. PMH: T2DM (metformin), HTN (ramipril), BPH. NKDA. Systolic murmur heard. Echo requested pre-op. Fascia iliaca block done.
+D1 19:30 | Ward ortho SHO | Clerked. For hemiarthroplasty tomorrow. NBM from midnight. Bloods: creat 96, HbA1c 61. Ramipril held – pre-op. VTE assessment done.
+D2 08:15 | Ward ortho SHO | TTE: moderate AS, LVEF 55%. Anaesthetist aware, proceed with spinal.
+D2 13:40 | Theatre | R cemented hemiarthroplasty under spinal. Urinary catheter inserted. Wound drain placed. EBL 300ml. Cefuroxime at induction.
+D2 18:00 | Ward nurse | Back from theatre. Obs stable. Catheter draining clear urine. PCA morphine.
+D3 09:20 | Ward ortho SpR WR | Day 1 post-op. Hb 98. Creat 162 – AKI stage 1. Metformin held – AKI. D/w renal re AKI. Drain removed, 80ml total.
+D3 15:00 | Ward ortho SHO | Renal advised: IV fluids, avoid NSAIDs, repeat U&E daily. Physio: stood with frame + 2.
+D4 10:00 | Ward ortho SHO | Creat 131 improving. Pain controlled. Enoxaparin 40 SC to continue 28 days post-op.
+D5 03:30 | Ward nurse | Confused overnight, pulling at catheter. Temp 37.9. MSU sent. Bladder scan not done.
+D5 10:30 | Ward ortho SpR WR | Post-op delirium, 4AT 6. Bloods NAD. Creat 104. Ramipril restarted 2.5mg. D/w orthogeriatrics re bone health + falls – will review.
+D6 11:00 | Physio | Walking 10m with frame + 1. Stairs not yet assessed.
+D7 09:45 | Ward ortho SHO | Delirium settled. Wound dry. Catheter in situ. Medically fit for rehab. BMs 11–14, on sliding scale insulin PRN.
+D8 14:00 | Ward ortho SHO | Transferred to rehab unit. TTO written. Discharge summary to rehab team.
+D9 10:00 | Rehab SHO | Admitted from ortho. Meds as per TTO: ramipril 2.5, paracetamol, enoxaparin 40 SC, laxatives. Catheter draining well.
+D12 11:30 | Rehab physio | Stairs achieved with rail. Independent transfers.
+D15 09:30 | Rehab SpR WR | Progressing well. BMs 13–17 this week. Home at the weekend with district nurses for enoxaparin.
+D17 13:00 | Rehab SHO | Discharge letter sent to GP. Dx: R NOF #, hemiarthroplasty, AKI resolved, moderate AS. Home nursing accepted for daily enoxaparin until day 28.
+D18 10:15 | Community nurse | Home visit 1. Enoxaparin given. Catheter still in, pt unsure why or who takes it away. BM 16.8. Says his diabetes tablets were not sent home with him.
+D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re catheter + diabetes tablets.`,
+      expectedOpen: ['drug:metformin', 'device:urinary catheter', 'pending:urine culture', 'referral:orthogeriatrics'],
+      demoEntry: 'D21 09:00 | GP | Metformin restarted 500mg BD, creat back to baseline.'
+    }
+  ];
+  const data = { PATIENTS };
   if (typeof module !== 'undefined') module.exports = data; else root.RindData = data;
 })(typeof window !== 'undefined' ? window : globalThis);
 
 /* Rind engine. Rules only, no language model: same notes in, same page out.
    Five checks, each looking for something that was started and never closed. */
 (function (root) {
-  const DRUGS = ['apixaban','warfarin','rivaroxaban','edoxaban','dabigatran','bisoprolol','ramipril','amlodipine','metformin','amiodarone','digoxin','atorvastatin','clopidogrel','aspirin','levetiracetam','furosemide','insulin'];
+  const DRUGS = ['prednisolone','salbutamol','ipratropium','doxycycline','hydrocortisone','apixaban','warfarin','rivaroxaban','edoxaban','dabigatran','bisoprolol','ramipril','amlodipine','metformin','amiodarone','digoxin','atorvastatin','clopidogrel','aspirin','levetiracetam','furosemide','insulin'];
+  /* Messy-notes handling. Brand names map to the drug. A one-letter typo in a drug name is read as that drug.
+     Class words ("blood thinner") point at a drug class. Typos and class words can OPEN a loop or add a
+     "possible" note, but they never CLOSE a loop: unclear evidence stays open for a human to confirm. */
+  const BRANDS = { eliquis: 'apixaban', xarelto: 'rivaroxaban', pradaxa: 'dabigatran', lixiana: 'edoxaban', glucophage: 'metformin', lanoxin: 'digoxin', plavix: 'clopidogrel', keppra: 'levetiracetam', lasix: 'furosemide' };
+  const CLASSES = [
+    { re: /\b(blood[- ]?thinners?|anticoag\w*|DOAC|NOAC)\b/i, drugs: ['apixaban', 'warfarin', 'rivaroxaban', 'edoxaban', 'dabigatran'] },
+    { re: /\bdiabet\w* (tablets?|meds?|medication)\b/i, drugs: ['metformin'] },
+    { re: /\b(BP|blood pressure) (tablets?|meds?|medication)\b/i, drugs: ['ramipril', 'amlodipine', 'bisoprolol'] },
+    { re: /\bwater tablets?\b/i, drugs: ['furosemide'] },
+    { re: /\bsteroids?\b/i, drugs: ['prednisolone', 'hydrocortisone'] }
+  ];
+  function lev(a, b) {
+    const m = a.length, n = b.length; let prev = Array.from({ length: n + 1 }, (_, j) => j);
+    for (let i = 1; i <= m; i++) { const cur = [i]; for (let j = 1; j <= n; j++) cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)); prev = cur; }
+    return prev[n];
+  }
+  function normalise(text) {
+    return text.replace(/[A-Za-z]{5,}/g, w => {
+      const l = w.toLowerCase();
+      if (DRUGS.includes(l)) return w;
+      if (BRANDS[l]) return BRANDS[l];
+      if (l.length < 6) return w;
+      for (const d of DRUGS) {
+        if (d[0] !== l[0] || Math.abs(d.length - l.length) > 2) continue;
+        if (lev(l, d) <= (d.length >= 9 ? 2 : 1)) return d;
+      }
+      return w;
+    });
+  }
   const STOP = /\b(held|hold|withheld|stopped|stop|suspended|omit(?:ted)?)\b/i;
   const RESTART = /\b(re-?start(?:ed)?|resum(?:e|ed)|recommenc(?:e|ed)|back on)\b/i;
   const FINDING = /\b(nodule|lesion|mass|aneurysm|polyp|incidental)\b/i;
   const FINDING_KEY = /\b(nodule|lesion|mass|aneurysm|polyp)\b/i;
   const FOLLOW = /\b(f\/u|follow[- ]?up|advise[ds]?|recommend(?:s|ed)?|suggest(?:s|ed)?)\b/i;
   const TESTS = [
-    { name: 'blood cultures', re: /\b([Bb]lood cultures?|[Bb]lood cx|BCs?)\b/ },
+    { name: 'blood cultures', re: /\b([Bb]lood cultures?|[Bb]lood cx|[Bb]ld cx|BCx|BCs?)\b/ },
     { name: 'sputum culture', re: /\bsputum\b/i },
     { name: 'echo', re: /\b(echo|TTE)\b/i },
     { name: 'urine culture', re: /\b(MSU|urine culture)\b/i },
@@ -226,26 +675,59 @@ D27 16:05 | Community nurse | Home visit 2. HR 112 irregular. No call back from 
     { name: 'respiratory', re: /\bresp(?:iratory)? team\b/i },
     { name: 'SALT', re: /\bSALT\b/ },
     { name: 'surgery', re: /\bsurg(?:ical|eons?)\b/i },
-    { name: 'neurology', re: /\bneuro(?:logy)?\b/i }
+    { name: 'neurology', re: /\bneuro(?:logy)?\b/i },
+    { name: 'orthogeriatrics', re: /\bortho-?geri\w*/i }
   ];
   const REQ = /\b(refer(?:red|ral)?|opinion|d\/w|discuss(?:ed)? with|review requested)\b/i;
   const REPLY = /\b(reviewed|seen by|advice|advised|input|recommend(?:s|ed)?|suggest(?:s|ed)?)\b/i;
   const DEVICES = [
-    { name: 'CVC', re: /\b(CVC|central line)\b/i },
-    { name: 'art line', re: /\bart(?:erial)? line\b/i },
-    { name: 'urinary catheter', re: /\b(urinary )?catheter\b/i }
+    { name: 'CVC', re: /\b(CVC|CVL|central line)\b/i },
+    { name: 'art line', re: /\b(art(?:erial)? line|a-line)\b/i },
+    { name: 'urinary catheter', re: /\b((urinary )?catheter|foley|IDC)\b/i },
+    { name: 'wound drain', re: /\bdrain\b/i }
   ];
   const INSERT = /\b(sited|inserted|placed)\b/i;
   const REMOVE = /\b(removed|taken out|out)\b/i;
-  const EVENTS = /\b(intubated|extubated|norad started|norad off|AKI stage|fast AF|step-down|septic shock|escalate abx|medically fit|discharge letter sent|home visit 1)\b/i;
+  const EVENTS = /\b(intubated|extubated|norad started|norad off|AKI stage|fast AF|step-down|septic shock|escalate abx|medically fit|discharge letter sent|home visit 1|NOF fracture|hemiarthroplasty under|transferred to rehab|post-op delirium)\b/i;
+  const NEG = /\b(not|unable|unconfirmed|whether|no record)\b/i;
   const CHECKS = [
     'Drug held and not restarted',
     'Follow-up advised and not arranged',
     'Test sent with no result',
     'Referral with no reply',
-    'Line or catheter with no removal'
+    'Line or catheter with no removal',
+    'Medicine prescribed with no record it was given',
+    'Decision deferred and never made',
+    'Something to confirm that nobody confirmed',
+    'A document the team could not see',
+    'Family to be told, with no record they were'
   ];
 
+  /* Problem-oriented summary: each sentence is filed under the problems it mentions.
+     Order on screen: problems with open loops first, then this list's order (most acute first). */
+  const PROBLEMS = [
+    { name: 'Breathing', re: /\b(sats|SpO2|FiO2|NIV|HFNO|intubat\w*|extubat\w*|ETT|SBT|T1RF|nasal O2|SOB|PEEP|chest clear|breathless\w*|wheeze|oxygen|saturation|nebulis\w*|COPD|asthma|RR \d+|prednisolone|salbutamol|ipratropium|steroids?)\b/i },
+    { name: 'Infection', re: /\b(CAP|pneumonia|sepsis|septic|abx|antibiotic\w*|co-amox|clari|tazocin|cefuroxime|temp|afebrile|CRP|WCC|cultures?|BCs?|BCx|sputum|MSU|consolidation)\b/i },
+    { name: 'Heart and circulation', re: /\b(norad\w*|shock|AF|bisoprolol|ramipril|amlodipine|HTN|rate control|[Cc]ardio\w*|TTE|[Ee]cho|LVEF|murmur|HR \d+|irregular|AS)\b/ },
+    { name: 'Blood thinning', re: /\b(apixaban|warfarin|rivaroxaban|edoxaban|dabigatran|anticoag\w*|blood[- ]?thinners?|enoxaparin|VTE|plts|INR)\b/i },
+    { name: 'Kidneys', re: /\b(AKI|creat|RRT|renal|UO|anuric|eGFR|U&E|nephrotoxics)\b/i },
+    { name: 'Confusion and dementia', re: /\b(delirium|confus\w*|dementia|CAM-ICU|4AT|GCS|sedation)\b/i },
+    { name: 'Allergy', re: /\b(allerg\w*|penicillins?|urticaria)\b/i },
+    { name: 'Diabetes', re: /\b(T2DM|[Dd]iabet\w*|[Mm]etformin|[Ii]nsulin|BMs?|HbA1c)\b/ },
+    { name: 'Fracture, surgery and bones', re: /\b(NOF|fracture|hemiarthroplasty|wound|drain|post-op|spinal|bone health|falls?|orthogeri\w*)\b/i },
+    { name: 'Lines and catheters', re: /\b(CVC|CVL|central line|art line|catheter|foley|TWOC|cannula)\b/i },
+    { name: 'Incidental findings', re: /\b(nodule|lesion|incidental)\b/i },
+    { name: 'Eating and swallowing', re: /\b(SALT|NG feed|dietitian|oral intake|thin fluids|eating)\b/i },
+    { name: 'Treatment escalation', re: /\b(escalation (ceiling|wishes)|NIV|DNACPR|ReSPECT)\b/i },
+    { name: 'Mobility and going home', re: /\b(physio|OT|mobilis\w*|frame|stairs|transfers|walking|home nursing|lives alone|home alone|discharge)\b/i },
+    { name: 'Family', re: /\b(daughter|son|wife|husband|family|NOK)\b/i },
+    { name: 'Records and documents', re: /\b(chart|care plan|PDF|paper copy|medication record|not transmitted)\b/i }
+  ];
+  /* Medicines: names and the short forms used on wards */
+  const MEDS = [...['apixaban','warfarin','rivaroxaban','edoxaban','dabigatran','bisoprolol','ramipril','amlodipine','metformin','amiodarone','digoxin','atorvastatin','clopidogrel','aspirin','levetiracetam','furosemide','insulin','enoxaparin','lansoprazole','omeprazole','paracetamol','morphine','tazocin','cefuroxime','laxatives','prednisolone','salbutamol','ipratropium','doxycycline'].map(n => ({ name: n, re: new RegExp('\\b' + n + '\\b', 'i') })),
+    { name: 'co-amoxiclav', re: /\bco-amox\w*/i }, { name: 'clarithromycin', re: /\bclari\w*/i }, { name: 'noradrenaline', re: /\bnorad\w*/i }];
+  const HOME_LIST = /\b(home meds|PMH|meds bag)\b/i, NOW_LIST = /\b(TTO|Meds):/;
+  const SERVICES_NAMED = ['Hospital A', 'GP', 'UCR', 'Care home', 'ICU', 'Ward', 'ED'];
   const cap = s => s[0].toUpperCase() + s.slice(1);
   const clauses = t => t.split(/[.;](?=\s|$)/).map(s => s.trim()).filter(Boolean);
 
@@ -253,6 +735,11 @@ D27 16:05 | Community nurse | Home visit 2. HR 112 irregular. No call back from 
     if (/paramedic|ambulance/i.test(who)) return 'Ambulance';
     if (/^ED\b/i.test(who)) return 'ED';
     if (/^ICU\b/i.test(who)) return 'ICU';
+    if (/^care home/i.test(who)) return 'Care home';
+    if (/^UCR/i.test(who)) return 'UCR';
+    if (/^hospital a/i.test(who)) return 'Hospital A';
+    if (/^(theatre|anaes)/i.test(who)) return 'Theatre';
+    if (/^rehab/i.test(who)) return 'Rehab';
     if (/^Ward\b/i.test(who)) return 'Ward';
     if (/community|district|home care/i.test(who)) return 'Home care';
     if (/^GP\b/i.test(who)) return 'GP';
@@ -276,21 +763,25 @@ D27 16:05 | Community nurse | Home visit 2. HR 112 irregular. No call back from 
     const loops = [];
     const later = (i, pred) => E.slice(i + 1).find(pred);
 
-    // 1 drug held, never restarted
+    // 1 drug held, never restarted (N = text with typos and brand names normalised; quotes always use the original)
+    const N = E.map(e => normalise(e.text)), cl = i => clauses(E[i].text), cn = i => clauses(N[i]);
     const lastStop = {};
-    E.forEach(e => clauses(e.text).forEach(c => {
+    E.forEach(e => cn(e.i).forEach((c, k) => {
       if (!STOP.test(c)) return;
-      DRUGS.forEach(d => { if (new RegExp('\\b' + d + '\\b', 'i').test(c)) lastStop[d] = { e, c }; });
+      DRUGS.forEach(d => { if (new RegExp('\\b' + d + '\\b', 'i').test(c)) lastStop[d] = { e, c: cl(e.i)[k] || c }; });
     }));
     Object.entries(lastStop).forEach(([d, { e, c }]) => {
       const dre = new RegExp('\\b' + d + '\\b', 'i');
-      const re = later(e.i, x => clauses(x.text).some(cl => dre.test(cl) && RESTART.test(cl)));
+      const inClass = x => CLASSES.some(k => k.drugs.includes(d) && k.re.test(x));
+      const re = later(e.i, x => cl(x.i).some(c2 => dre.test(c2) && RESTART.test(c2)));
       if (re) loops.push({ key: 'drug:' + d, kind: 'drug', label: cap(d), status: 'closed', start: e.i, end: re.i, text: `${cap(d)} held D${e.day}, restarted D${re.day}`, src: [e.i, re.i] });
       else {
-        const again = E.slice(e.i + 1).filter(x => dre.test(x.text));
-        loops.push({ key: 'drug:' + d, kind: 'drug', label: cap(d), status: 'open', start: e.i, end: null,
+        const again = E.slice(e.i + 1).filter(x => dre.test(N[x.i]));
+        let maybe = null;
+        E.slice(e.i + 1).some(x => cn(x.i).some((c2, k) => { if ((dre.test(c2) || inClass(c2)) && RESTART.test(c2)) { maybe = { i: x.i, text: cl(x.i)[k] || c2 }; return true; } return false; }));
+        loops.push({ key: 'drug:' + d, kind: 'drug', label: cap(d), status: 'open', start: e.i, end: null, maybe,
           title: `${cap(d)} held D${e.day} — no restart documented`,
-          detail: `"${c}"` + (again.length ? ` · listed again D${again.map(x => x.day).join(', D')} but never restarted` : ' · not mentioned again'),
+          detail: `"${c}"` + (again.length ? ` · listed again D${[...new Set(again.map(x => x.day))].join(', D')} but never restarted` : ' · not mentioned again'),
           src: [e.i, ...again.map(x => x.i)] });
       }
     });
@@ -309,7 +800,7 @@ D27 16:05 | Community nurse | Home visit 2. HR 112 irregular. No call back from 
 
     // 3 test sent, no result
     E.forEach(e => clauses(e.text).forEach(c => {
-      if (!SENT.test(c)) return;
+      if (!SENT.test(c) || /\bdeferred\b/i.test(c)) return;
       TESTS.forEach(t => {
         if (!t.re.test(c)) return;
         const re = later(e.i, x => clauses(x.text).some(cl => t.re.test(cl) && RESULT.test(cl) && !SENT.test(cl)));
@@ -345,31 +836,159 @@ D27 16:05 | Community nurse | Home visit 2. HR 112 irregular. No call back from 
       }
     });
 
+    // 6 prescribed, no record it was given
+    const rx = {};
+    E.forEach(e => cn(e.i).forEach((c, k) => {
+      if (!/\bprescribed\b/i.test(c) || NEG.test(c)) return;
+      DRUGS.forEach(d => { if (!rx[d] && new RegExp('\\b' + d + '\\b', 'i').test(c)) rx[d] = { e, c: cl(e.i)[k] || c }; });
+    }));
+    Object.entries(rx).forEach(([d, { e, c }]) => {
+      const dre = new RegExp('\\b' + d + '\\b', 'i'), cls = x => CLASSES.some(k => k.drugs.includes(d) && k.re.test(x));
+      const given = later(e.i, x => cn(x.i).some(c2 => dre.test(c2) && /\b(given|administered|taken)\b/i.test(c2) && !NEG.test(c2)));
+      if (given) loops.push({ key: 'rx:' + d, kind: 'rx', label: cap(d), status: 'closed', start: e.i, end: given.i, text: `${cap(d)} prescribed ${e.time}, given ${given.time}`, src: [e.i, given.i] });
+      else {
+        const doubts = E.slice(e.i + 1).filter(x => cn(x.i).some(c2 => (dre.test(c2) || cls(c2)) && NEG.test(c2)));
+        loops.push({ key: 'rx:' + d, kind: 'rx', label: cap(d), status: 'open', start: e.i, end: null, maybe: null,
+          title: `${cap(d)} prescribed ${e.time} — no record it was given`,
+          detail: `"${c}"` + (doubts.length ? ` · ${doubts.length} later note${doubts.length === 1 ? ' says' : 's say'} this could not be confirmed` : ' · not mentioned again'),
+          src: [e.i, ...doubts.map(x => x.i)] });
+      }
+    });
+
+    // 7 decision deferred, never made
+    const deferred = {};
+    E.forEach(e => cl(e.i).forEach(c => {
+      const m = c.match(/\b([A-Za-z-]+?)s?\s+deferred\b/i); if (!m) return;
+      const topic = m[1].toLowerCase(); if (deferred[topic]) return; deferred[topic] = true;
+      const tre = new RegExp('\\b' + topic, 'i');
+      const made = later(e.i, x => cl(x.i).some(c2 => tre.test(c2) && /\b(prescribed|started|given|commenced)\b/i.test(c2) && !NEG.test(c2)));
+      if (made) loops.push({ key: 'decision:' + topic, kind: 'decision', label: cap(topic), status: 'closed', start: e.i, end: made.i, text: `${cap(topic)} deferred ${e.time}, decided ${made.time}`, src: [e.i, made.i] });
+      else {
+        const again = E.slice(e.i + 1).filter(x => tre.test(x.text));
+        loops.push({ key: 'decision:' + topic, kind: 'decision', label: cap(topic), status: 'open', start: e.i, end: null, maybe: null,
+          title: `${cap(topic)} decision deferred ${e.time} — still not made`,
+          detail: `"${c}"` + (again.length ? ` · raised again ${again.map(x => x.time).join(', ')}, still not decided` : ''),
+          src: [e.i, ...again.map(x => x.i)] });
+      }
+    }));
+
+    // 8 something to confirm that nobody confirmed
+    E.forEach(e => cl(e.i).forEach(c => {
+      const m = c.match(/\b(confirm|check|verify|clarify)\s+(?:current |exact |the )?([^.,;]{3,50}?)\s+(with|before)\s+([^.,;]{2,40})/i);
+      if (!m || NEG.test(c.slice(0, m.index))) return;
+      const obj = m[2].toLowerCase(), words = obj.split(/\s+/).filter(w => w.length > 4);
+      const done = later(e.i, x => cl(x.i).some(c2 => /\b(confirmed|verified|clarified|discussed)\b/i.test(c2) && !NEG.test(c2) && words.some(w => c2.toLowerCase().includes(w))));
+      if (done) loops.push({ key: 'confirm:' + obj, kind: 'confirm', label: cap(obj), status: 'closed', start: e.i, end: done.i, text: `${cap(obj)} confirmed ${done.time}`, src: [e.i, done.i] });
+      else { const name = /reaction/.test(obj) && /penicillin/i.test(e.text) ? 'Penicillin allergy, ' + obj : cap(obj);
+        loops.push({ key: 'confirm:' + obj, kind: 'confirm', label: name.split(',')[0], status: 'open', start: e.i, end: null, maybe: null,
+        title: `${name} — to ${m[1].toLowerCase()} ${m[3].toLowerCase()} ${m[4].split(/ before | so | to /)[0]}, no record it was done`, detail: `"${c}"`, src: [e.i] }); }
+    }));
+
+    // 9 a document the team could not see
+    const docs = {};
+    E.forEach(e => cl(e.i).forEach(c => {
+      if (!/\b(not attached|not directly viewable|not located|not transmitted)\b/i.test(c)) return;
+      const type = /\bchart\b/i.test(c) ? 'observation chart' : /\b(plan|copy|PDF)\b/i.test(c) ? 'care plan' : 'document';
+      (docs[type] = docs[type] || []).push({ e, c });
+    }));
+    Object.entries(docs).forEach(([type, hits]) => {
+      const first = hits[0], src = hits.map(h => h.e.i), who = [...new Set(hits.map(h => h.e.svc))];
+      const named = SERVICES_NAMED.find(s => hits.some(h => new RegExp('\\b' + s + '\\b', 'i').test(h.c)) && E.some(x => x.svc === s && !src.includes(x.i)));
+      if (named) { const held = E.find(x => x.svc === named); loops.push({ key: 'doc:' + type, kind: 'doc', label: cap(type), status: 'closed', found: true, start: first.e.i, end: hits[hits.length - 1].e.i,
+        text: `${cap(type)} could not be seen by ${who.join(', ')}. It is in this record, from ${named}`, src: [...src, held.i] }); }
+      else loops.push({ key: 'doc:' + type, kind: 'doc', label: cap(type), status: 'open', start: first.e.i, end: null, maybe: null,
+        title: `${cap(type)} not available — not in this record either`, detail: `"${first.c}"`, src });
+    });
+
+    // 10 family to be told
+    E.forEach(e => cl(e.i).forEach(c => {
+      if (!/\b(daughter|son|wife|husband|family|NOK)\b[^.]*\bto be (updated|informed|told|called)\b/i.test(c)) return;
+      const told = later(e.i, x => cl(x.i).some(c2 => /\b(daughter|son|wife|husband|family|NOK)\b/i.test(c2) && /\b(informed|updated|told|aware|phoned)\b/i.test(c2) && !/to be/i.test(c2)));
+      if (told) loops.push({ key: 'family', kind: 'family', label: 'Family', status: 'closed', start: e.i, end: told.i, text: `Family to be told ${e.time}, told ${told.time}`, src: [e.i, told.i] });
+      else loops.push({ key: 'family', kind: 'family', label: 'Family', status: 'open', start: e.i, end: null, maybe: null, title: `Family to be told ${e.time} — no record they were`, detail: `"${c}"`, src: [e.i] });
+    }));
+
     // services, and the handovers each open loop has crossed
     const strip = [];
     E.forEach(e => { const l = strip[strip.length - 1]; if (l && l.svc === e.svc) { l.n++; l.i1 = e.i; } else strip.push({ svc: e.svc, n: 1, i0: e.i, i1: e.i }); });
     const path = i => { const p = [E[i].svc]; E.slice(i + 1).forEach(x => { if (x.svc !== p[p.length - 1]) p.push(x.svc); }); return p; };
     loops.forEach(l => { if (l.status === 'open') l.path = path(l.start); });
-    loops.sort((a, b) => a.start - b.start);
+    const RANK = ['rx', 'drug', 'decision', 'confirm', 'pending', 'finding', 'referral', 'device', 'doc', 'family'];
+    loops.sort((a, b) => (RANK.indexOf(a.kind) - RANK.indexOf(b.kind)) || (a.start - b.start));
 
     // coverage: which sentences did any check have something to look at
-    const KNOWN = [...DRUGS.map(d => new RegExp('\\b' + d + '\\b', 'i')), ...DEVICES.map(d => d.re), ...TESTS.map(t => t.re), ...SPECIALTIES.map(x => x.re), FINDING, EVENTS, STOP, RESTART];
+    const KNOWN = [...CLASSES.map(k => k.re), ...DRUGS.map(d => new RegExp('\\b' + d + '\\b', 'i')), ...DEVICES.map(d => d.re), ...TESTS.map(t => t.re), ...SPECIALTIES.map(x => x.re), FINDING, EVENTS, STOP, RESTART];
     let total = 0, checked = 0; const unchk = [];
-    E.forEach(e => { let any = false; clauses(e.text).forEach(c => { total++; if (KNOWN.some(r => r.test(c))) { checked++; any = true; } }); if (!any) unchk.push(e.i); });
+    E.forEach(e => { let any = false; cn(e.i).forEach(c => { total++; if (KNOWN.some(r => r.test(c))) { checked++; any = true; } }); if (!any) unchk.push(e.i); });
 
     // summary: every field is a sourced sentence, or null (shown as "not found")
+    const first = re => { for (let i = 0; i < E.length; i++) { const c = clauses(E[i].text).find(c => re.test(c)); if (c) return { text: c, src: [i] }; } return null; };
     const find = re => { for (let i = E.length - 1; i >= 0; i--) { const c = clauses(E[i].text).find(c => re.test(c)); if (c) return { text: c, src: [i] }; } return null; };
     const events = []; E.forEach(e => clauses(e.text).forEach(c => { if (EVENTS.test(c)) events.push({ text: c, src: [e.i] }); }));
-    const adm = E.find(e => e.svc === 'ED') || E[0];
+    const adm = E.find(e => e.svc === 'ED') || E.find(e => /\b(suspected|imp:|impression|working diagnosis)\b/i.test(e.text)) || E[0];
     const summary = {
-      admitted: adm ? { text: clauses(adm.text).slice(0, 5).join('. ') + '.', src: [adm.i] } : null,
+      admitted: adm ? { text: clauses(adm.text).slice(0, adm.svc === 'ED' ? 5 : 1).join('. ') + '.', src: [adm.i] } : null,
       events,
       now: E.length ? { text: E[E.length - 1].text, src: [E.length - 1] } : null,
-      resus: find(/\b(DNACPR|DNAR|resus|escalation|ceiling of (?:care|treatment)|ReSPECT|TEP)\b/i),
+      resus: find(/\b(DNACPR|DNAR|resus\w*|escalation (?:ceiling|wishes|plan|status)|ceiling of (?:care|treatment)|ReSPECT|TEP)\b/i),
       allergies: find(/\b(NKDA|allerg\w+)\b/i),
-      family: find(/\b(daughter|son|wife|husband|NOK|family)\b/i)
+      family: find(/\b(daughter|son|wife|husband|NOK|family)\b/i),
+      // the person, not only the illness: who to call, when they were last told, where the patient lives
+      nok: first(/\b(NOK|next of kin)\b/i) || first(/\b(daughter|son|wife|husband|partner) [A-Z][a-z]+[^.]*\b0\d{3}/i) || first(/\b(daughter|son|wife|husband|partner) [A-Z][a-z]+/),
+      adjust: first(/\b(short simple sentences|explain before touching|low-stimulation|simple explanations)\b/i),
+      familyTold: find(/^(?!.*\bto be\b).*\b(daughter|son|wife|husband|family|NOK)\b[^.]*\b(updated|informed|told|phoned|aware|visited|present|meeting)\b/i),
+      phone: find(/\b0\d{2,4} ?\d{3,4} ?\d{3,4}\b/),
+      living: first(/\b(lives alone|home alone|lives with|care home|nursing home)\b/i)
     };
-    return { E, bad, loops, open: loops.filter(l => l.status === 'open'), closed: loops.filter(l => l.status === 'closed'),
+    // problems, most important first
+    const problems = PROBLEMS.map((p, order) => {
+      const items = [];
+      E.forEach(e => cl(e.i).forEach(c => { if (p.re.test(c)) items.push({ i: e.i, text: c }); }));
+      return { name: p.name, order, items, loops: [] };
+    }).filter(p => p.items.length);
+    loops.forEach(l => {
+      const probe = l.status === 'open' ? l.label + ' ' + l.title + ' ' + l.detail : l.label + ' ' + l.text;
+      const byLabel = PROBLEMS.find(p => p.re.test(l.label) || p.re.test(l.label.toLowerCase())) || PROBLEMS.find(p => p.re.test(probe));
+      l.problem = byLabel ? byLabel.name : null;
+      const p = problems.find(x => x.name === l.problem); if (p && l.status === 'open') p.loops.push(l.key);
+    });
+    problems.sort((a, b) => (b.loops.length - a.loops.length) || (a.order - b.order));
+
+    // medicines: what she came in on, what the latest list says, and the difference
+    const medsIn = c => MEDS.filter(m => m.re.test(c)).map(m => m.name);
+    const home = new Set(), homeSrc = new Set(); let now = null;
+    E.forEach(e => cn(e.i).forEach(c => {
+      if (HOME_LIST.test(c)) medsIn(c).forEach(n => { home.add(n); homeSrc.add(e.i); });
+      if (NOW_LIST.test(c) && medsIn(c).length) now = { i: e.i, names: medsIn(c) };
+    }));
+    const allMeds = MEDS.map(m => {
+      const hits = []; E.forEach(e => cn(e.i).forEach((c, k) => { if (m.re.test(c)) hits.push({ i: e.i, text: cl(e.i)[k] || c, n: c }); }));
+      if (!hits.length) return null;
+      let status = 'mentioned';
+      hits.forEach(h => {
+        const mm = h.n.match(m.re); if (!mm) return;
+        const near = h.n.slice(Math.max(0, mm.index - 12), mm.index) + ' | ' + h.n.slice(mm.index + mm[0].length, mm.index + mm[0].length + 22);
+        if (RESTART.test(near)) status = 'restarted';
+        else if (/\b(stopped|off)\b/i.test(near)) status = 'stopped';
+        else if (/\b(held|withheld|suspended|omitted)\b/i.test(near)) status = 'held';
+        else if (/\b(continues?|to continue)\b/i.test(near)) status = 'continuing';
+        else if (/\b(started|given|at induction)\b/i.test(near) && !NEG.test(h.n)) status = 'given';
+        else if (/\bprescribed\b/i.test(h.n) && status === 'mentioned') status = 'prescribed';
+      });
+      return { name: m.name, status, first: hits[0].i, last: hits[hits.length - 1].i, home: home.has(m.name), now: !!(now && now.names.includes(m.name)) };
+    }).filter(Boolean);
+    const meds = { home: [...home], homeSrc: [...homeSrc], now, all: allMeds,
+      missing: now ? [...home].filter(n => !now.names.includes(n)) : [],
+      added: now ? now.names.filter(n => !home.has(n)) : [] };
+
+    const obs = [];
+    E.forEach(e => {
+      const g = re => { const m = e.text.match(re); return m ? m[1] : null; };
+      const o = { i: e.i, rr: g(/\bRR (?:still )?(\d+)/), spo2: g(/\bSpO2 (\d+%(?: on [^,.]+)?)/), hr: g(/\bHR (\d+)/), temp: g(/\bTemp (\d+(?:\.\d)?)/), news: g(/\bNEWS2 (\d+)/) };
+      if (o.rr || o.spo2 || o.hr) obs.push(o);
+    });
+
+    return { E, bad, loops, problems, meds, obs, open: loops.filter(l => l.status === 'open'), closed: loops.filter(l => l.status === 'closed'),
       summary, strip, cover: { total, checked, unchk }, days: E.length ? E[E.length - 1].day - E[0].day + 1 : 0, words: text.split(/\s+/).length };
   }
 
@@ -380,208 +999,494 @@ D27 16:05 | Community nurse | Home visit 2. HR 112 irregular. No call back from 
 /* Rind UI. All detection lives in rules.js; this file only draws. */
 (function () {
   const { analyse, LINE, CHECKS } = window.Rind;
-  const { NOTES, EXPECTED_OPEN, DEMO_ENTRY } = window.RindData;
+  const { PATIENTS } = window.RindData;
   const $ = id => document.getElementById(id);
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const cap = s => s[0].toUpperCase() + s.slice(1);
   const reduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   const sleep = ms => new Promise(r => setTimeout(r, ms));
-  let notesText = NOTES, built = false, busy = false;
+  let cur = PATIENTS[0], notesText = cur.notes, built = false, busy = false, lastMs = '0', query = '', lastR = null, audience = '', jStage = null, jOpen = true, jClosed = false, doc = 'handover', jSel = null;
+  const edits = {}, myNote = {};
 
-  /* ---------- notes pane ---------- */
+  /* ---------- source links: a small chip; hover or focus shows the note it came from ---------- */
+  const when = (i, E) => { const e = E[i], L = cur.dayLabels; if (!L) return `Day ${e.day}, ${e.time}`; return e.day === 0 ? L[0] : `${L[e.day] || 'Day ' + e.day}, ${e.time}`; };
+  const whenShort = (i, E) => { const e = E[i], L = cur.dayLabels; return !L ? `Day ${e.day}` : e.day === 0 ? L[0] : e.time; };
+  const dayWords = t => t ? t.replace(/\bD(\d+)\b/g, 'day $1') : t;
+  const nice = R => { if (!cur.dayLabels) R.loops.forEach(l => { l.title = dayWords(l.title); l.detail = dayWords(l.detail); l.text = dayWords(l.text); }); return R; };
+  const USER = 'ED clinician (demo sign-in)';
+  const nowTime = () => new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+  const audit = [], done = {}, reviewed = {};
+  const log = text => { audit.unshift({ t: nowTime(), text }); if (audit.length > 60) audit.pop(); drawAudit(); };
+  function drawAudit() { const el = $('auditList'); if (el) el.innerHTML = audit.map(a => `<li><span class="day">${a.t}</span><span>${esc(a.text)}</span></li>`).join('') || '<li><span class="day"></span><span>Nothing logged yet.</span></li>'; }
+  const chips = (src, E) => [...new Set(src)].map(i => `<button type="button" class="src" data-i="${i}" aria-label="Source: ${when(i, E)}, ${esc(E[i].svc)}">${when(i, E)}</button>`).join('<span class="sep" aria-hidden="true"> · </span>');
+  const dayLink = (i, E) => `<button type="button" class="src day" data-i="${i}" aria-label="Source: ${when(i, E)}, ${esc(E[i].svc)}">${whenShort(i, E)}</button>`;
+  const pop = document.createElement('div'); pop.id = 'pop'; pop.hidden = true; pop.setAttribute('role', 'tooltip'); document.body.appendChild(pop);
+  function showPop(b) {
+    const e = lastR && lastR.E[+b.dataset.i]; if (!e) return;
+    pop.innerHTML = `<div class="popMeta">${when(e.i, lastR.E)} · ${esc(e.svc)} · ${esc(e.who)}</div><div>${esc(e.text)}</div><div class="popHint">Select to open in the notes</div>`;
+    pop.hidden = false;
+    const r = b.getBoundingClientRect(), w = Math.min(420, window.innerWidth - 24);
+    pop.style.width = w + 'px';
+    pop.style.left = Math.max(12, Math.min(r.left + window.scrollX, window.scrollX + window.innerWidth - w - 12)) + 'px';
+    const below = r.bottom + 8 + pop.offsetHeight < window.innerHeight;
+    pop.style.top = (below ? r.bottom + window.scrollY + 6 : r.top + window.scrollY - pop.offsetHeight - 6) + 'px';
+  }
+  const hidePop = () => { pop.hidden = true; };
+  document.addEventListener('mouseover', e => { const b = e.target.closest && e.target.closest('.src'); if (b) showPop(b); });
+  document.addEventListener('mouseout', e => { if (e.target.closest && e.target.closest('.src')) hidePop(); });
+  document.addEventListener('focusin', e => { const b = e.target.closest && e.target.closest('.src'); if (b) showPop(b); else hidePop(); });
+  window.addEventListener('scroll', hidePop, true);
+
+  /* ---------- notes panel ---------- */
+  const qWords = q => q.toLowerCase().split(/\s+/).filter(Boolean);
+  const qHit = (e, W) => { const t = (e.text + ' ' + e.who + ' ' + e.svc).toLowerCase(); return W.every(w => t.includes(w)); };
+  const qMark = (t, W) => W.length ? t.split(new RegExp('(' + W.map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') + ')', 'ig')).map((p, k) => k % 2 ? `<mark>${esc(p)}</mark>` : esc(p)).join('') : esc(t);
   function renderNotes(R, newIdx) {
-    $('noteHead').textContent = `Source notes · ${R.E.length} entries · ${R.days} days`;
-    $('notes').innerHTML = R.E.map(e => `<div class="note${e.i === newIdx ? ' new' : ''}" id="n${e.i}"><span class="meta">D${e.day} ${e.time} · <b>${esc(e.svc)}</b> · ${esc(e.who)}</span><br>${esc(e.text)}</div>`).join('');
+    const q = query.trim(), W = qWords(q);
+    const hl = t => q ? qMark(t, W) : esc(t);
+    const list = R.E.filter(e => !q || qHit(e, W));
+    $('noteHead').textContent = q ? `${list.length} of ${R.E.length} entries match "${q}"` : `Source notes · ${R.E.length} entries · ${R.days} days`;
+    $('notes').innerHTML = list.map(e => `<div class="note${e.i === newIdx ? ' new' : ''}" id="n${e.i}"><span class="meta">${when(e.i, R.E)} · ${esc(e.svc)} · ${hl(e.who)}</span>${hl(e.text)}</div>`).join('') || '<p class="none">No entries match.</p>';
     if (built) R.cover.unchk.forEach(i => { const n = $('n' + i); if (n) n.classList.add('unchk'); });
   }
+  function setNotes(on) { $('left').hidden = !on; document.body.classList.toggle('showNotes', on); $('notesBtn').setAttribute('aria-pressed', on); $('notesLb').textContent = on ? 'Hide notes' : 'Show notes'; }
   function showNote(i) {
+    hidePop(); setNotes(true);
+    if (lastR && lastR.E[i]) log(`Source viewed: ${when(i, lastR.E)}, ${lastR.E[i].svc}`);
     if (!$('editor').hidden) toggleEdit();
+    if (query && !$('n' + i)) { query = ''; $('q').value = ''; renderNotes(lastR); }
     document.querySelectorAll('.note.hit').forEach(n => n.classList.remove('hit'));
     const n = $('n' + i); if (!n) return;
     n.classList.add('hit');
     const box = $('notes'); box.scrollTop = Math.max(0, n.offsetTop - box.offsetTop - 80);
-    if (n.scrollIntoView) n.scrollIntoView({ block: 'nearest' });
+  }
+  function setView(v) {
+    document.querySelectorAll('.view').forEach(x => { x.hidden = x.id !== 'v-' + v; });
+    document.querySelectorAll('.nav[data-v]').forEach(b => { if (b.dataset.v === v) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
+    document.body.classList.toggle('wide', v === 'journey');
+    if (v === 'journey' && built) drawJourney(lastR, true, true);
+    if (v !== 'home') document.body.classList.remove('noPatient');
+    window.scrollTo(0, 0);
   }
 
-  /* ---------- journey (hero) ---------- */
+  /* ---------- journey ---------- */
   const W = 1200, L = 24, RP = 150, TY = 204;
   function layout(R) {
-    const E = R.E, segs = R.strip.map(s => Object.assign({}, s));
+    const E = R.E, all = R.strip.map(s => Object.assign({}, s));
     const tEnd = E[E.length - 1].t + 0.6;
-    segs.forEach((s, k) => { s.t0 = E[s.i0].t; s.t1 = k < segs.length - 1 ? E[segs[k + 1].i0].t : tEnd; s.w = Math.max(s.t1 - s.t0, 2.6); });
+    all.forEach((s, k) => { s.t0 = E[s.i0].t; s.t1 = k < all.length - 1 ? E[all[k + 1].i0].t : tEnd; s.w = Math.max(s.t1 - s.t0, 2.6); });
+    const segs = jStage === null || !all[jStage] ? all : [all[jStage]];
     const tot = segs.reduce((a, s) => a + s.w, 0), span = W - L - RP; let x = L;
     segs.forEach(s => { s.x0 = x; s.x1 = x + span * s.w / tot; x = s.x1; });
-    const X = i => { const s = segs.find(s => i >= s.i0 && i <= s.i1), t = E[i].t; return s.x0 + (s.t1 > s.t0 ? (t - s.t0) / (s.t1 - s.t0) : 0) * (s.x1 - s.x0); };
-    return { segs, X, rindX: W - RP + 10 };
+    const lo = segs[0].i0, hi = segs[segs.length - 1].i1;
+    const X = i => { if (i < lo) return L; if (i > hi) return segs[segs.length - 1].x1; const s = segs.find(s => i >= s.i0 && i <= s.i1), t = E[i].t; return s.x0 + (s.t1 > s.t0 ? (t - s.t0) / (s.t1 - s.t0) : 0) * (s.x1 - s.x0); };
+    return { segs, X, rindX: W - RP + 10, lo, hi };
   }
   function drawJourney(R, show, animate) {
-    const { segs, X, rindX } = layout(R), E = R.E;
-    const f = n => n.toFixed(1);
-    let s = '<title id="jt">Journey of one patient across services, with open and closed loops</title>';
-    segs.forEach((g, k) => {
-      s += `<rect class="seg${k % 2 ? ' alt' : ''}" x="${f(g.x0)}" y="${TY}" width="${f(g.x1 - g.x0 - 2)}" height="24"/>`;
-      s += `<text class="segLab" x="${f((g.x0 + g.x1) / 2)}" y="${TY + 44}" text-anchor="middle">${esc(g.svc)}</text>`;
-      s += `<text class="segSub" x="${f((g.x0 + g.x1) / 2)}" y="${TY + 60}" text-anchor="middle">${g.n} ${g.n === 1 ? 'entry' : 'entries'}</text>`;
+    const E = R.E, G = R.strip, stageOf = i => G.findIndex(g => i >= g.i0 && i <= g.i1);
+    const rows = !show ? [] : [...(jOpen ? R.open : []), ...(jClosed ? R.closed : [])].filter(l => {
+      if (jStage === null) return true;
+      return [l.start, ...l.src, ...(l.status === 'closed' ? [l.end] : [])].some(i => stageOf(i) === jStage);
     });
-    E.forEach(e => { s += `<rect class="tick" x="${f(X(e.i) - 0.75)}" y="${TY + 7}" width="1.5" height="10"/>`; });
-    // handover slabs (the slices)
-    segs.slice(1).forEach(g => {
-      s += `<rect class="slab" x="${f(g.x0 - 6)}" y="14" width="10" height="${TY - 14}" rx="3"/>`;
-      s += `<text class="slabLab" x="${f(g.x0 - 1)}" y="10" text-anchor="middle">handover</text>`;
+    const mark = (idx, i, cls) => `<span class="src jm ${cls}" data-i="${i}" data-loop="${idx}"></span>`;
+    let h = `<div class="jg" style="--n:${G.length}" role="table" aria-label="Where each loop started and how far it was carried">
+      <div class="jh jlab" role="columnheader">Loop</div>
+      ${G.map((g, k) => `<button type="button" class="jh${jStage === k ? ' on' : ''}" data-js="${k}" aria-pressed="${jStage === k}" title="Show only the loops ${esc(g.svc)} started or mentioned"><b>${esc(g.svc)}</b><span>${g.n} ${g.n === 1 ? 'entry' : 'entries'}</span></button>`).join('')}
+      <div class="jh jrind" role="columnheader"><b>Rind</b><span>now</span></div>`;
+    rows.forEach((l, r) => {
+      const open = l.status !== 'closed', a = stageOf(l.start), b = open ? G.length : stageOf(l.end), idx = R.loops.indexOf(l);
+      const t = open ? l.title.split(' — ') : [cap(l.label), 'closed ' + when(l.end, E)];
+      const acted = open && done[dk(l)];
+      h += `<button type="button" class="loopHit jlab ${open ? 'open' : 'closed'}" data-loop="${idx}" style="--k:${r}"><b>${esc(t[0])}</b><span>${esc(t.slice(1).join(' — '))}</span></button>`;
+      G.forEach((g, k) => {
+        if (k < a || k > b) { h += `<div class="jc${jStage === k ? ' on' : ''}" data-loop="${idx}"></div>`; return; }
+        const ids = [...new Set([l.start, ...l.src, ...(open ? [] : [l.end])])].filter(i => stageOf(i) === k).sort((x, y) => x - y);
+        const line = a === b ? '' : k === a ? ' from' : k === b ? ' to' : ' thru';
+        const one = !ids.length ? '' : !open && k === b ? mark(idx, l.end, 'end') : k === a ? mark(idx, l.start, 'start') : mark(idx, ids[ids.length - 1], 'again');
+        h += `<div class="jc${line}${open ? '' : ' ok'}${jStage === k ? ' on' : ''}" data-loop="${idx}">${one}</div>`;
+      });
+      h += open ? `<div class="jc to jr" data-loop="${idx}"><span class="jopen${acted ? ' acted' : ''}">${acted ? 'Actioned' : 'Open'}</span></div>` : `<div class="jc jr" data-loop="${idx}"><span class="jdone">Closed</span></div>`;
     });
-    s += `<rect class="rindEdge" x="${rindX + 10}" y="14" width="5" height="${TY - 14}" rx="2"/><rect class="rindBar" x="${rindX}" y="14" width="12" height="${TY - 14}" rx="3"/>`;
-    s += `<text class="rindLab" x="${rindX + 7}" y="${TY + 44}" text-anchor="middle">Rind</text>`;
-    if (show) {
-      const an = (cls, d) => animate && !reduced ? ` class="${cls} draw" pathLength="1" style="animation-delay:${d}ms"` : ` class="${cls}"`;
-      const pop = d => animate && !reduced ? ` style="animation-delay:${d}ms" class="pop"` : '';
-      // closed loops: arcs that land
-      const spanSeen = {}, placed = [];
-      const fits = (x, y, w) => { if (placed.some(p => Math.abs(p.x - x) < (p.w + w) / 2 + 8 && Math.abs(p.y - y) < 15)) return false; placed.push({ x, y, w }); return true; };
-      const labelled = new Set([...R.closed].sort((p, q) => (X(q.end) - X(q.start)) - (X(p.end) - X(p.start))).filter(l => {
-        const a = X(l.start), b = X(l.end); if (b - a < 60) return false;
-        const h = Math.min(120, 16 + (b - a) * 0.2); return fits((a + b) / 2, TY - h - 6, l.label.length * 6.4);
-      }));
-      R.closed.forEach((l, k) => {
-        const a = X(l.start), b = Math.max(X(l.end), a + 14), key = l.start + '-' + l.end;
-        const dup = spanSeen[key] = (spanSeen[key] || 0) + 1;
-        const h = Math.min(120, 16 + (b - a) * 0.2) + (dup - 1) * 13;
-        const d = 150 + k * 90;
-        s += `<g class="loopHit" tabindex="0" role="button" data-src="${l.start}" aria-label="Closed: ${esc(l.text)}"><title>Closed: ${esc(l.text)}</title>`;
-        const pd = `M${f(a)} ${TY} Q${f((a + b) / 2)} ${f(TY - 2 * h)} ${f(b)} ${TY}`;
-        s += `<path class="hit" d="${pd}"/><path${an('arc', d)} d="${pd}"/>`;
-        s += `<circle class="startDot" cx="${f(a)}" cy="${TY}" r="3"/><circle class="startDot" cx="${f(b)}" cy="${TY}" r="3"/>`;
-        if (labelled.has(l)) s += `<text${pop(d + 700)} x="${f((a + b) / 2)}" y="${f(TY - h - 6)}" text-anchor="middle"><tspan class="arcLab">${esc(l.label)}</tspan></text>`;
-        s += '</g>';
-      });
-      // open loops: threads that pass every handover and reach the rind
-      const n = R.open.length, gap = n > 1 ? Math.min(26, 96 / (n - 1)) : 0;
-      R.open.forEach((l, k) => {
-        const a = X(l.start), y = 34 + k * gap, d = 1100 + k * 260;
-        segs.slice(1).forEach(g => { if (g.x0 > a + 8) s += `<circle class="hole" cx="${f(g.x0 - 1)}" cy="${f(y)}" r="8"/>`; });
-        s += `<g class="loopHit" tabindex="0" role="button" data-open="${k}" data-src="${l.start}" aria-label="Open: ${esc(l.title)}"><title>Open: ${esc(l.title)}</title>`;
-        const pd = `M${f(a)} ${TY} C${f(a)} ${f(y + 70)} ${f(a + 4)} ${f(y)} ${f(a + 46)} ${f(y)} L${rindX} ${f(y)}`;
-        s += `<path class="hit" d="${pd}"/><path${an('thread', d)} d="${pd}"/>`;
-        s += `<circle class="startDot" cx="${f(a)}" cy="${TY}" r="4"/>`;
-        s += `<g${pop(d + 850)}><circle class="endDot" cx="${rindX}" cy="${f(y)}" r="6"/><text class="threadLab" x="${rindX + 24}" y="${f(y + 5)}">${esc(l.label)}</text></g></g>`;
-      });
-    }
-    $('journey').innerHTML = s;
-  }
-  function tiles(R, show) {
-    const h = R.strip.length - 1;
-    const t = (cls, n, label) => `<div class="tile ${cls}"><b>${n}</b><span>${label}</span></div>`;
-    $('tiles').innerHTML = t('', R.E.length, 'entries read') + t('', h, `handover${h === 1 ? '' : 's'}`) +
-      (show ? t('r', R.open.length, 'open loops') + t('g', R.closed.length, 'closed loops') + t('y', R.cover.unchk.length, 'entries no check touched')
-            : t('r', '–', 'open loops') + t('g', '–', 'closed loops') + t('y', '–', 'entries no check touched'));
+    if (show && !rows.length) h += `<div class="jnone">Nothing to show with these filters.</div>`;
+    h += '</div>';
+    $('journey').innerHTML = h;
+    if (show) { const key = l => l.key + '|' + l.start, pick = rows.find(l => key(l) === jSel) || rows[0]; if (pick) showLoop(R.loops.indexOf(pick), R); else $('loopDetail').innerHTML = ''; }
+    if ($('jf')) $('jf').innerHTML = `<span class="jfL">Show</span>
+        <button type="button" class="chip" data-jk="open" aria-pressed="${jOpen}">Open loops ${R.open.length}</button>
+        <button type="button" class="chip" data-jk="closed" aria-pressed="${jClosed}">Closed loops ${R.closed.length}</button>
+        ${jStage !== null ? `<button type="button" class="chip" data-js="all" aria-pressed="false">${esc(G[jStage].svc)} only · show whole journey</button>` : ''}
+        <span class="jkey"><i class="jm start"></i>started <i class="jm again"></i>mentioned again <i class="jm end"></i>closed</span>`;
   }
 
-  /* ---------- the page ---------- */
-  const chips = (src, E) => [...new Set(src)].map(i => `<button type="button" class="src" data-i="${i}">D${E[i].day} ${E[i].time}</button>`).join('');
-  const NF = '<span class="nf">Not found in these notes</span> — check with the team';
-  function renderPage(R, ms) {
-    const { E, open, closed, summary: S, cover } = R;
+  /* ---------- one loop, in full: used on the loops page and under the journey ---------- */
+  function loopBody(l, E) {
+    if (l.status === 'closed') return `<p class="quote">${esc(l.text)}. Started and finished in the notes.</p><dl class="meta2"><dt>Source</dt><dd>${chips(l.src, E)}</dd></dl>`;
+    return `<p class="quote">${esc(l.detail)}</p>
+      ${l.maybe ? `<p class="q"><b>Possible restart on day ${E[l.maybe.i].day}:</b> "${esc(l.maybe.text)}". The wording is unclear, so this stays open until someone confirms. ${chips([l.maybe.i], E)}</p>` : ''}
+      <dl class="meta2"><dt>Passed through</dt><dd>${l.path.map(esc).join('<span class="arrow" aria-hidden="true"></span>')}</dd><dt>Source</dt><dd>${chips(l.src, E)}</dd></dl>`;
+  }
+
+  /* ---------- who needs to act on what ---------- */
+  const CARER = { 'Home care': 'Community nurse', Ward: 'Ward team', Rehab: 'Rehab team', ICU: 'ICU team', ED: 'ED', GP: 'GP', Theatre: 'Ward team', Ambulance: 'ED', 'Care home': 'Care home', UCR: 'UCR team', 'Hospital A': 'Hospital A' };
+  const carer = R => CARER[R.E[R.E.length - 1].svc] || 'Receiving team';
+  function owners(l, R) {
+    const now = carer(R), has = s => R.strip.some(x => x.svc === s), u = a => [...new Set(a)];
+    if (l.kind === 'referral') return u([l.label, 'GP']);
+    if (l.kind === 'drug') return u(['GP', now]);
+    if (l.kind === 'device') return u([now, 'GP']);
+    if (l.kind === 'rx') return u([now, has('Care home') ? 'Care home' : 'GP']);
+    if (l.kind === 'decision' || l.kind === 'confirm' || l.kind === 'family') return [now];
+    if (l.kind === 'doc') return u([has('Care home') ? 'Care home' : now]);
+    return ['GP'];
+  }
+  /* recommended handovers for this patient: the team caring for them now, then anyone with a loop to act on */
+  function recommended(R) {
+    const now = carer(R), count = {};
+    R.open.forEach(l => owners(l, R).forEach(o => { count[o] = (count[o] || 0) + 1; }));
+    const names = [...new Set([now, ...Object.keys(count).sort((a, b) => count[b] - count[a])])];
+    return names.map(n => {
+      const ref = R.open.find(l => l.kind === 'referral' && l.label === n);
+      const arriving = R.E[R.E.length - 1].svc === 'Ambulance';
+      const why = n === now ? (arriving ? 'Receiving the patient next' : 'Looking after the patient now') : ref ? `Asked for an opinion on day ${R.E[ref.start].day}, no reply in the notes` : n === 'Care home' ? 'Can confirm what was given and send the chart' : 'Has follow-up to arrange';
+      return { name: n, n: count[n] || 0, why };
+    });
+  }
+  function audiences(R) { return [...new Set([...recommended(R).map(x => x.name), 'ED'])]; }
+  function handoverText(R, who) {
+    const E = R.E, at = i => when(i, E), S = R.summary, demo = (notesText.match(/\b\d{2,3}[FM]\b/) || ['patient'])[0];
+    const mine = who === 'ED' && carer(R) !== 'ED' ? R.open : R.open.filter(l => owners(l, R).includes(who)), rest = R.open.filter(l => !mine.includes(l));
+    const line = (l, k) => `${k + 1}. ${l.title} [${at(l.start)}, ${E[l.start].svc}]` + (l.maybe ? ` (possible restart ${at(l.maybe.i)}, unclear, confirm)` : '');
+    const L = [`HANDOVER TO ${who.toUpperCase()} · synthetic patient ${demo}`, ''];
+    if (S.admitted) L.push('PRESENTING PROBLEM', S.admitted.text, '');
+    L.push('MAIN PROBLEMS', ...R.problems.slice(0, 5).map(p => `- ${p.name}: ${p.items[p.items.length - 1].text}`), '');
+    L.push(who === 'ED' && carer(R) !== 'ED' ? `ALL OPEN LOOPS (${mine.length})` : `FOR YOU TO ACTION (${mine.length})`);
+    L.push(...(mine.length ? mine.map(line) : ['None found for you by these checks.']));
+    if (rest.length) L.push('', `OPEN WITH OTHER TEAMS (${rest.length})`, ...rest.map(l => `- ${l.title} → ${owners(l, R).join(', ')}`));
+    if (R.meds.now) {
+      L.push('', 'MEDICINES');
+      if (R.meds.missing.length) L.push(`Home medicine not on the latest list: ${R.meds.missing.join(', ')}`);
+      if (R.meds.added.length) L.push(`New on the latest list: ${R.meds.added.join(', ')}`);
+    }
+    const nf = [['Resus / escalation status', S.resus], ['Allergies', S.allergies], ['Next of kin', S.nok], ['Family phone number', S.phone]].filter(x => !x[1]).map(x => x[0]);
+    if (S.nok || S.familyTold) L.push('', 'FAMILY', ...(S.nok ? ['Next of kin: ' + S.nok.text] : []), ...(S.familyTold ? [`Last told: ${S.familyTold.text} [${at(S.familyTold.src[0])}]`] : []));
+    if (nf.length) L.push('', 'NOT FOUND IN THE NOTES', ...nf.map(x => '- ' + x));
+    L.push('', `${CHECKS.length} checks only, not a full summary. ${R.cover.unchk.length} of ${E.length} entries were not touched by any check.`);
+    return L.join('\n');
+  }
+  const ST = { held: 'held', stopped: 'stopped', restarted: 'held, then restarted', continuing: 'continuing', given: 'given', prescribed: 'prescribed', mentioned: 'mentioned' };
+  const DOCS = [['handover', 'Handover'], ['discharge', 'Discharge summary'], ['family', 'Call the family']];
+  const nokShort = t => { const m = t.match(/\b([Dd]aughter|[Ss]on|[Ww]ife|[Hh]usband|[Pp]artner) ([A-Z][a-z]+(?: [A-Z][a-z]+)?)[^0-9]{0,8}(0\d[\d ]{8,12}\d)?/); return m ? `${m[2]}, ${m[1].toLowerCase()}${m[3] ? ' · ' + m[3] : ''}` : t; };
+  const mine = () => (myNote[cur.id] || '').trim();
+  function dischargeText(R) {
+    const E = R.E, at = i => when(i, E), S = R.summary, v = x => x ? x.text : 'Not found in the notes';
+    const src = l => `[${at(l.start)}, ${E[l.start].svc}]`, by = k => R.open.filter(l => k.includes(l.kind));
+    const medLine = m => `- ${cap(m.name)}: ${R.open.some(l => l.key === 'drug:' + m.name) ? 'HELD, NOT RESTARTED' : R.open.some(l => l.key === 'rx:' + m.name) ? 'PRESCRIBED, NO RECORD IT WAS GIVEN' : ST[m.status]}`;
+    const L = ['DISCHARGE SUMMARY · draft', `${cur.name} · born ${cur.dob} · NHS no ${cur.nhsNo} · synthetic patient`, ''];
+    L.push('PRESENTING PROBLEM', v(S.admitted), '', 'CLINICAL SUMMARY, BY PROBLEM', ...R.problems.slice(0, 6).map(p => `- ${p.name}: ${p.items[p.items.length - 1].text}`), '');
+    L.push('MEDICINES', ...(R.meds.all.length ? R.meds.all.map(medLine) : ['Not found in the notes']));
+    if (R.meds.now && R.meds.missing.length) L.push(`Home medicine not on the latest list: ${R.meds.missing.join(', ')}`);
+    if (R.meds.now && R.meds.added.length) L.push(`New on the latest list: ${R.meds.added.join(', ')}`);
+    L.push('', 'ALLERGIES', v(S.allergies), '');
+    const res = by(['pending']), fu = by(['referral', 'finding', 'drug', 'device']), other = R.open.filter(l => !res.includes(l) && !fu.includes(l));
+    L.push('RESULTS STILL AWAITED', ...(res.length ? res.map(l => `- ${l.title} ${src(l)}`) : ['None found by these checks.']), '');
+    L.push('ACTIONS FOR THE GP AND FOLLOW-UP', ...(fu.length ? fu.map(l => `- ${l.title} ${src(l)}`) : ['None found by these checks.']));
+    if (other.length) L.push('', 'STILL OPEN AT DISCHARGE', ...other.map(l => `- ${l.title} ${src(l)}`));
+    L.push('', 'ESCALATION AND RESUSCITATION', v(S.resus), '', 'FAMILY', `Next of kin: ${S.nok ? nokShort(S.nok.text) : 'Not found in the notes'}`, `Last told: ${S.familyTold ? `${S.familyTold.text} [${at(S.familyTold.src[0])}]` : 'Not found in the notes'}`);
+    if (S.adjust) L.push('', 'ADJUSTMENTS', S.adjust.text);
+    if (mine()) L.push('', 'ADDED BY THE CLINICIAN', mine());
+    L.push('', `Draft from ${CHECKS.length} checks, not a full summary. Check against the notes before sending.`);
+    return L.join('\n');
+  }
+  function familyText(R) {
+    const E = R.E, at = i => when(i, E), S = R.summary;
+    const ask = R.open.filter(l => l.kind === 'family' || /family|daughter|\bson\b|wife|husband|partner|NOK/i.test(l.title));
+    const L = ['CALL THE FAMILY', '', 'WHO', S.nok ? nokShort(S.nok.text) : 'Next of kin not found in the notes', '', 'LAST TOLD', S.familyTold ? `${S.familyTold.text} [${at(S.familyTold.src[0])}]` : 'No record in the notes that the family has been told', ''];
+    L.push('TO TELL THEM', S.now ? S.now.text.split(/(?<=\.)\s/).slice(0, 2).join(' ') : 'Not found in the notes', '(clinical wording from the notes: put it in plain words on the call)', '');
+    L.push('TO ASK THEM', ...(ask.length ? ask.map(l => `- ${l.title}`) : ['Nothing in the open loops needs the family.']));
+    if (S.adjust) L.push('', 'WHAT HELPS THIS PERSON', S.adjust.text);
+    if (mine()) L.push('', 'ADDED BY THE CLINICIAN', mine());
+    return L.join('\n');
+  }
+  const docKey = () => `${cur.id}|${doc}|${doc === 'handover' ? audience : ''}`;
+  const draftFor = R => doc === 'handover' ? handoverText(R, audience) + (mine() ? '\n\nADDED BY THE CLINICIAN\n' + mine() : '') : doc === 'discharge' ? dischargeText(R) : familyText(R);
+  function docStatus(draft) {
+    const ed = edits[docKey()];
+    $('docState').innerHTML = !ed ? 'Draft written by Rind from the notes. Edit anything before you send it.'
+      : `<span class="okTag">Edited by you at ${ed.t}</span>${ed.base !== draft ? '<b class="bad">The notes have changed since you edited this.</b> ' : ''}<button type="button" class="linkbtn" id="docReset">Go back to Rind's draft</button>`;
+  }
+  function drawHandover(R) {
+    const recs = recommended(R), list = audiences(R); if (!list.includes(audience)) audience = list[0];
+    const draft = draftFor(R), ed = edits[docKey()];
+    $('v-handover').innerHTML = `<h2 class="cardH">Handover and documents</h2>
+      <div class="jf"><span class="jfL">Write</span>${DOCS.map(d => `<button type="button" class="chip" data-doc="${d[0]}" aria-pressed="${doc === d[0]}">${d[1]}</button>`).join('')}</div>
+      ${doc === 'handover' ? `<p class="hint" style="margin:0 0 10px">Recommended for this patient, from who is caring for them now and who has a loop to act on.</p>
+      <div class="recGrid" id="aud">${recs.map(x => `<button type="button" class="rec" data-a="${esc(x.name)}" aria-pressed="${x.name === audience}"><b>${esc(x.name)}</b><span class="recN">${x.n} to action</span><span class="recWhy">${esc(x.why)}</span></button>`).join('')}
+        ${recs.some(x => x.name === 'ED') ? '' : `<button type="button" class="rec" data-a="ED" aria-pressed="${audience === 'ED'}"><b>ED</b><span class="recN">All ${R.open.length}</span><span class="recWhy">If the patient comes back in</span></button>`}</div>` : ''}
+      <textarea id="hoText" rows="16" spellcheck="true" aria-label="${DOCS.find(d => d[0] === doc)[1]} text, editable">${esc(ed ? ed.text : draft)}</textarea>
+      <p class="docState" id="docState"></p>
+      <button type="button" id="copyBtn" class="btn copy">Copy text</button> <button type="button" id="pdfBtn" class="btn copy">Print or save as PDF</button> <span id="copyMsg" class="hint" role="status"></span>`;
+    docStatus(draft);
+    $('recs').innerHTML = recs.map(x => `<button type="button" class="nav sub" data-aud="${esc(x.name)}"><span class="lbl">${esc(x.name)}</span><span class="badge quiet">${x.n}</span></button>`).join('');
+  }
+  document.addEventListener('change', e => { if (e.target.id === 'idTick') $('idOpen').disabled = !e.target.checked; });
+  document.addEventListener('input', e => {
+    if (e.target.id === 'hoText') { const k = docKey(), draft = draftFor(lastR); if (!edits[k]) log(`${DOCS.find(d => d[0] === doc)[1]} edited by the clinician`); edits[k] = { text: e.target.value, t: nowTime(), base: edits[k] ? edits[k].base : draft }; docStatus(draft); }
+    if (e.target.id === 'myNote') { if (!myNote[cur.id]) log('Clinician added a line to the summary'); myNote[cur.id] = e.target.value; drawHandover(lastR); }
+  });
+
+  /* ---------- pages ---------- */
+  const NF = '<span class="nf">Not found in these notes</span>';
+  const dk = l => `${cur.id}|${l.key}|${l.start}`;
+  function renderPage(R) {
+    const { E, open, closed, summary: S, cover, problems, meds } = R;
     const f = x => x ? `${esc(x.text)} ${chips(x.src, E)}` : NF;
-    const demo = (notesText.match(/\b\d{2,3}[FM]\b/) || ['patient'])[0];
-    let val;
-    if (notesText === NOTES) {
-      const got = open.map(o => o.key), hit = EXPECTED_OPEN.filter(k => got.includes(k)).length, extra = got.filter(k => !EXPECTED_OPEN.includes(k)).length;
-      val = `Self-check on this synthetic record: ${hit}/${EXPECTED_OPEN.length} planted open loops found · ${extra} false alarms · ${closed.length} closed loops left alone.`;
-    } else val = 'Notes changed since the original. This page was rebuilt from the current text.';
-    if (R.bad.length) val += ` Lines not in the entry format and not read: ${R.bad.join(', ')}.`;
-    $('out').innerHTML = `
-      <div class="pt"><b>Synthetic patient · ${esc(demo)}</b><span>read ${E.length} entries in ${ms} ms</span></div>
-      <div class="box red"><h3>Open loops — ${open.length} started and never closed</h3>
-        ${open.length ? open.map((o, k) => `<div class="flag" id="flag${k}"><div class="t"><span class="tagOpen">Open</span>${esc(o.title)} ${chips(o.src, E)}</div><div class="d">${esc(o.detail)}</div>
-          <div class="route">${o.path.length > 1 ? `Crossed ${o.path.length - 1} handover${o.path.length > 2 ? 's' : ''} unclosed:` : 'Not yet handed over:'} ${o.path.map(p => `<span class="stop">${esc(p)}</span>`).join('<i>→</i>')}</div></div>`).join('')
-          : '<div class="flag">None found by these 5 checks. That is not the same as none. The notes are still the record.</div>'}
-      </div>
-      <div class="row"><div class="k">Why admitted</div><div>${f(S.admitted)}</div></div>
-      <div class="row"><div class="k">What happened</div><div><ul class="ev">${S.events.map(x => `<li>${f(x)}</li>`).join('') || '<li>' + NF + '</li>'}</ul></div></div>
+    // 1 open loops
+    $('out').innerHTML = `<p class="hub"><span class="hubL">Read ${R.E.length} entries in ${lastMs} ms from</span>${R.strip.map(x => `<span class="svc">${esc(x.svc)} <i>${x.n}</i></span>`).join('<span class="arrow" aria-hidden="true"></span>')}</p><section class="loops">${open.length ? open.map((o, k) => `<details class="loop${done[dk(o)] ? ' actioned' : ''}" id="flag${k}" ${k === 0 && !done[dk(o)] ? 'open' : ''}>
+        <summary><span class="dot" aria-hidden="true"></span><span class="lt">${esc(o.title)}</span>${o.problem ? `<span class="tag">${esc(o.problem)}</span>` : ''}</summary>
+        <div class="lb">${loopBody(o, E)}<p class="act">${done[dk(o)] ? `<span class="okTag">Actioned at ${done[dk(o)]}</span> <button type="button" class="linkbtn" data-undo="${k}">Undo</button>` : `<button type="button" class="btn" data-done="${k}">Mark as actioned</button>`}</p></div></details>`).join('')
+        : '<p class="notice">None found by these checks. That is not the same as none. The notes are still the record.</p>'}</section>
+      ${closed.filter(c => c.found).map(c => `<p class="notice good"><b>Found in the record.</b> ${esc(c.text)}. ${chips(c.src, E)}</p>`).join('')}
+      <p class="notice"><b>${CHECKS.length} checks only.</b> ${cover.unchk.length} of ${E.length} entries were not touched by any check and still need a human read. <button type="button" class="linkbtn" data-act="unchk">Show them</button></p>
+      <p class="sign">${reviewed[cur.id] ? `<span class="okTag">Reviewed at ${reviewed[cur.id]}</span> Logged in the audit trail.` : `<button type="button" class="btn" id="signBtn">Mark this page as reviewed</button>`}</p>
+      <p class="next"><button type="button" class="btn" data-go="journey">Next: see where each one started</button></p>`;
+    $('out').hidden = false;
+    // 2 summary: problems in order of importance, then medicines
+    const st = { held: 'Held', stopped: 'Stopped', restarted: 'Held, then restarted', continuing: 'Continuing', given: 'Given', prescribed: 'Prescribed', mentioned: 'Mentioned' };
+    const openRx = n => open.some(l => l.key === 'rx:' + n);
+    const openDrug = n => open.some(l => l.key === 'drug:' + n);
+    const medRow = m => `<tr><td>${esc(cap(m.name))}</td><td>${openDrug(m.name) ? '<b class="bad">Held, not restarted</b>' : openRx(m.name) ? '<b class="bad">Prescribed, no record it was given</b>' : st[m.status]}</td><td>${m.home ? 'Yes' : ''}</td><td>${m.now ? 'Yes' : ''}</td><td>${chips([m.first, m.last], E)}</td></tr>`;
+    $('v-summary').innerHTML = `<h2 class="cardH">Summary</h2>
+      <div class="row"><div class="k">Presenting problem</div><div>${f(S.admitted)}</div></div>
       <div class="row"><div class="k">Latest entry</div><div>${f(S.now)}</div></div>
+      <div class="row"><div class="k"><label for="myNote">Your additions</label></div><div><textarea id="myNote" rows="2" placeholder="Add or correct anything. It is marked as yours and goes into every document.">${esc(myNote[cur.id] || '')}</textarea></div></div>
+      <h3 class="subH">The person</h3>
+      <div class="row"><div class="k">Next of kin</div><div>${f(S.nok)}</div></div>
+      ${S.phone && S.nok && S.phone.text === S.nok.text ? '' : `<div class="row"><div class="k">Phone</div><div>${f(S.phone)}</div></div>`}
+      <div class="row"><div class="k">Family last told</div><div>${f(S.familyTold)}</div></div>
+      <div class="row"><div class="k">Lives</div><div>${f(S.living)}</div></div>
+      <div class="row"><div class="k">Adjustments</div><div>${f(S.adjust)}</div></div>
       <div class="row"><div class="k">Resus / escalation</div><div>${f(S.resus)}</div></div>
-      <div class="row"><div class="k">Allergies</div><div>${f(S.allergies)}</div></div>
-      <div class="row"><div class="k">Family</div><div>${f(S.family)}</div></div>
-      <div class="box green" style="margin-top:16px"><h3>Closed loops — ${closed.length}</h3>${closed.map(c => `<div class="closedRow">${esc(c.text)} ${chips(c.src, E)}</div>`).join('')}</div>
-      <div class="box grey"><h3>What this page did not check</h3>
-        <div class="closedRow">It runs 5 checks and nothing else: ${CHECKS.map(c => c.toLowerCase()).join('; ')}.</div>
-        <div class="closedRow">Those checks had something to look at in ${cover.checked} of ${cover.total} sentences. ${cover.unchk.length} entries were not touched by any check. They have a dashed edge in the notes and still need a human read.</div>
-      </div>
-      <div class="val">${val}</div>`;
-    $('empty').hidden = true; $('out').hidden = false;
+      ${R.obs.length > 1 ? `<h3 class="subH">Observations across the journey</h3>
+      <table class="meds"><thead><tr><th>When</th><th>Where</th><th>Breathing rate</th><th>Oxygen</th><th>Heart rate</th><th>Temp</th><th>NEWS2</th></tr></thead><tbody>${R.obs.map(o => `<tr><td>${chips([o.i], E)}</td><td>${esc(E[o.i].svc)}</td><td>${o.rr || ''}</td><td>${esc(o.spo2 || '')}</td><td>${o.hr || ''}</td><td>${o.temp || ''}</td><td>${o.news || ''}</td></tr>`).join('')}</tbody></table>` : ''}
+      <h3 class="subH">Problems, most important first</h3>
+      
+      ${(() => { const row = p => { const last = p.items[p.items.length - 1]; return `<details class="prob"><summary><span class="pn">${esc(p.name)}</span>${p.loops.length ? `<span class="badge">${p.loops.length} open</span>` : ''}<span class="pl">${esc(last.text.length > 70 ? last.text.slice(0, 68) + '…' : last.text)}</span></summary>
+        <ol class="tl">${p.items.map(it => `<li>${dayLink(it.i, E)}<span>${esc(it.text)}</span></li>`).join('')}</ol></details>`; }; const top = problems.filter(p => p.loops.length), rest = problems.filter(p => !p.loops.length);
+        return (top.length ? top : rest.slice(0, 3)).map(row).join('') + ((top.length ? rest : rest.slice(3)).length ? `<details class="prob more"><summary><span class="pn">${(top.length ? rest : rest.slice(3)).length} more mentioned</span><span class="pl">${(top.length ? rest : rest.slice(3)).map(p => esc(p.name)).join(', ')}</span></summary><div class="nest">${(top.length ? rest : rest.slice(3)).map(row).join('')}</div></details>` : ''); })()}
+      <h3 class="subH">Medicines</h3>
+      ${meds.now ? `${meds.missing.length ? `<p class="notice bad"><b>Home medicine not on the latest list:</b> ${meds.missing.map(cap).map(esc).join(', ')}. ${chips([meds.now.i], E)}</p>` : '<p class="notice">Every home medicine is on the latest list.</p>'}
+        ${meds.added.length ? `<p class="notice"><b>New on the latest list:</b> ${meds.added.map(cap).map(esc).join(', ')}.</p>` : ''}
+        <details class="prob"><summary><span class="pn">Full medicines list</span><span class="pl">${meds.all.length} medicines mentioned in the notes</span></summary>
+        <table class="meds"><thead><tr><th>Medicine</th><th>In the notes</th><th>Home</th><th>Latest list</th><th>First and last mention</th></tr></thead><tbody>${meds.all.map(medRow).join('')}</tbody></table></details>`
+      : `<table class="meds"><thead><tr><th>Medicine</th><th>In the notes</th><th>First and last mention</th></tr></thead><tbody>${meds.all.map(m => `<tr><td>${esc(cap(m.name))}</td><td>${openRx(m.name) ? '<b class="bad">Prescribed, no record it was given</b>' : st[m.status]}</td><td>${chips([m.first, m.last], E)}</td></tr>`).join('')}</tbody></table>`}
+      <p class="next"><button type="button" class="btn" data-go="handover">Next: hand over to the right team</button></p>`;
+    // 3 handover
+    drawHandover(R);
+    // 4 journey extras
+    $('loopDetail').innerHTML = '<p class="hint">Select a row to see what it is and where it came from.</p>';
+    $('closedList').innerHTML = `<summary><span class="pn">Closed loops</span><span class="pl">${closed.length} started and finished in the notes</span></summary>${closed.map(c => `<div class="closedRow"><span class="dot ok" aria-hidden="true"></span>${esc(c.text)} ${chips(c.src, E)}</div>`).join('') || '<div class="closedRow">None.</div>'}`;
+    // 5 more
+    let val;
+    if (notesText === cur.notes) {
+      const got = open.map(o => o.key), hit = cur.expectedOpen.filter(k => got.includes(k)).length, extra = got.filter(k => !cur.expectedOpen.includes(k)).length;
+      val = `Self-check on this synthetic record: ${hit}/${cur.expectedOpen.length} planted open loops found · ${extra} false alarms · ${closed.length} closed loops left alone.`;
+    } else val = 'Notes changed since the original. Everything was rebuilt from the current text.';
+    if (R.bad.length) val += ` Lines not in the entry format and not read: ${R.bad.join(', ')}.`;
+    $('checksBody').innerHTML = `<p>Rind runs ${CHECKS.length} checks. Each one looks for something that was started and never finished.</p>
+      <ul class="ev">${CHECKS.map(c => `<li>${esc(c)}</li>`).join('')}</ul>
+      <p>On this record the checks had something to look at in ${cover.checked} of ${cover.total} sentences. ${cover.unchk.length} entries were not touched by any check. <button type="button" class="linkbtn" data-act="unchk">Show them</button></p>
+      <p><b>Messy notes.</b> Brand names, common abbreviations and one-letter typos in drug names are understood. Unclear wording can open a loop or add a "possible" note. It never closes one.</p>
+      <p><b>No AI model.</b> Rules only, so the same notes always give the same page and it cannot invent a sentence. Every line links to the note it came from.</p>
+      <p class="val">${val}</p>`;
+    $('nOpen').textContent = open.filter(l => !done[dk(l)]).length;
+    const tidy = t => { const m = t.match(/\b([Dd]aughter|[Ss]on|[Ww]ife|[Hh]usband|[Pp]artner) ([A-Z][a-z]+(?: [A-Z][a-z]+)?)[^0-9]{0,8}(0\d[\d ]{8,12}\d)?/); if (m) return `${m[2]}, ${m[1].toLowerCase()}${m[3] ? ' · ' + m[3] : ''}`; t = t.replace(/^escalation ceiling:\s*/i, ''); return cap(t.length > 60 ? t.slice(0, 58) + '…' : t); };
+    const fact = (k, x) => `<div class="fact${x ? '' : ' miss'}"><span>${k}</span><b>${x ? esc(tidy(x.text)) : 'Not found in notes'}</b></div>`;
+    $('facts').innerHTML = fact('Allergies', S.allergies) + fact('Escalation', S.resus) + fact('Next of kin', S.nok);
   }
 
   /* ---------- flows ---------- */
+  function drawBanner() {
+    $('ptAv').textContent = cur.name.split(' ').map(w => w[0]).join('');
+    $('ptName').textContent = cur.name;
+    $('ptSub').textContent = `${cur.age} · ${cur.sex === 'F' ? 'Female' : 'Male'} · Born ${cur.dob} · NHS no ${cur.nhsNo} · ${cur.where}`;
+    $('ptPre').hidden = !cur.prealert; $('ptPre').textContent = cur.prealert || '';
+  }
+  function drawHome() {
+    $('ptList').innerHTML = PATIENTS.map(p => `<button type="button" class="ptRow" data-p="${p.id}"><span class="avatar" aria-hidden="true">${p.name.split(' ').map(w => w[0]).join('')}</span>
+      <span class="ptRowId"><b>${esc(p.name)}</b><span>${p.age} · ${p.sex === 'F' ? 'Female' : 'Male'} · Born ${esc(p.dob)} · NHS no ${esc(p.nhsNo)}</span><span>${esc(p.story)}</span>${p.prealert ? `<span class="pre">${esc(p.prealert)}</span>` : ''}</span>
+</button>`).join('');
+  }
+  function goHome() { $('q').placeholder = 'Find a patient by name or NHS number'; document.body.classList.add('noPatient'); setNotes(false); document.body.classList.remove('paper'); $('paperBack').hidden = true; setView('home'); }
+  let pending = null;
+  function askIdentity(id) {
+    const p = PATIENTS.find(x => x.id === id); closeList(); $('q').value = ''; query = '';
+    if (!p || busy) return;
+    pending = p;
+    $('idBody').innerHTML = [['Name', p.name], ['Date of birth', `${p.dob} (${p.age})`], ['NHS number', p.nhsNo], ['Address', p.where]].map(x => `<dt>${x[0]}</dt><dd>${esc(x[1])}</dd>`).join('');
+    $('idSay').innerHTML = `I confirm I am accessing the record of <b>${esc(p.name)}</b>, NHS number <b>${esc(p.nhsNo)}</b>, for their direct care.`; $('idTick').checked = false; $('idOpen').disabled = true; $('idModal').hidden = false; $('idTick').focus();
+  }
+  function openPatient(p) {
+    $('idModal').hidden = true; pending = null;
+    if (!$('editor').hidden) { $('editor').hidden = true; $('notes').hidden = false; $('addForm').hidden = false; $('editBtn').textContent = 'Edit notes'; }
+    cur = p; notesText = p.notes; $('addIn').value = p.demoEntry; $('addErr').hidden = true; audience = ''; doc = 'handover'; jStage = null; jSel = null; built = false;
+    document.body.classList.remove('noPatient'); $('q').placeholder = 'Find a patient or search these notes'; $('out').hidden = true;
+    drawBanner(); refresh(false); setView('loops'); $('notes').scrollTop = 0;
+    log(`Access confirmed for direct care and record opened: ${p.name}, NHS no ${p.nhsNo}`);
+    build();
+  }
   function heroText(R, show) {
-    const svc = R.strip.length;
-    $('heroTitle').textContent = show
-      ? (R.open.length ? `${R.open.length} open loop${R.open.length === 1 ? '' : 's'} passed every handover. Rind is where they stop.` : 'No open loops found by these 5 checks.')
-      : `One patient. ${svc} services. Every handover is a slice with holes.`;
-    $('heroSub').textContent = show
-      ? 'Red threads were started and never closed. Green arcs were closed. Select any of them to see the note.'
-      : `${R.E.length} entries over ${R.days} days. Nobody reads all of it at a handover.`;
+    const svc = new Set(R.strip.map(x => x.svc)).size, n = R.open.length;
+    const demo = (notesText.match(/\b\d{2,3}[FM]\b/) || ['patient'])[0];
+    const nd = R.open.filter(l => done[dk(l)]).length;
+    const left = R.open.filter(l => !done[dk(l)]);
+    const short = l => { const base = l.kind === 'confirm' ? l.title.split(' — ')[0].split(',')[0] : (l.label || l.title.split(' — ')[0]); return (base + ({ decision: ' decision', finding: ' follow-up', referral: ' reply', pending: ' result' }[l.kind] || '')).toLowerCase(); };
+    $('heroTitle').textContent = !show ? 'What was started and never closed?' : !n ? 'No open loops found by these checks' : !left.length ? `All ${n} open loops marked as actioned` : 'Still open: ' + left.slice(0, 3).map(short).join(', ') + (left.length > 3 ? ` + ${left.length - 3} more` : '');
+    const nowS = R.summary.now, nowP = nowS ? nowS.text.split(/(?<=\.)\s/) : [], nowT = nowP.length > 1 && nowP[0].length < 30 ? nowP[0] + ' ' + nowP[1] : nowP[0] || '';
+    if (show && nowS) $('heroSub').innerHTML = `<b>Latest:</b> ${esc(nowT)} ${chips(nowS.src, R.E)}`;
+    else $('heroSub').textContent = show ? `${R.E.length} entries from ${svc} services.` : 'Rind reads the whole record across every handover and lists the loose ends.';
+    $('bootCount').textContent = `${R.E.length} entries loaded · ${R.days} days · ${svc} services`;
+    $('lead').classList.toggle('done', show);
   }
   function refresh(animate, newIdx) {
-    const t0 = performance.now(); const R = analyse(notesText); const ms = (performance.now() - t0).toFixed(1);
-    renderNotes(R, newIdx); heroText(R, built); drawJourney(R, built, animate); tiles(R, built);
-    if (built) { renderPage(R, ms); R.cover.unchk.forEach(i => { const n = $('n' + i); if (n) n.classList.add('unchk'); }); }
+    const t0 = performance.now(); const R = nice(analyse(notesText)); lastMs = (performance.now() - t0).toFixed(1);
+    lastR = R; renderNotes(R, newIdx); heroText(R, built); drawJourney(R, built, animate && !$('v-journey').hidden);
+    if (built) { renderPage(R); R.cover.unchk.forEach(i => { const n = $('n' + i); if (n) n.classList.add('unchk'); }); }
     return R;
   }
   async function build() {
-    if (busy) return; busy = true; $('buildBtn').disabled = true;
+    if (busy) return; busy = true;
+    const ring = document.querySelector('.ring'), arc = $('ringArc');
     try {
       if (!reduced) {
-        const notes = [...document.querySelectorAll('.note')], box = $('notes');
-        for (let i = 0; i < notes.length; i++) {
-          notes[i].classList.add('scan'); if (i) notes[i - 1].classList.remove('scan');
-          box.scrollTop = Math.max(0, notes[i].offsetTop - box.offsetTop - 120);
-          $('heroSub').textContent = `Reading entry ${i + 1} of ${notes.length}…`;
-          await sleep(32);
-        }
-        if (notes.length) notes[notes.length - 1].classList.remove('scan');
-        box.scrollTop = 0;
+        const n = lastR.E.length; ring.classList.add('live'); arc.style.strokeDashoffset = 84;
+        for (let i = 0; i < n; i++) { arc.style.strokeDashoffset = (84 * (1 - (i + 1) / n)).toFixed(1); $('heroSub').textContent = `Reading entry ${i + 1} of ${n}`; await sleep(28); }
+        await sleep(160);
       }
     } catch (e) { /* the animation is decoration; never let it block the result */ }
+    ring.classList.remove('live'); arc.style.strokeDashoffset = '';
     built = true;
-    try { refresh(true); } finally { busy = false; $('buildBtn').disabled = false; $('buildBtn').textContent = 'Read again'; }
+    try { refresh(true); } finally { busy = false; }
   }
   function toggleEdit() {
     const ed = $('editor');
-    if (ed.hidden) { $('ta').value = notesText; ed.hidden = false; $('notes').hidden = true; $('addForm').hidden = true; $('editBtn').textContent = 'Done — rebuild'; }
+    if (ed.hidden) { setNotes(true); $('ta').value = notesText; ed.hidden = false; $('notes').hidden = true; $('addForm').hidden = true; $('editBtn').textContent = 'Done editing, rebuild'; }
     else { notesText = $('ta').value.replace(/\s+$/, ''); ed.hidden = true; $('notes').hidden = false; $('addForm').hidden = false; $('editBtn').textContent = 'Edit notes'; refresh(false); }
+  }
+  function showLoop(i, R0) {
+    const R = R0 || lastR, l = R.loops[i]; if (!l) return;
+    jSel = l.key + '|' + l.start;
+    document.querySelectorAll('#journey .sel').forEach(g => g.classList.remove('sel'));
+    document.querySelectorAll(`#journey [data-loop="${i}"]`).forEach(g => g.classList.add('sel'));
+    $('loopDetail').innerHTML = `<div class="ldHead"><span class="dot${l.status === 'closed' ? ' ok' : ''}" aria-hidden="true"></span><b>${esc(l.status === 'closed' ? 'Closed: ' + l.label : l.title)}</b>${l.problem ? `<span class="tag">${esc(l.problem)}</span>` : ''}</div>${loopBody(l, R.E)}`;
   }
 
   /* ---------- events ---------- */
   document.addEventListener('click', e => {
-    const b = e.target.closest('.src'); if (b) { showNote(+b.dataset.i); return; }
-    const g = e.target.closest('.loopHit'); if (g) activateLoop(g);
+    const t = e.target;
+    if (!t.closest('.search')) closeList();
+    const jr = t.closest('#journey [data-loop]'); if (jr) { showLoop(+jr.dataset.loop); return; }
+    const b = t.closest('.src'); if (b) { showNote(+b.dataset.i); return; }
+    const g = t.closest('.loopHit'); if (g) { showLoop(+g.dataset.loop); return; }
+    const nv = t.closest('.nav[data-v]'); if (nv) { setView(nv.dataset.v); return; }
+    const go = t.closest('[data-go]'); if (go) { setView(go.dataset.go); return; }
+    const jk = t.closest('[data-jk]'); if (jk) { if (jk.dataset.jk === 'open') jOpen = !jOpen; else jClosed = !jClosed; drawJourney(lastR, true, false); return; }
+    const js = t.closest('[data-js]'); if (js) { jStage = js.dataset.js === 'all' || jStage === +js.dataset.js ? null : +js.dataset.js; drawJourney(lastR, true, false); return; }
+    const dc = t.closest('[data-doc]'); if (dc) { doc = dc.dataset.doc; drawHandover(lastR); return; }
+    if (t.id === 'docReset') { delete edits[docKey()]; log(`${DOCS.find(d => d[0] === doc)[1]} put back to Rind's draft`); drawHandover(lastR); return; }
+    const au = t.closest('#aud button'); if (au) { audience = au.dataset.a; drawHandover(lastR); return; }
+    const sub = t.closest('.nav.sub'); if (sub) { audience = sub.dataset.aud; drawHandover(lastR); setView('handover'); return; }
+    const qp = t.closest('#qList [data-p]'); if (qp) { pickPatient(qp.dataset.p); return; }
+    if (t.closest('#qList [data-notes]')) { searchNotes(); return; }
+    const qn = t.closest('#qList [data-qn]'); if (qn) { query = $('q').value; closeList(); if (!$('editor').hidden) toggleEdit(); setNotes(true); renderNotes(lastR); showNote(+qn.dataset.qn); return; }
+    const ql = t.closest('#qList [data-ql]'); if (ql) { closeList(); setView('loops'); const d = $('flag' + ql.dataset.ql); if (d) { d.open = true; d.scrollIntoView({ block: 'center' }); } return; }
+    if (t.id === 'changePt') { goHome(); return; }
+    const row = t.closest('.ptRow'); if (row) { askIdentity(row.dataset.p); return; }
+    if (t.id === 'idOpen' && pending && $('idTick').checked) { openPatient(pending); return; }
+    if (t.id === 'idCancel' || t.id === 'idModal') { $('idModal').hidden = true; pending = null; return; }
+    const dn = t.closest('[data-done]'); if (dn) { const l = lastR.open[+dn.dataset.done]; done[dk(l)] = nowTime(); log(`Marked as actioned: ${l.title}`); refresh(false); return; }
+    const un = t.closest('[data-undo]'); if (un) { const l = lastR.open[+un.dataset.undo]; delete done[dk(l)]; log(`Undid actioned: ${l.title}`); refresh(false); return; }
+    if (t.id === 'signBtn') { reviewed[cur.id] = nowTime(); log(`Page reviewed for ${cur.name}`); refresh(false); return; }
+    if (!t.closest('.search')) closeList();
+    if (t.id === 'closeNotes') { setNotes(false); return; }
+    if (t.dataset && t.dataset.act === 'unchk') { setNotes(true); const n = document.querySelector('.note.unchk'); if (n) { const box = $('notes'); box.scrollTop = Math.max(0, n.offsetTop - box.offsetTop - 40); } return; }
+    if (t.id === 'pdfBtn') {
+      const name = DOCS.find(d => d[0] === doc)[1], ed = edits[docKey()];
+      $('printDoc').innerHTML = `<div class="pdHead"><b>Rind</b> · ${esc(name)}${doc === 'handover' ? ' to ' + esc(audience) : ''}<br>${esc(cur.name)} · born ${esc(cur.dob)} · NHS no ${esc(cur.nhsNo)} · synthetic patient<br>${ed ? 'Edited by the clinician at ' + ed.t : 'Draft written by Rind from the notes, not yet edited'}<br>Requested by ${esc(USER)} · printed ${nowTime()}</div><pre>${esc($('hoText').value)}</pre><div class="pdFoot">Student prototype, not an NHS service. Decision support: check against the notes.</div>`;
+      log(`${name} printed or saved as PDF`);
+      document.body.classList.add('printDoc'); window.print(); setTimeout(() => document.body.classList.remove('printDoc'), 500); return;
+    }
+    if (t.id === 'copyBtn') {
+      const ta = $('hoText'), msg = $('copyMsg');
+      log(`${DOCS.find(d => d[0] === doc)[1]} copied${doc === 'handover' ? ' for ' + audience : ''}`);
+      const copied = () => { msg.textContent = 'Copied.'; }, manual = () => { ta.focus(); ta.select(); msg.textContent = 'Selected. Press Ctrl+C to copy.'; };
+      try { navigator.clipboard.writeText(ta.value).then(copied, manual); } catch (err) { manual(); }
+    }
   });
   document.addEventListener('keydown', e => {
-    if ((e.key === 'Enter' || e.key === ' ') && e.target.classList && e.target.classList.contains('loopHit')) { e.preventDefault(); activateLoop(e.target); }
+    if ((e.key === 'Enter' || e.key === ' ') && e.target.classList && e.target.classList.contains('loopHit')) { e.preventDefault(); showLoop(+e.target.dataset.loop); }
+    if (e.key === 'Escape') { hidePop(); if (!$('idModal').hidden) { $('idModal').hidden = true; pending = null; } }
   });
-  function activateLoop(g) {
-    showNote(+g.dataset.src);
-    document.querySelectorAll('.flag.on').forEach(x => x.classList.remove('on'));
-    if (g.dataset.open !== undefined) { const fl = $('flag' + g.dataset.open); if (fl) { fl.classList.add('on'); if (fl.scrollIntoView) fl.scrollIntoView({ block: 'nearest' }); } }
+  $('notesBtn').addEventListener('click', () => { const on = $('left').hidden; setNotes(on); if (on) log(`Source notes opened: ${cur.name}`); });
+  /* header search: finds a patient, or searches this patient's notes */
+  function closeList() { $('qList').hidden = true; $('q').setAttribute('aria-expanded', 'false'); }
+  function drawList() {
+    const v = $('q').value.trim(), low = v.toLowerCase(), home = document.body.classList.contains('noPatient'), W = qWords(v);
+    const pts = PATIENTS.filter(p => !v || (p.name + ' ' + p.story + ' ' + p.age + ' ' + p.dob + ' ' + p.nhsNo + ' ' + p.nhsNo.replace(/ /g, '')).toLowerCase().includes(low));
+    let h = '';
+    if (!home && lastR && v.length >= 2) {
+      const hit = lastR.E.filter(e => qHit(e, W)), loops = lastR.open.filter(l => W.every(w => l.title.toLowerCase().includes(w)));
+      const snip = e => { const t = e.text, at = Math.max(0, t.toLowerCase().indexOf(W[0])), a = Math.max(0, at - 36); return (a ? '…' : '') + t.slice(a, a + 104) + (a + 104 < t.length ? '…' : ''); };
+      h += `<div class="qH">In ${esc(cur.name)}'s record · ${hit.length} ${hit.length === 1 ? 'note' : 'notes'}${loops.length ? ` · ${loops.length} open ${loops.length === 1 ? 'loop' : 'loops'}` : ''}</div>`;
+      h += loops.map(l => `<button type="button" data-ql="${lastR.open.indexOf(l)}"><b><i class="qDot" aria-hidden="true"></i>Open loop</b><span>${qMark(l.title, W)}</span></button>`).join('');
+      h += hit.slice(0, 5).map(e => `<button type="button" data-qn="${e.i}"><b>${when(e.i, lastR.E)} · ${esc(e.svc)}</b><span>${qMark(snip(e), W)}</span></button>`).join('');
+      if (!hit.length && !loops.length) h += '<div class="qNone">Nothing in this record matches.</div>';
+      if (hit.length > 5) h += `<button type="button" data-notes="1" class="qNotes">Show all ${hit.length} in the notes</button>`;
+    }
+    if (home || !v || pts.length) h += `<div class="qH">${v ? 'Patients' : 'Recent patients'}</div>` +
+      (pts.map(p => `<button type="button" data-p="${p.id}"><b>${esc(p.name)}</b><span>${p.age} · ${p.sex} · NHS no ${esc(p.nhsNo)} · ${esc(p.story)}${!home && p === cur ? ' · open now' : ''}</span></button>`).join('') || '<div class="qNone">No patient matches. Search by name, date of birth or NHS number.</div>');
+    $('qList').innerHTML = h; $('qList').hidden = false; $('q').setAttribute('aria-expanded', 'true');
   }
-  $('buildBtn').addEventListener('click', build);
-  $('editBtn').addEventListener('click', toggleEdit);
-  $('resetBtn').addEventListener('click', () => { $('ta').value = NOTES; });
-  $('paperBtn').addEventListener('click', () => {
-    if (!built) { built = true; refresh(false); $('buildBtn').textContent = 'Read again'; }
-    const on = document.body.classList.toggle('paper'); $('paperBtn').textContent = on ? 'Back to notes' : 'Downtime copy';
-    if (on) { try { window.print(); } catch (e) { /* printing is blocked in some hosted frames; the on-screen copy still shows */ } }
+  function searchNotes() { query = $('q').value; closeList(); if (!$('editor').hidden) toggleEdit(); setNotes(true); renderNotes(lastR); }
+  function pickPatient(id) { askIdentity(id); }
+  $('q').addEventListener('focus', drawList);
+  $('q').addEventListener('input', () => { drawList(); if (!$('q').value.trim() && query) { query = ''; renderNotes(lastR); } });
+  $('q').addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); const v = $('q').value.trim(); if (!v) return; const pts = PATIENTS.filter(p => p.name.toLowerCase().includes(v.toLowerCase())); const home = document.body.classList.contains('noPatient'); if (pts.length === 1 && (home || pts[0] !== cur)) pickPatient(pts[0].id); else if (!home) searchNotes(); }
+    if (e.key === 'Escape') closeList();
   });
+  $('menuBtn').addEventListener('click', () => { const off = document.body.classList.toggle('noSide'); $('menuBtn').setAttribute('aria-expanded', !off); });
+  $('editBtn').addEventListener('click', toggleEdit);
+  $('resetBtn').addEventListener('click', () => { $('ta').value = cur.notes; });
+  $('paperBtn').addEventListener('click', () => {
+    const on = document.body.classList.toggle('paper'); $('paperBack').hidden = !on;
+    if (on) { setNotes(false); setView('loops'); try { window.print(); } catch (e) { /* printing is blocked in some hosted frames; the on-screen copy still shows */ } }
+  });
+  $('paperBack').addEventListener('click', () => { document.body.classList.remove('paper'); $('paperBack').hidden = true; });
   $('addForm').addEventListener('submit', e => {
     e.preventDefault();
     const v = $('addIn').value.trim(), err = $('addErr');
     if (!LINE.test(v)) { err.textContent = 'Use the entry format: D28 09:00 | GP | what happened'; err.hidden = false; return; }
     err.hidden = true; notesText = notesText + '\n' + v;
-    const R = refresh(true, analyse(notesText).E.length - 1);
-    const n = $('n' + (R.E.length - 1)); if (n) { const box = $('notes'); box.scrollTop = box.scrollHeight; }
+    log(`Entry added to the notes: ${v.slice(0, 60)}`);
+    const R = refresh(true, nice(analyse(notesText)).E.length - 1);
+    if ($('n' + (R.E.length - 1))) { const box = $('notes'); box.scrollTop = box.scrollHeight; }
     $('addIn').value = '';
   });
   $('addIn').addEventListener('input', () => { $('addErr').hidden = true; });
-  $('addIn').value = DEMO_ENTRY;
+  /* offline copy: the page is one file with no network calls, so saving it is the whole install */
+  const dl = $('dlBtn');
+  if (location.protocol === 'file:') { dl.hidden = true; $('boot').firstElementChild.textContent = 'Running from a file on this device'; }
+  else dl.addEventListener('click', async () => {
+    try {
+      const html = await (await fetch(location.href, { cache: 'no-store' })).text();
+      const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
+      a.download = 'rind-offline.html'; document.body.appendChild(a); a.click(); a.remove();
+    } catch (e) { dl.textContent = 'Use your browser\'s Save page as'; }
+  });
+  $('addIn').value = cur.demoEntry;
+  drawBanner(); drawHome(); drawAudit();
   refresh(false);
+  goHome();
 })();
 
 </script>
