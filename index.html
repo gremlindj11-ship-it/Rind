@@ -539,6 +539,15 @@ div.act{margin-top:12px;font-size:13px;color:var(--mute)}
 .notice.flash{margin:12px 0}
 body.paper .recF,body.paper div.act .btn{display:none}
 
+/* v20: AI suggestions, kept apart and only when backed by a quote */
+.aiBox{border:1px dashed #9db4c9;border-radius:8px;padding:0 16px;margin:12px 0;background:var(--surface)}
+.aiBox>summary{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;padding:11px 0;cursor:pointer;list-style:none}
+.aiBox>summary::-webkit-details-marker{display:none}
+.aiBox>summary b{font-weight:600}.aiBox>summary span{font-size:13px;color:var(--mute)}
+.aiBox ul{margin:0;padding:0 0 4px 18px;font-size:14px;line-height:1.5}
+.aiBox q{color:var(--mute);font-size:13px}
+.aiBox .hint{margin:6px 0 12px}
+
 </style>
 </head>
 <body>
@@ -798,15 +807,23 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
   }
   const STOP = /\b(held|hold|withheld|stopped|stop|suspended|omit(?:ted)?)\b/i;
   const RESTART = /\b(re-?start(?:ed)?|resum(?:e|ed)|recommenc(?:e|ed)|back on)\b/i;
-  const FINDING = /\b(nodule|lesion|mass|aneurysm|polyp|incidental)\b/i;
-  const FINDING_KEY = /\b(nodule|lesion|mass|aneurysm|polyp)\b/i;
+  const FINDING = /\b(nodule|lesion|mass|aneurysm|polyp|cyst|shadow|lymph node|incidental)\b/i;
+  const FINDING_KEY = /\b(nodule|lesion|mass|aneurysm|polyp|cyst|shadow|lymph node)\b/i;
   const FOLLOW = /\b(f\/u|follow[- ]?up|advise[ds]?|recommend(?:s|ed)?|suggest(?:s|ed)?)\b/i;
   const TESTS = [
     { name: 'blood cultures', re: /\b([Bb]lood cultures?|[Bb]lood cx|[Bb]ld cx|BCx|BCs?)\b/ },
     { name: 'sputum culture', re: /\bsputum\b/i },
     { name: 'echo', re: /\b(echo|TTE)\b/i },
     { name: 'urine culture', re: /\b(MSU|urine culture)\b/i },
-    { name: 'histology', re: /\b(histology|cytology)\b/i }
+    { name: 'histology', re: /\b(histology|cytology|biopsy)\b/i },
+    { name: 'CT scan', re: /\bCT\b/ },
+    { name: 'MRI scan', re: /\bMRI\b/ },
+    { name: 'ultrasound', re: /\b(USS|ultrasound)\b/i },
+    { name: 'troponin', re: /\btrop(?:onin)?\b/i },
+    { name: 'blood gas', re: /\b(ABG|VBG|blood gas)\b/i },
+    { name: 'wound swab', re: /\b(wound )?swab\b/i },
+    { name: 'stool sample', re: /\bstool (?:sample|culture)\b/i },
+    { name: 'blood tests', re: /\b(bloods|U&Es?|FBC|LFTs?|INR)\b/ }
   ];
   const SENT = /\b(sent|awaited|pending|requested|chase)\b/i;
   const RESULT = /\b(no growth|grew|negative|positive|resulted|shows|showed|reported|LVEF)\b|:/i;
@@ -817,7 +834,23 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
     { name: 'SALT', re: /\bSALT\b/ },
     { name: 'surgery', re: /\bsurg(?:ical|eons?)\b/i },
     { name: 'neurology', re: /\bneuro(?:logy)?\b/i },
-    { name: 'orthogeriatrics', re: /\bortho-?geri\w*/i }
+    { name: 'orthogeriatrics', re: /\bortho-?geri\w*/i },
+    { name: 'physiotherapy', re: /\bphysio\w*/i },
+    { name: 'occupational therapy', re: /\b(OT|occupational therap\w+)\b/ },
+    { name: 'dietitian', re: /\bdieti[ct]ians?\b/i },
+    { name: 'palliative care', re: /\bpalliative\b/i },
+    { name: 'district nurses', re: /\b(district nurs\w+|DNs)\b/ },
+    { name: 'social care', re: /\bsocial (?:work\w*|services|care)\b/i },
+    { name: 'pharmacy', re: /\bpharmac(?:y|ist)\b/i },
+    { name: 'mental health', re: /\b(mental health|psychiatr\w+|liaison psych\w*)\b/i },
+    { name: 'diabetes team', re: /\b(diabetes team|DSN)\b/i },
+    { name: 'gastroenterology', re: /\bgastro\w*\b/i },
+    { name: 'haematology', re: /\bhaem(?:atology)?\b/i },
+    { name: 'urology', re: /\burolog\w+/i },
+    { name: 'vascular', re: /\bvascular\b/i },
+    { name: 'stroke team', re: /\bstroke team\b/i },
+    { name: 'tissue viability', re: /\b(tissue viability|TVN)\b/i },
+    { name: 'frailty team', re: /\b(frailty|geriatric\w*) team\b/i }
   ];
   const REQ = /\b(refer(?:red|ral)?|opinion|d\/w|discuss(?:ed)? with|review requested)\b/i;
   const REPLY = /\b(reviewed|seen by|advice|advised|input|recommend(?:s|ed)?|suggest(?:s|ed)?)\b/i;
@@ -1059,7 +1092,7 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
     }));
 
     // 11. a medicine given or prescribed that the allergy record rules out
-    const PEN = /\b(amoxicillin|co-?amoxiclav|augmentin|flucloxacillin|tazocin|piperacillin|benzylpenicillin|phenoxymethylpenicillin|penicillin v|pivmecillinam)\b/i;
+    const PEN = /\b(amoxicillin|amoxil|co-?amoxiclav|augmentin|flucloxacillin|fluclox|tazocin|pip-?taz|piperacillin|benzylpenicillin|benpen|phenoxymethylpenicillin|penicillin v|pen v|pivmecillinam|temocillin)\b/i;
     let penAl = null;
     E.forEach(e => clauses(e.text).forEach(c => { if (!penAl && /penicillin/i.test(c) && /allerg|avoid/i.test(c) && !/no known|NKDA/i.test(c)) penAl = { e, c }; }));
     if (penAl) E.forEach(e => clauses(e.text).forEach(c => {
@@ -1217,7 +1250,15 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
     case 'family': return [['Family told', 'Family told at [time] by [who]: [what was said].']];
     case 'conflict': return [['Reviewed', 'Allergy reviewed at [time] with [who]: [what was done].']];
     default: return [['Done', '[What was done], at [time].']]; } };
-  let flash = '';
+  let flash = '', aiItems = [];
+  const aiCheck = R => aiItems.map(x => { const q = String(x.quote || '').trim().toLowerCase(), cited = typeof x.index === 'number' ? R.E[x.index] : R.E.find(e => `D${e.day} ${e.time}` === String(x.entry || '').trim());
+    const hit = q.length >= 12 ? (cited && cited.text.toLowerCase().includes(q) ? cited : R.E.find(y => y.text.toLowerCase().includes(q))) : null;
+    return { text: String(x.text || '').slice(0, 300), quote: String(x.quote || '').trim(), ok: !!hit && !!x.text, i: hit ? hit.i : null }; });
+  window.RindAI = {
+    notes: () => lastR.E.map(e => ({ entry: `D${e.day} ${e.time}`, index: e.i, service: e.svc, who: e.who, text: e.text })),
+    suggest: list => { aiItems = Array.isArray(list) ? list.slice(0, 20) : []; const out = aiCheck(lastR); log(`AI suggestions received: ${out.filter(x => x.ok).length} kept, ${out.filter(x => !x.ok).length} dropped`); if (built) refresh(false); return out.map(x => ({ text: x.text, kept: x.ok })); },
+    clear: () => { aiItems = []; if (built) refresh(false); }
+  };
   const USER = 'ED clinician (demo sign-in)';
   const nowTime = () => new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
   const audit = [], done = {}, reviewed = {};
@@ -1326,11 +1367,12 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
   }
 
   /* ---------- one loop, in full: used on the loops page and under the journey ---------- */
+  const evidence = l => { const n = new Set(l.src).size; return l.maybe ? 'Unclear wording in the notes, a person needs to confirm' : n >= 3 ? `Strong, ${n} notes say the same` : n === 2 ? 'Moderate, 2 notes' : 'One note only'; };
   function loopBody(l, E) {
     if (l.status === 'closed') return `<p class="quote">${esc(l.text)}. Started and finished in the notes.</p><dl class="meta2"><dt>Source</dt><dd>${chips(l.src, E)}</dd></dl>`;
     return `<p class="quote">${esc(l.detail)}</p>
       ${l.maybe ? `<p class="q"><b>Possible restart on day ${E[l.maybe.i].day}:</b> "${esc(l.maybe.text)}". The wording is unclear, so this stays open until someone confirms. ${chips([l.maybe.i], E)}</p>` : ''}
-      <dl class="meta2"><dt>Passed through</dt><dd>${l.path.map(esc).join('<span class="arrow" aria-hidden="true"></span>')}</dd><dt>Source</dt><dd>${chips(l.src, E)}</dd></dl>`;
+      <dl class="meta2"><dt>Passed through</dt><dd>${l.path.map(esc).join('<span class="arrow" aria-hidden="true"></span>')}</dd><dt>Evidence</dt><dd>${evidence(l)}</dd><dt>Source</dt><dd>${chips(l.src, E)}</dd></dl>`;
   }
 
   /* ---------- who needs to act on what ---------- */
@@ -1456,6 +1498,8 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
     const trendCard = R.trend ? `<div class="trend"><div class="trendH"><b>Getting worse today</b><span>${R.trend.src.length} sets of observations, ${chips([R.trend.src[0]], E)} to ${chips([R.trend.src[R.trend.src.length - 1]], E)}</span></div>
       <div class="trendG">${R.trend.items.map(x => `<div class="${x.wide ? 'wide' : ''}"><span>${esc(x.k)}</span><b><i>${esc(String(x.a))}</i><em aria-hidden="true">→</em>${esc(String(x.b))}</b></div>`).join('')}</div></div>` : '';
     const planCard = plan ? `<details class="plan" open><summary><b>Treatment plan already on record</b><span>${esc(plan.svc)}, ${when(plan.lines[0].i, E)} · ${esc(plan.why)}</span></summary><ul>${plan.lines.map(x => `<li>${esc(x.c)} ${chips([x.i], E)}</li>`).join('')}</ul></details>` : '';
+    const ai = aiCheck(R), kept = ai.filter(x => x.ok), drop = ai.length - kept.length;
+    const aiCard = ai.length ? `<details class="aiBox" open><summary><b>Suggested by AI</b><span>${kept.length} backed by a line in the notes${drop ? ` · ${drop} dropped, no matching line` : ''}</span></summary>${kept.length ? `<ul>${kept.map(x => `<li>${esc(x.text)} <q>${esc(x.quote)}</q> ${chips([x.i], E)}</li>`).join('')}</ul>` : ''}<p class="hint">Written by a language model, not by the checks. A line is shown only if its quote is found word for word in the notes. AI lines never open or close a loop.</p></details>` : '';
     const flashCard = flash ? `<p class="notice good flash"><b>Closed by your entry.</b> ${esc(flash)}</p>` : ''; flash = '';
     $('out').innerHTML = `${flashCard}${trendCard}${planCard}<section class="loops">${open.length ? open.map((o, k) => `<details class="loop${done[dk(o)] ? ' actioned' : ''}" id="flag${k}" ${k === 0 && !done[dk(o)] ? 'open' : ''}>
         <summary><span class="dot" aria-hidden="true"></span><span class="lt"><b>${esc(o.t1)}</b>${o.t2 ? `<i>${esc(o.t2)}</i>` : ''}</span><span class="age">${age(o.start, E).startsWith('since') ? age(o.start, E) : 'open ' + age(o.start, E)}</span>${o.problem ? `<button type="button" class="tag" data-prob="${esc(o.problem)}" title="See this problem in the summary">${esc(o.problem)}</button>` : ''}</summary>
@@ -1466,6 +1510,7 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
           <button type="submit" class="btn">Add to the notes</button> <button type="button" class="linkbtn" data-reccancel="1">Cancel</button> <span class="recErr" role="alert"></span></form></div></div></details>`).join('')
         : '<p class="notice">None found by these checks. That is not the same as none. The notes are still the record.</p>'}</section>
       ${closed.filter(c => c.found && !plan).map(c => `<p class="notice good"><b>Found in the record.</b> ${esc(c.text)}. ${chips(c.src, E)}</p>`).join('')}
+      ${aiCard}
       <p class="notice"><b>${CHECKS.length} checks only.</b> ${cover.unchk.length} of ${E.length} entries were not touched by any check and still need a human read. <button type="button" class="linkbtn" data-act="unchk">Show them</button></p>
       <p class="hub"><span class="hubL">Read ${R.E.length} entries in ${lastMs} ms from</span>${R.strip.map(x => `<button type="button" class="svc" data-ns="${esc(x.svc)}" title="Show the ${esc(x.svc)} notes">${esc(x.svc)} <i>${x.n}</i></button>`).join('<span class="arrow" aria-hidden="true"></span>')}</p>
       <p class="sign">${reviewed[cur.id] ? `<span class="okTag">Reviewed at ${reviewed[cur.id]}</span> Logged in the audit trail.` : `<button type="button" class="btn" id="signBtn">Mark this page as reviewed</button>`}</p>
@@ -1554,7 +1599,7 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
   function openPatient(p) {
     $('idModal').hidden = true; pending = null;
     if (!$('editor').hidden) { $('editor').hidden = true; $('notes').hidden = false; $('addForm').hidden = false; $('editBtn').textContent = 'Edit notes'; }
-    cur = p; notesText = p.notes; $('addIn').value = p.demoEntry; $('addErr').hidden = true; audience = ''; doc = 'handover'; jStage = null; jSel = null; nSvc = null; nUn = false; query = ''; built = false;
+    cur = p; notesText = p.notes; $('addIn').value = p.demoEntry; $('addErr').hidden = true; audience = ''; doc = 'handover'; aiItems = []; jStage = null; jSel = null; nSvc = null; nUn = false; query = ''; built = false;
     document.body.classList.remove('noPatient'); $('q').placeholder = 'Find a patient or search these notes'; $('out').hidden = true;
     drawBanner(); refresh(false); setView('loops'); $('notes').scrollTop = 0;
     log(`Access confirmed for direct care and record opened: ${p.name}, NHS no ${p.nhsNo}`);
