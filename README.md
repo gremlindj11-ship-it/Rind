@@ -6,6 +6,10 @@ The layer that holds the rest together. Student prototype for the National MedTe
 
 Open `index.html` in a browser. It is one file and works with no internet.
 
+## On Windows, one step
+
+Double-click `run-windows.bat`. It asks for your API key the first time (saved in `.env` on your machine only), installs what the server needs, starts it and opens the page.
+
 ## With the optional AI summary
 
 `main.py` (by Kalvin) serves the same page and adds an AI summary with a safety gate: any claim whose quote is not word for word in the notes is blocked.
