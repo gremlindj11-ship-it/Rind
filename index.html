@@ -558,6 +558,20 @@ body.paper .recF,body.paper div.act .btn{display:none}
 .pastHint{margin-top:12px;font-size:13px;color:var(--mute)}
 body.paper #moments{display:none}
 
+/* v22: optional AI summary through the team's server */
+.aiSum{padding:12px 16px 4px;margin:12px 0 4px}
+.aiHead{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;margin-bottom:6px}
+.aiHead b{font-weight:600}.aiHead span{font-size:13px;color:var(--mute)}
+.aiMeta{font-size:13px;color:var(--mute);margin:0 0 8px}
+.aiSum h4{font-size:13px;font-weight:600;color:var(--bluedk);margin:12px 0 4px}
+.aiSum ul{padding:0 0 2px 18px;margin:0;font-size:14px;line-height:1.5}
+.aiSum li{margin:2px 0}
+.aiConf{font-size:12px;color:#8a5a00;background:var(--ambertint);border-radius:10px;padding:1px 8px;margin-left:4px}
+.aiBlocked{margin-top:6px;font-size:13px}
+.aiBtns{margin:10px 0 12px}
+.aiBtns .btn{padding:5px 12px;font-size:13px}
+body.paper .aiSum{display:none}
+
 </style>
 </head>
 <body>
@@ -1357,7 +1371,42 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
     case 'dup': return [['Reviewed', `${d} second dose reviewed at [time] with [who]: [intended or not, and what was done].`]];
     case 'conflict': return [['Reviewed', 'Allergy reviewed at [time] with [who]: [what was done].']];
     default: return [['Done', '[What was done], at [time].']]; } };
-  let flash = '', aiItems = [];
+  let flash = '', aiItems = [], aiAvail = false, aiState = 'idle', aiData = null, aiErr = '';
+  const findQuote = (R, q) => { const n = String(q || '').replace(/\s+/g, ' ').trim().toLowerCase(); if (n.length < 8) return null; const e = R.E.find(y => y.text.replace(/\s+/g, ' ').toLowerCase().includes(n)); return e ? e.i : null; };
+  function aiPanelHtml(R) {
+    if (!aiAvail) return '';
+    const btns = `<p class="aiBtns"><button type="button" class="btn" data-ai="run">${aiState === 'done' ? 'Run again' : 'Write an AI summary'}</button> <button type="button" class="btn" data-ai="test">Test the safety gate</button>${aiState === 'done' ? ' <button type="button" class="linkbtn" data-ai="clear">Clear</button>' : ''}</p>`;
+    const head = `<div class="aiHead"><b>AI summary</b><span>optional · through the team's local server</span></div>`;
+    if (aiState === 'loading') return `<div class="aiBox aiSum">${head}<p class="hint">Asking the model, then checking every claim's quote against the notes…</p></div>`;
+    if (aiState === 'error') return `<div class="aiBox aiSum">${head}<p class="notice bad"><b>No AI summary.</b> ${esc(aiErr)}. Everything else on this page is from Rind's own checks and does not depend on it.</p>${btns}</div>`;
+    if (aiState !== 'done' || !aiData) return `<div class="aiBox aiSum">${head}<p class="hint">Sends these synthetic notes to a language model. Every claim must carry a word-for-word quote from the notes, or it is blocked before it reaches this page.</p>${btns}</div>`;
+    const d = aiData, st = d.verification_stats || {}, fb = /DETERMINISTIC|FALLBACK/i.test(d.generation_mode || '');
+    let dropped = 0;
+    const line = (c, lead) => { if (!c || !c.verification_passed) return ''; const i = findQuote(R, c.exact_source_quote); if (i == null) { dropped++; return ''; }
+      const same = String(c.claim_text || '').replace(/[.\s]+$/, '').toLowerCase() === String(c.exact_source_quote || '').replace(/[.\s]+$/, '').toLowerCase();
+      return `<li>${lead && !fb ? `<b>${esc(lead)}</b> ` : ''}${esc(c.claim_text)}${same ? '' : ` <q>${esc(c.exact_source_quote)}</q>`} ${chips([i], R.E)}${c.confidence && c.confidence !== 'HIGH' ? ` <span class="aiConf">${esc(c.confidence.toLowerCase())} confidence</span>` : ''}</li>`; };
+    const sec = (title, arr, lead) => { const rows = (arr || []).map(c => line(c, lead ? lead(c) : '')).join(''); return rows ? `<h4>${title}</h4><ul>${rows}</ul>` : ''; };
+    const admin = { ADMINISTERED: 'given', PRESCRIBED_ONLY: 'prescribed only', WITHHELD_OR_NOT_GIVEN: 'withheld or not given', INSUFFICIENT_DATA: 'not clear' };
+    const body = sec('Reason for attendance', [d.reason_for_attendance]) + sec('Allergies', d.allergies) + sec('Medicines', d.medications, c => `${c.medication_name}, ${admin[c.administration_status] || 'not clear'}:`) + sec('Key clinical information', d.key_clinical_info) + sec('What helps this person', d.reasonable_adjustments) + sec('Open loops the model sees', d.open_loops);
+    const q = d.quarantined_claims || [];
+    return `<div class="aiBox aiSum">${head}
+      <p class="aiMeta">${fb ? 'No model was used: the server had no API key or the call failed, so it fell back to plain extraction.' : `Written by <code>${esc(d.model_used || 'a language model')}</code>.`} ${st.verified_claims != null ? `${st.verified_claims} of ${st.total_claims_checked} claims backed by a word-for-word quote.` : ''}${dropped ? ` ${dropped} more dropped by Rind's own check.` : ''}</p>
+      ${d.clinical_safety_halt || q.length ? `<div class="notice bad"><b>Safety gate stopped ${q.length || 'some'} claim${q.length === 1 ? '' : 's'}.</b> The quote was not in the notes, so the claim is not shown as fact.${q.map(x => `<div class="aiBlocked">Blocked: ${esc(x.blocked_claim_text || '')}</div>`).join('')}</div>` : ''}
+      ${body}
+      <p class="hint">${fb ? 'Plain extraction by the server, with no model used.' : 'Written by a language model, not by Rind\'s checks.'} It never opens or closes a loop.</p>${btns}</div>`;
+  }
+  async function aiRun(sim) {
+    aiState = 'loading'; const p = $('aiPanel'); if (p) p.innerHTML = aiPanelHtml(lastR);
+    try {
+      const r = await fetch('/api/summarise', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ patient_id: cur.id, patient_name: cur.name, raw_notes_text: viewText(), simulate_hallucination: !!sim }) });
+      if (!r.ok) throw new Error('the server answered ' + r.status);
+      aiData = await r.json(); aiState = 'done';
+      aiItems = (aiData.open_loops || []).filter(c => c.verification_passed).map(c => ({ text: c.claim_text, quote: c.exact_source_quote }));
+      const st = aiData.verification_stats || {};
+      log(`AI summary ${sim ? '(safety gate test) ' : ''}received: ${st.verified_claims}/${st.total_claims_checked} claims verified${aiData.clinical_safety_halt ? ', safety gate stopped ' + (aiData.quarantined_claims || []).length : ''}`);
+    } catch (e) { aiState = 'error'; aiErr = String(e && e.message || e); log('AI summary failed: ' + aiErr); }
+    if (built) refresh(false);
+  }
   const aiCheck = R => aiItems.map(x => { const q = String(x.quote || '').trim().toLowerCase(), cited = typeof x.index === 'number' ? R.E[x.index] : R.E.find(e => `D${e.day} ${e.time}` === String(x.entry || '').trim());
     const hit = q.length >= 12 ? (cited && cited.text.toLowerCase().includes(q) ? cited : R.E.find(y => y.text.toLowerCase().includes(q))) : null;
     return { text: String(x.text || '').slice(0, 300), quote: String(x.quote || '').trim(), ok: !!hit && !!x.text, i: hit ? hit.i : null }; });
@@ -1649,6 +1698,7 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
         <p>Laid out as Situation, Background, Assessment, the order used in an SBAR handover. Rind does not recommend treatment, so the last part is what is still open.</p>
         <p>Problems with something still open come first. After that they follow the order an acute assessment runs: allergy and limits on treatment, then breathing, circulation, infection, confusion, and then everything else.</p>
         <p>Colour means the same thing everywhere: red needs someone to act, amber was not found in the notes, green was found or closed.</p></details>
+      <div id="aiPanel">${aiPanelHtml(R)}</div>
       <h3 class="subH">Situation</h3>
       <p class="sit">${f(nowTwo)}</p>
       ${R.trend ? `<div class="trendG flat">${R.trend.items.map(x => `<div class="${x.wide ? 'wide' : ''}"><span>${esc(x.k)}</span><b><i>${esc(String(x.a))}</i><em aria-hidden="true">→</em>${esc(String(x.b))}</b></div>`).join('')}</div>` : ''}
@@ -1721,7 +1771,7 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
   function openPatient(p) {
     $('idModal').hidden = true; pending = null;
     if (!$('editor').hidden) { $('editor').hidden = true; $('notes').hidden = false; $('addForm').hidden = false; $('editBtn').textContent = 'Edit notes'; }
-    cur = p; notesText = p.notes; $('addIn').value = p.demoEntry; $('addErr').hidden = true; audience = ''; doc = 'handover'; asOf = 0; aiItems = []; jStage = null; jSel = null; nSvc = null; nUn = false; query = ''; built = false;
+    cur = p; notesText = p.notes; $('addIn').value = p.demoEntry; $('addErr').hidden = true; audience = ''; doc = 'handover'; asOf = 0; aiItems = []; aiData = null; aiState = 'idle'; jStage = null; jSel = null; nSvc = null; nUn = false; query = ''; built = false;
     document.body.classList.remove('noPatient'); $('q').placeholder = 'Find a patient or search these notes'; $('out').hidden = true;
     drawBanner(); refresh(false); setView('loops'); $('notes').scrollTop = 0;
     log(`Access confirmed for direct care and record opened: ${p.name}, NHS no ${p.nhsNo}`);
@@ -1791,7 +1841,8 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
     const go = t.closest('[data-go]'); if (go) { setView(go.dataset.go); return; }
     const jk = t.closest('[data-jk]'); if (jk) { jOpen = jk.dataset.jk !== 'closed'; jClosed = jk.dataset.jk !== 'open'; drawJourney(lastR, true, false); return; }
     const js = t.closest('[data-js]'); if (js) { jStage = js.dataset.js === 'all' || jStage === +js.dataset.js ? null : +js.dataset.js; drawJourney(lastR, true, false); return; }
-    const mo = t.closest('[data-mo]'); if (mo) { asOf = +mo.dataset.mo; jSel = null; drawBanner(); refresh(false); log(`Viewing the record as it stood at: ${mom().label}`); return; }
+    const ab = t.closest('[data-ai]'); if (ab) { if (ab.dataset.ai === 'clear') { aiData = null; aiState = 'idle'; aiItems = []; refresh(false); } else aiRun(ab.dataset.ai === 'test'); return; }
+    const mo = t.closest('[data-mo]'); if (mo) { asOf = +mo.dataset.mo; jSel = null; aiData = null; aiState = 'idle'; aiItems = []; drawBanner(); refresh(false); log(`Viewing the record as it stood at: ${mom().label}`); return; }
     const dc = t.closest('[data-doc]'); if (dc) { doc = dc.dataset.doc; drawHandover(lastR); return; }
     if (t.id === 'docReset') { delete edits[docKey()]; log(`${DOCS.find(d => d[0] === doc)[1]} put back to Rind's draft`); drawHandover(lastR); return; }
     const au = t.closest('#aud button'); if (au) { audience = au.dataset.a; drawHandover(lastR); return; }
@@ -1917,6 +1968,7 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
   $('addIn').value = cur.demoEntry;
   drawBanner(); drawHome(); drawAudit();
   refresh(false);
+  if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) fetch('/api/health').then(r => r.ok ? r.json() : null).then(j => { if (j && j.status === 'ok') { aiAvail = true; if (built) refresh(false); } }).catch(() => {});
   goHome();
 })();
 
