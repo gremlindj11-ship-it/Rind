@@ -837,6 +837,21 @@ D2 08:40 | AMU pharmacist (HOSP-B-PHARM-150826) | Medicines reconciliation: pred
 D2 09:15 | AMU doctor (HOSP-B-MED-0915) | Ward round. Repeat U&E to follow potassium replacement. Respiratory management plan requested from North Mersey. Care home contacted for collateral. Daughter to be updated after ward round.`,
     expectedOpen: ['rx:potassium', 'dup:prednisolone', 'confirm:respiratory plan and oxygen target', 'confirm:penicillin reaction', 'confirm:nebuliser product and dose', 'confirm:care home collateral', 'pending:chest imaging', 'pending:repeat U&E', 'drug:ramipril', 'decision:antibiotic', 'referral:frailty team', 'device:urinary catheter', 'family'],
     demoEntry: 'D2 09:40 | AMU nurse | Potassium replacement given at 09:40 as charted.',
+    fills: {
+      'rx:potassium': { who: 'the AMU nurse' },
+      'dup:prednisolone': { who: 'the AMU pharmacist', 'intended or not, and what was done': 'not intended, no further steroid today' },
+      'drug:ramipril': { who: 'the AMU doctor', reason: 'acutely unwell', date: '16 Nov' },
+      'decision:antibiotic': { 'which one': 'doxycycline' },
+      'confirm:respiratory plan and oxygen target': { who: 'North Mersey respiratory team', 'what they said': 'target SpO2 88 to 92%' },
+      'confirm:penicillin reaction': { who: 'her daughter', 'what they said': 'rash as a child, no anaphylaxis' },
+      'confirm:nebuliser product and dose': { who: 'the UCR practitioner', 'what they said': 'salbutamol 5 mg' },
+      'confirm:care home collateral': { who: 'the care home senior carer', 'what they said': 'usually alert and chatty' },
+      'pending:chest imaging': { result: 'chest X-ray, no consolidation' },
+      'pending:repeat U&E': { result: 'potassium 3.6' },
+      'referral:frailty team': { advice: 'will review on AMU today' },
+      'device:urinary catheter': { reason: 'fluid balance', date: '16 Nov' },
+      'family': { who: 'the AMU doctor', 'what was said': 'daughter updated on the plan' }
+    },
     tryEntries: [['Potassium is given', 'D2 09:40 | AMU nurse | Potassium replacement given at 09:40 as charted.'], ['A penicillin is prescribed', 'D2 09:50 | AMU doctor | Co-amoxiclav 1.2 g IV prescribed for chest infection.'], ['The catheter comes out', 'D2 10:10 | AMU nurse | Urinary catheter removed.'], ['Another service records no allergies', 'D2 10:20 | Frailty team | Reviewed on AMU. NKDA.']]
   },
     {
@@ -1465,6 +1480,7 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
     case 'dup': return [['Reviewed', `${d} second dose reviewed at [time] with [who]: [intended or not, and what was done].`]];
     case 'conflict': return [['Reviewed', 'Allergy reviewed at [time] with [who]: [what was done].']];
     default: return [['Done', '[What was done], at [time].']]; } };
+  const tfill = (l, s) => { const F = (cur.fills && cur.fills[l.key]) || {}, E = lastR ? lastR.E : [], T = E.length ? addMin(E[E.length - 1].time, 25) : ''; return s.replace(/\[([^\]]+)\]/g, (m, k) => k === 'time' && T ? T : F[k] != null ? F[k] : m); };
   let flash = '', aiItems = [], aiAvail = false, aiState = 'idle', aiData = null, aiErr = '';
   const findQuote = (R, q) => { const n = String(q || '').replace(/\s+/g, ' ').trim().toLowerCase(); if (n.length < 8) return null; const e = R.E.find(y => y.text.replace(/\s+/g, ' ').toLowerCase().includes(n)); return e ? e.i : null; };
   const trendVals = (x, E) => { const p = (x.pts || []).filter(Boolean); if (p.length < 2) return `<b><i>${esc(String(x.a))}</i><em aria-hidden="true">→</em>${esc(String(x.b))}</b>`;
@@ -1472,6 +1488,7 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
     return `<b>${p.map((q, k) => `<button type="button" class="src tv${k === p.length - 1 ? ' last' : ''}" data-i="${q.i}" aria-label="${esc(String(q.v))}, ${when(q.i, E)}, ${esc(E[q.i].svc)}">${esc(String(q.v))}</button>`).join('<em aria-hidden="true">→</em>')}</b><small>${esc(E[a.i].svc)} ${E[a.i].time} to ${esc(E[z.i].svc)} ${E[z.i].time}</small>`; };
   const AI_LOCAL = /^(localhost|127\.0\.0\.1)$/.test(location.hostname), AI_BASE = AI_LOCAL ? '' : ['http:', '', '127.0.0.1:8000'].join('/');
   function aiPanelHtml(R) {
+    if (!/[?&]ai\b/.test(location.search) && aiState === 'idle') return '';
     const btns = `<p class="aiBtns"><button type="button" class="btn" data-ai="run">${aiState === 'done' ? 'Run again' : 'Write an AI summary'}</button> <button type="button" class="btn" data-ai="test">Test the safety gate</button>${aiState === 'done' ? ' <button type="button" class="linkbtn" data-ai="clear">Clear</button>' : ''}</p>`;
     const head = `<div class="aiHead"><b>AI summary</b><span>${aiAvail ? 'server connected' : 'optional · needs the team\'s server running on this computer'}</span></div>`;
     if (aiState === 'loading') return `<div class="aiBox aiSum">${head}<p class="hint">Asking the model, then checking every claim's quote against the notes…</p></div>`;
@@ -1772,8 +1789,8 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
         <summary><span class="dot" aria-hidden="true"></span><span class="lt"><b>${esc(o.t1)}</b>${o.t2 ? `<i>${esc(o.t2)}</i>` : ''}</span><span class="age">${age(o.ageFrom != null ? o.ageFrom : o.start, E).startsWith('since') ? age(o.ageFrom != null ? o.ageFrom : o.start, E) : 'open ' + age(o.ageFrom != null ? o.ageFrom : o.start, E)}</span>${o.problem ? `<button type="button" class="tag" data-prob="${esc(o.problem)}" title="See this problem in the summary">${esc(o.problem)}</button>` : ''}</summary>
         <div class="lb">${loopBody(o, E)}${isLatest() ? `<div class="act">${done[dk(o)] ? `<span class="okTag">Recorded in the notes at ${done[dk(o)]}</span>Still open by the checks. <button type="button" class="linkbtn" data-rec="${k}">Add another entry</button>` : `<button type="button" class="btn" data-rec="${k}">Record what was done</button>`}
           <form class="recF" data-k="${k}" hidden><div class="recTop"><label for="rec${k}">New entry for the notes</label>${TPL(o).length > 1 ? TPL(o).map((t, n) => `<button type="button" class="chip" data-tpl="${n}" aria-pressed="${n === 0}">${esc(t[0])}</button>`).join('') : ''}</div>
-          <textarea id="rec${k}" rows="2" spellcheck="true">${esc(TPL(o)[0][1])}</textarea>
-          <p class="hint">Fill in the parts in brackets. It goes into the notes signed ${esc(USER)}, then Rind reads the record again. The loop closes only if the entry settles it.</p>
+          <textarea id="rec${k}" rows="2" spellcheck="true">${esc(tfill(o, TPL(o)[0][1]))}</textarea>
+          <p class="hint">Check the wording and fill in anything in brackets. It goes into the notes signed ${esc(USER)}, then Rind reads the record again. The loop closes only if the entry settles it.</p>
           <button type="submit" class="btn">Add to the notes</button> <button type="button" class="linkbtn" data-reccancel="1">Cancel</button> <span class="recErr" role="alert"></span></form></div>` : `<p class="pastHint">You are viewing the record as it stood at an earlier moment. Choose Latest to record what was done.</p>`}</div></details>`).join('')
         : '<p class="notice">None found by these checks. That is not the same as none. The notes are still the record.</p>'}</section>
       ${closed.filter(c => c.found && !plan).map(c => `<p class="notice good"><b>Found in the record.</b> ${esc(c.text)}. ${chips(c.src, E)}</p>`).join('')}
@@ -1792,10 +1809,10 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
     const nowTwo = S.now ? { text: S.now.text.split(/(?<=\.)\s/).slice(0, 2).join(' '), src: S.now.src } : null;
     const oRow = (l, k) => `<button type="button" class="openRow" data-ql="${k}"><i class="qDot" aria-hidden="true"></i><b>${esc(l.t1)}</b><span>${esc(l.t2 || '')}</span><em>${age(l.ageFrom != null ? l.ageFrom : l.start, E).startsWith('since') ? age(l.ageFrom != null ? l.ageFrom : l.start, E) : 'open ' + age(l.ageFrom != null ? l.ageFrom : l.start, E)}</em></button>`;
     $('v-summary').innerHTML = `<h2 class="cardH">Summary</h2>
-      <div class="keyG">
-        <div class="keyCard why"><span>Why ${cur.sex === 'F' ? 'she' : 'he'} is here</span><div>${S.admitted ? f(S.admitted) : NF}</div></div>
-        <div class="keyCard ${S.allergies ? 'alg' : 'miss'}"><span>Allergies</span><div>${S.allergies ? f(S.allergies) : NF}</div></div>
-        <div class="keyCard ${S.resus ? '' : 'miss'}"><span>Limits on treatment</span><div>${S.resus ? f(S.resus) : NF}</div></div>
+      <div class="keyG"${S.resus ? '' : ' style="grid-template-columns:minmax(0,2fr) minmax(0,1fr)"'}>
+        ${S.admitted ? `<div class="keyCard why"><span>Why ${cur.sex === 'F' ? 'she' : 'he'} is here</span><div>${f(S.admitted)}</div></div>` : ''}
+        ${S.allergies ? `<div class="keyCard alg"><span>Allergies</span><div>${f(S.allergies)}</div></div>` : ''}
+        ${S.resus ? `<div class="keyCard"><span>Limits on treatment</span><div>${f(S.resus)}</div></div>` : ''}
       </div>
       <h3 class="subH act">Still open<span class="badge">${open.length}</span></h3>
       ${open.length ? `<div class="openL">${open.slice(0, 5).map(oRow).join('')}${open.length > 5 ? `<details class="openMore"><summary>Show ${open.length - 5} more</summary>${open.slice(5).map((l, k) => oRow(l, k + 5)).join('')}</details>` : ''}</div>` : '<p class="hint">None found by these checks.</p>'}
@@ -1805,7 +1822,6 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
       ${R.obs.length > 1 ? `<details class="prob"><summary><span class="pn">All observations</span><span class="pl">${R.obs.length} sets across the journey</span></summary><table class="meds"><thead><tr><th>When</th><th>Where</th><th>Breathing rate</th><th>Oxygen</th><th>Heart rate</th><th>Temp</th><th>NEWS2</th></tr></thead><tbody>${R.obs.map(o => `<tr><td>${chips([o.i], E)}</td><td>${esc(E[o.i].svc)}</td><td>${o.rr || ''}</td><td>${esc(o.spo2 || '')}</td><td>${o.hr || ''}</td><td>${o.temp || ''}</td><td>${o.news || ''}</td></tr>`).join('')}</tbody></table></details>` : ''}
       <h3 class="subH">Background</h3>
       <div class="kvG">${[['Family last told', S.familyTold], ['Next of kin', S.nok]].filter(x => x[1]).map(x => kv(x[0], x[1])).join('')}${cur.where ? `<div class="kv"><span>Lives</span><div>${esc(cur.where)}</div></div>` : S.living ? kv('Lives', S.living) : ''}${S.adjust ? kv('What helps this person', S.adjust) : ''}</div>
-      ${(() => { const miss = [['Next of kin', S.nok], ['Family last told', S.familyTold], ['Where they live', cur.where || S.living], ['What helps this person', S.adjust]].filter(x => !x[1]).map(x => x[0]); return miss.length ? `<p class="kvMiss"><i class="aDot" aria-hidden="true"></i><b>Not found in these notes:</b> ${miss.map(esc).join(', ').toLowerCase()}</p>` : ''; })()}
       <h3 class="subH">By problem</h3>
       ${(() => { const row = p => { const last = p.items[p.items.length - 1]; return `<details class="prob" data-pn="${esc(p.name)}"><summary><span class="pn">${esc(p.name)}</span>${p.loops.length ? `<span class="badge">${p.loops.length} open</span>` : ''}<span class="pl">${esc(last.text.length > 70 ? last.text.slice(0, 68) + '…' : last.text)}</span></summary>
         ${p.items.length > 6 ? `<details class="earlier"><summary>${p.items.length - 5} earlier mentions</summary><ol class="tl">${p.items.slice(0, -5).map(it => `<li>${dayLink(it.i, E)}<span>${esc(it.text)}</span></li>`).join('')}</ol></details>` : ''}<ol class="tl">${(p.items.length > 6 ? p.items.slice(-5) : p.items).map(it => `<li>${dayLink(it.i, E)}<span>${esc(it.text)}</span></li>`).join('')}</ol>${open.filter(l => p.loops.includes(l.key)).map(l => `<p class="pLoop"><button type="button" class="linkbtn" data-ql="${open.indexOf(l)}"><i class="qDot" aria-hidden="true"></i>${esc(l.title)}</button></p>`).join('')}</details>`; }; const top = problems.filter(p => p.loops.length), rest = problems.filter(p => !p.loops.length);
@@ -1843,7 +1859,7 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
     $('nOpen').textContent = open.filter(l => !done[dk(l)]).length;
     const tidy = t => { const m = t.match(/\b([Dd]aughter|[Ss]on|[Ww]ife|[Hh]usband|[Pp]artner) ([A-Z][a-z]+(?: [A-Z][a-z]+)?)[^0-9]{0,8}(0\d[\d ]{8,12}\d)?/); if (m) return `${m[2]}, ${m[1].toLowerCase()}${m[3] ? ' · ' + m[3] : ''}`; t = t.replace(/^escalation ceiling:\s*/i, ''); return cap(t); };
     const fact = (k, x) => x ? `<button type="button" class="fact src" data-i="${x.src[0]}" title="Open the note this came from"><span>${k}</span><b>${esc(tidy(x.text))}</b></button>` : `<div class="fact miss"><span>${k}</span><b>Not found in notes</b></div>`;
-    $('facts').innerHTML = fact('Allergies', S.allergies) + fact('Escalation', S.resus) + (S.nok || !S.familyTold ? fact('Next of kin', S.nok) : fact('Family last told', S.familyTold));
+    $('facts').innerHTML = [['Allergies', S.allergies], ['Escalation', S.resus], ['Next of kin', S.nok], ['Family last told', S.familyTold]].filter(x => x[1]).slice(0, 3).map(x => fact(x[0], x[1])).join('');
     const pa = E.find(e => /pre-?alert/i.test(e.text)), pp = $('ptPre'); pp.classList.toggle('src', !!pa); if (pa) pp.dataset.i = pa.i; else delete pp.dataset.i;
   }
 
@@ -1962,7 +1978,7 @@ D20 10:30 | Community nurse | Home visit 2. BM 18.2. Message left for GP re cath
     if (t.id === 'idOpen' && pending && $('idTick').checked) { openPatient(pending); return; }
     if (t.id === 'idCancel' || t.id === 'idModal') { $('idModal').hidden = true; pending = null; return; }
     const rc = t.closest('[data-rec]'); if (rc) { const f = rc.closest('.act').querySelector('.recF'); f.hidden = false; const ta = f.querySelector('textarea'); ta.focus(); const a = ta.value.indexOf('['), b = ta.value.indexOf(']'); if (a >= 0 && b > a) ta.setSelectionRange(a, b + 1); return; }
-    const tp = t.closest('[data-tpl]'); if (tp) { const f = tp.closest('.recF'), l = lastR.open[+f.dataset.k]; f.querySelector('textarea').value = TPL(l)[+tp.dataset.tpl][1]; f.querySelectorAll('[data-tpl]').forEach(b => b.setAttribute('aria-pressed', b === tp)); f.querySelector('textarea').focus(); return; }
+    const tp = t.closest('[data-tpl]'); if (tp) { const f = tp.closest('.recF'), l = lastR.open[+f.dataset.k]; f.querySelector('textarea').value = tfill(l, TPL(l)[+tp.dataset.tpl][1]); f.querySelectorAll('[data-tpl]').forEach(b => b.setAttribute('aria-pressed', b === tp)); f.querySelector('textarea').focus(); return; }
     if (t.closest('[data-reccancel]')) { t.closest('.recF').hidden = true; return; }
     const dn = t.closest('[data-done]'); if (dn) { const l = lastR.open[+dn.dataset.done]; done[dk(l)] = nowTime(); log(`Marked as actioned: ${l.title}`); refresh(false); return; }
     const un = t.closest('[data-undo]'); if (un) { const l = lastR.open[+un.dataset.undo]; delete done[dk(l)]; log(`Undid actioned: ${l.title}`); refresh(false); return; }
